@@ -1,0 +1,14 @@
+{
+    "id": "{3C878C9D-63E0-767D-494C-35AC950EA76D}",
+    "name": "Batteriemelder",
+    "type": 3,
+    "vendor": "UB",
+    "aliases": [
+        "Batteriemelder"
+    ],
+    "url": "https://github.com/ubittner/Batteriemelder/tree/main/Batteriemelder",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "BATM"
+}

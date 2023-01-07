@@ -298,17 +298,27 @@ trait BATM_Reports
                 }
                 //We have more than one category
                 if ($multiMessage > 1) {
-                    $sendMail = true;
+                    $sendMail = false;
                     if ($useUpdateOverdue) {
-                        $messageText .= $updateOverdueMessages;
+                        if (strpos($updateOverdueMessages, 'Keine') === false) {
+                            $sendMail = true;
+                            $messageText .= $updateOverdueMessages;
+                        }
                     }
                     if ($useLowBattery) {
-                        $messageText .= $lowBatteryMessages;
+                        if (strpos($lowBatteryMessages, 'Keine') === false) {
+                            $sendMail = true;
+                            $messageText .= $lowBatteryMessages;
+                        }
                     }
                     if ($useNormalStatus) {
-                        $messageText .= $normalStatusMessages;
+                        if (strpos($normalStatusMessages, 'Keine') === false) {
+                            $sendMail = true;
+                            $messageText .= $normalStatusMessages;
+                        }
                     }
                 }
+                $this->SendDebug(__FUNCTION__, 'E-Mail Versand: ' . json_encode($sendMail), 0);
                 if ($sendMail) {
                     $subject = 'Batteriemelder, Tagesbericht vom ' . $timeStamp;
                     $locationDesignation = $this->ReadPropertyString('LocationDesignation');

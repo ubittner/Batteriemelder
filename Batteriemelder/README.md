@@ -22,8 +22,29 @@ Der Nutzer stimmt den o.a. Bedingungen, sowie den Lizenzbedingungen ausdrücklic
 
 Dieses Modul überwacht den Batteriestatus von Geräten in [IP-Symcon](https://www.symcon.de).
 
-Die Überwachung oder Erstellung der Batterieliste wird immer durchgeführt.  
-Wenn der Schalter `Aktiv` in WebFront auf `Aus` steht, werden lediglich keine Benachrichtigungen versendet.  
+[![Image](../imgs/WebFront.png)]()
+
+Aktiv:  
+Es erfolgt immer eine überwachung der Melder.  
+Ist der Schalter `Aktiv` in WebFront auf `Aus`, werden lediglich keine Benachrichtigungen versendet.  
+
+Auslösender Melder:  
+Gibt es mehrere kritische Melder, welche alphabetisch nach der Bezeichnung sortiert sind,  
+so wird der Melder mit der höchsten Priorität angezeigt.
+
+| Priorität | Status                      |
+|-----------|-----------------------------|
+| 1         | ❗️Aktualisierung überfällig |
+| 2         | ⚠️ Batterie schwach         |
+| 3         | 🟢 Batterie OK              |
+| 4         | ❌ Überwachung deaktiviert   |
+
+Batteriewechsel ID:  
+Wird ein Batteriewechsel ausgeführt und ist der Melder dann nicht mehr in einem kritischen Zustand,  
+so wird der Melder aus der Tages- und der Wochenliste gelöscht.
+
+Batterieliste:  
+Die Überwachung der Melder und die Erstellung der Batterieliste wird immer durchgeführt.
 
 ### 2. Voraussetzungen
 
@@ -36,18 +57,8 @@ Wenn der Schalter `Aktiv` in WebFront auf `Aus` steht, werden lediglich keine Be
                       | Batteriemelder (Modul) |
                       |                        |
 Auslöser<-------------+ Status                 |
-                      |                        |
-                      +------------+-----------+
-                                   |
-                                   |                        +--------------------------+
-                                   |                        | Benachrichtigung (Modul) |
-                                   |                        |                          |
-                                   +----------------------->| WebFront                 |
-                                                            | Push Benachrichtigung    |
-                                                            | SMS                      |
-                                                            | E-Mail                   |
-                                                            | Instant messaging        |
-                                                            +--------------------------+
+                      | Batterieliste          |
+                      +------------------------+
 ```
 
 ### 4. Auslöser
@@ -59,34 +70,23 @@ Wird der Status eines Auslösers aktualisiert, so werden alle aktivierten Variab
 
 ##### 5.1 Sofortige Benachrichtigung
 
-##### 5.1.1 Gesamtstatus:
-
-Ändert sich erstmalig der Gesamtstatus von `OK` auf `Alarm`,  
-so werden die Benachrichtigungen für den Gesamtstatus `Alarm` versendet, sofern aktiviert.
-
-Ändert sich der Gesamtstatus von `Alarm` wieder auf `OK`,  
-so werden die Benachrichtigungen für den Gesamtstaus `OK` versendet, sofern aktiviert.
-
-Ist in der Konfiguration `Maximal eine Benachrichtigung bis` aktiviert,  
-so werden die Benachrichtigungen über die Änderung des jeweiligen Status maximal ***einmal*** versendet.
-
-##### 5.1.2 Gerätestatus:
+##### 5.1.1 Gerätestatus:
 
 Ändert sich erstmalig der Gerätestatus von `OK` auf `Schwache Batterie` oder `Überfällige Aktualisierung`,  
-so werden die Benachrichtigungen für den Gerätestatus `Schwache Batterie` oder `Überfällige Aktualisierung` versendet, sofern aktiviert.
+so werden die sofortigen Benachrichtigungen für den Gerätestatus `Schwache Batterie` oder `Überfällige Aktualisierung` versendet.
 
 Ändert sich Gerätestatus von `Schwache Batterie` oder `Überfällige Aktualisierung` wieder auf `OK`,  
-so werden die Benachrichtigungen für den Gerätestatus `OK` versendet, sofern aktiviert.
+so werden die sofortigen Benachrichtigungen für den Gerätestatus `OK` versendet.
 
-Es werden Benachrichtigungen über die Änderung des jeweiligen Gerätestatus maximal ***einmal*** versendet.
+Es werden Benachrichtigungen über die Änderung des jeweiligen Gerätestatus maximal ***einmal*** innerhalb des Zeitraums versendet.
 
 #####  5.2 Tägliche Benachrichtigung
 
-Eine Benachrichtigung über den Gesamtstaus und/oder Gerätestatus kann zu der festgelegten Zeit an den ausgewählten Tagen erfolgen.
+Eine Benachrichtigung über den Gerätestatus kann zu der festgelegten Zeit an den ausgewählten Tagen erfolgen.
 
 #####  5.3 Wöchentliche Benachrichtigung
 
-Eine Benachrichtigung über den Gesamtstaus und/oder Gerätestatus kann einmal wöchentlich zu der festgelegten Zeit erfolgen.
+Eine Benachrichtigung über den Gerätestatus kann einmal wöchentlich zu der festgelegten Zeit erfolgen.
 
 ### 6. PHP-Befehlsreferenz
 
@@ -100,9 +100,8 @@ Der Befehl liefert als Rückgabewert **TRUE**, wenn alle Batterien `OK` sind, an
 
 | Parameter     | Wert  | Bezeichnung    |
 |---------------|-------|----------------|
-| `INSTANCE_ID` |       | ID der Instanz |
+| `INSTANCE_ID` | 12345 | ID der Instanz |
 
 Beispiel:  
 > $result = BATM_CheckBatteries(12345);  
 > echo $result;
-

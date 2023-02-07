@@ -243,6 +243,7 @@ trait BATM_MonitoredVariables
                         'Designation'            => $name,
                         'Comment'                => $address,
                         'BatteryType'            => '',
+                        'UserDefinedBatteryType' => '',
                         'CheckBattery'           => true,
                         'UseMultipleAlerts'      => false,
                         'PrimaryCondition'       => json_encode($primaryCondition),

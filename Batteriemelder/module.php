@@ -26,7 +26,7 @@ class Batteriemelder extends IPSModule
     //Constants
     private const MODULE_NAME = 'Batteriemelder';
     private const MODULE_PREFIX = 'BATM';
-    private const MODULE_VERSION = '3.0-2, 02.02.2023';
+    private const MODULE_VERSION = '3.0-3, 07.02.2023';
     private const NOTIFICATION_MODULE_GUID = '{BDAB70AA-B45D-4CB4-3D65-509CFF0969F9}';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';

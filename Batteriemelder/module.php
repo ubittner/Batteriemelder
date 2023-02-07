@@ -8,6 +8,7 @@
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
+/** @noinspection PhpUnusedPrivateMethodInspection */
 /** @noinspection PhpUnhandledExceptionInspection */
 /** @noinspection PhpUnused */
 
@@ -25,8 +26,10 @@ class Batteriemelder extends IPSModule
     //Constants
     private const MODULE_NAME = 'Batteriemelder';
     private const MODULE_PREFIX = 'BATM';
-    private const MODULE_VERSION = '3.0-1, 19.10.2022';
+    private const MODULE_VERSION = '3.0-2, 02.02.2023';
     private const NOTIFICATION_MODULE_GUID = '{BDAB70AA-B45D-4CB4-3D65-509CFF0969F9}';
+    private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
+    private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
     public function Create()
     {
@@ -35,52 +38,61 @@ class Batteriemelder extends IPSModule
 
         ########## Properties
 
-        //Info
+        ##### Info
+
         $this->RegisterPropertyString('Note', '');
-        //Functions
+
+        ##### Functions
+
         $this->RegisterPropertyBoolean('EnableActive', false);
         $this->RegisterPropertyBoolean('EnableStatus', true);
         $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
         $this->RegisterPropertyBoolean('EnableBatteryReplacement', true);
+        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
+        $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
         $this->RegisterPropertyBoolean('EnableBatteryList', true);
-        //Location designation
-        $this->RegisterPropertyString('LocationDesignation', '');
-        //Trigger list
+        $this->RegisterPropertyBoolean('EnableUpdateOverdue', true);
+        $this->RegisterPropertyBoolean('EnableLowBattery', true);
+        $this->RegisterPropertyBoolean('EnableBatteryOK', true);
+        $this->RegisterPropertyBoolean('EnableCheckDisabled', true);
+        $this->RegisterPropertyString('UpdateOverdueStatusText', '❗️ Aktualisierung überfällig');
+        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️ Batterie schwach');
+        $this->RegisterPropertyString('BatteryOKStatusText', '🟢 Batterie OK');
+        $this->RegisterPropertyString('MonitoringDisabledStatusText', '❌ Überwachung deaktiviert');
+
+        ##### Trigger list
+
         $this->RegisterPropertyString('TriggerList', '[]');
-        //Immediate notification
-        $this->RegisterPropertyInteger('ImmediateNotification', 0);
+
+        ##### Immediate notification
+
         $this->RegisterPropertyString('ImmediateNotificationResetTime', '{"hour":7,"minute":0,"second":0}');
-        $this->RegisterPropertyBoolean('UseImmediateNotificationTotalStateLimit', true);
-        $this->RegisterPropertyString('ImmediateNotificationTotalStatusAlarm', '[{"Use":false,"Designation":"Alarm","SpacerNotification":"","LabelMessageText":"","MessageText":"⚠️ Batteriestatus Alarm!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('ImmediateNotificationTotalStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText":"✅ Batteriestatus OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyBoolean('UseImmediateNotificationDeviceStateLimit', true);
-        $this->RegisterPropertyString('ImmediateNotificationDeviceStatusUpdateOverdue', '[{"Use":false,"Designation":"Überfällige Aktualisierung","SpacerNotification":"","LabelMessageText":"","MessageText": "❗️%1$s Aktualisierung überfällig!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('ImmediateNotificationDeviceStatusLowBattery', '[{"Use":false,"Designation":"Schwache Batterie","SpacerNotification":"","LabelMessageText":"","MessageText": "⚠️ %1$s Batterie schwach!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('ImmediateNotificationDeviceStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText": "✅ %1$s Batterie OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        //Daily notification
-        $this->RegisterPropertyInteger('DailyNotification', 0);
-        $this->RegisterPropertyBoolean('DailyNotificationMonday', false);
-        $this->RegisterPropertyBoolean('DailyNotificationTuesday', false);
-        $this->RegisterPropertyBoolean('DailyNotificationWednesday', false);
-        $this->RegisterPropertyBoolean('DailyNotificationThursday', false);
-        $this->RegisterPropertyBoolean('DailyNotificationFriday', false);
-        $this->RegisterPropertyBoolean('DailyNotificationSaturday', false);
+        $this->RegisterPropertyString('ImmediateNotification', '[]');
+        $this->RegisterPropertyString('ImmediatePushNotification', '[]');
+        $this->RegisterPropertyString('ImmediateMailerNotification', '[]');
+
+        ##### Daily notification
+
+        $this->RegisterPropertyBoolean('DailyNotificationMonday', true);
+        $this->RegisterPropertyBoolean('DailyNotificationTuesday', true);
+        $this->RegisterPropertyBoolean('DailyNotificationWednesday', true);
+        $this->RegisterPropertyBoolean('DailyNotificationThursday', true);
+        $this->RegisterPropertyBoolean('DailyNotificationFriday', true);
+        $this->RegisterPropertyBoolean('DailyNotificationSaturday', true);
         $this->RegisterPropertyBoolean('DailyNotificationSunday', false);
         $this->RegisterPropertyString('DailyNotificationTime', '{"hour":19,"minute":0,"second":0}');
-        $this->RegisterPropertyString('DailyNotificationTotalStatusAlarm', '[{"Use":false,"Designation":"Alarm","SpacerNotification":"","LabelMessageText":"","MessageText":"⚠️ Batteriestatus Alarm!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('DailyNotificationTotalStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText":"✅ Batteriestatus OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('DailyNotificationDeviceStatusUpdateOverdue', '[{"Use":false,"Designation":"Überfällige Aktualisierung","SpacerNotification":"","LabelMessageText":"","MessageText": "❗️%1$s Aktualisierung überfällig!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('DailyNotificationDeviceStatusLowBattery', '[{"Use":false,"Designation":"Schwache Batterie","SpacerNotification":"","LabelMessageText":"","MessageText": "⚠️ %1$s Batterie schwach!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('DailyNotificationDeviceStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText": "✅ %1$s Batterie OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        //Weekly notification
-        $this->RegisterPropertyInteger('WeeklyNotification', 0);
+        $this->RegisterPropertyBoolean('DailyNotificationAlwaysResetCriticalVariables', false);
+        $this->RegisterPropertyString('DailyNotification', '[]');
+        $this->RegisterPropertyString('DailyPushNotification', '[]');
+        $this->RegisterPropertyString('DailyMailerNotification', '[]');
+
+        ##### Weekly notification
+
         $this->RegisterPropertyInteger('WeeklyNotificationDay', 0);
         $this->RegisterPropertyString('WeeklyNotificationTime', '{"hour":19,"minute":0,"second":0}');
-        $this->RegisterPropertyString('WeeklyNotificationTotalStatusAlarm', '[{"Use":false,"Designation":"Alarm","SpacerNotification":"","LabelMessageText":"","MessageText":"⚠️ Batteriestatus Alarm!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('WeeklyNotificationTotalStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText":"✅ Batteriestatus OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('WeeklyNotificationDeviceStatusUpdateOverdue', '[{"Use":false,"Designation":"Überfällige Aktualisierung","SpacerNotification":"","LabelMessageText":"","MessageText": "❗️%1$s Aktualisierung überfällig!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('WeeklyNotificationDeviceStatusLowBattery', '[{"Use":false,"Designation":"Schwache Batterie","SpacerNotification":"","LabelMessageText":"","MessageText": "⚠️ %1$s Batterie schwach!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
-        $this->RegisterPropertyString('WeeklyNotificationDeviceStatusOK', '[{"Use":false,"Designation":"OK","SpacerNotification":"","LabelMessageText":"","MessageText": "✅ %1$s Batterie OK!","UseTimestamp":true,"SpacerWebFrontNotification":"","LabelWebFrontNotification":"","UseWebFrontNotification":false,"WebFrontNotificationTitle":"","WebFrontNotificationIcon":"","WebFrontNotificationDisplayDuration":0,"SpacerWebFrontPushNotification":"","LabelWebFrontPushNotification":"","UseWebFrontPushNotification":false,"WebFrontPushNotificationTitle":"","WebFrontPushNotificationSound":"","WebFrontPushNotificationTargetID":0,"SpacerMail":"","LabelMail":"","UseMailer":false,"Subject":"","SpacerSMS":"","LabelSMS":"","UseSMS":false,"SMSTitle":"","SpacerTelegram":"","LabelTelegram":"","UseTelegram":false,"TelegramTitle":""}]');
+        $this->RegisterPropertyString('WeeklyNotification', '[]');
+        $this->RegisterPropertyString('WeeklyPushNotification', '[]');
+        $this->RegisterPropertyString('WeeklyMailerNotification', '[]');
 
         ########## General profiles
 
@@ -102,7 +114,8 @@ class Batteriemelder extends IPSModule
 
         ########## Variables
 
-        //Active
+        ##### Active
+
         $id = @$this->GetIDForIdent('Active');
         $this->RegisterVariableBoolean('Active', 'Aktiv', '~Switch', 10);
         $this->EnableAction('Active');
@@ -110,7 +123,8 @@ class Batteriemelder extends IPSModule
             $this->SetValue('Active', true);
         }
 
-        //Status
+        ##### Status
+
         $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.Status';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 0);
@@ -119,7 +133,8 @@ class Batteriemelder extends IPSModule
         IPS_SetVariableProfileAssociation($profile, 1, 'Alarm', 'Warning', 0xFF0000);
         $this->RegisterVariableBoolean('Status', 'Status', $profile, 20);
 
-        //Triggering detector
+        ##### Triggering detector
+
         $id = @$this->GetIDForIdent('TriggeringDetector');
         $this->RegisterVariableString('TriggeringDetector', 'Auslösender Melder', '', 30);
         $this->SetValue('TriggeringDetector', '');
@@ -127,7 +142,8 @@ class Batteriemelder extends IPSModule
             IPS_SetIcon($this->GetIDForIdent('TriggeringDetector'), 'Eyes');
         }
 
-        //Battery replacement
+        ##### Battery replacement
+
         $id = @$this->GetIDForIdent('BatteryReplacement');
         $this->RegisterVariableInteger('BatteryReplacement', 'Batteriewechsel ID', '', 40);
         $this->EnableAction('BatteryReplacement');
@@ -135,9 +151,28 @@ class Batteriemelder extends IPSModule
             IPS_SetIcon($this->GetIDForIdent('BatteryReplacement'), 'Gear');
         }
 
-        //Battery list
+        ##### Last update
+
+        $id = @$this->GetIDForIdent('LastUpdate');
+        $this->RegisterVariableString('LastUpdate', 'Letzte Aktualisierung', '', 50);
+        if (!$id) {
+            IPS_SetIcon($this->GetIDForIdent('LastUpdate'), 'Clock');
+        }
+
+        ##### Update status
+
+        $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.UpdateStatus';
+        if (!IPS_VariableProfileExists($profile)) {
+            IPS_CreateVariableProfile($profile, 1);
+        }
+        IPS_SetVariableProfileAssociation($profile, 0, 'Aktualisieren', 'Repeat', -1);
+        $this->RegisterVariableInteger('UpdateStatus', 'Aktualisierung', $profile, 60);
+        $this->EnableAction('UpdateStatus');
+
+        ##### Battery list
+
         $id = @$this->GetIDForIdent('BatteryList');
-        $this->RegisterVariableString('BatteryList', 'Batterieliste', 'HTMLBox', 50);
+        $this->RegisterVariableString('BatteryList', 'Batterieliste', 'HTMLBox', 70);
         if (!$id) {
             IPS_SetIcon($this->GetIDForIdent('BatteryList'), 'Battery');
         }
@@ -150,8 +185,6 @@ class Batteriemelder extends IPSModule
 
         ########## Attributes
 
-        $this->RegisterAttributeBoolean('UseImmediateNotificationTotalStatusAlarm', true);
-        $this->RegisterAttributeBoolean('UseImmediateNotificationTotalStatusOK', true);
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
@@ -189,21 +222,29 @@ class Batteriemelder extends IPSModule
         }
 
         //Register references and update messages
-        $names = [];
-        $names[] = ['propertyName' => 'ImmediateNotification', 'useUpdate' => false];
-        $names[] = ['propertyName' => 'DailyNotification', 'useUpdate' => false];
-        $names[] = ['propertyName' => 'WeeklyNotification', 'useUpdate' => false];
 
+        //Register notifications
+        $names = ['ImmediateNotification',
+            'ImmediatePushNotification',
+            'ImmediateMailerNotification',
+            'DailyNotification',
+            'DailyPushNotification',
+            'DailyMailerNotification',
+            'WeeklyNotification',
+            'WeeklyPushNotification',
+            'WeeklyMailerNotification'];
         foreach ($names as $name) {
-            $id = $this->ReadPropertyInteger($name['propertyName']);
-            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-                $this->RegisterReference($id);
-                if ($name['useUpdate']) {
-                    $this->RegisterMessage($id, VM_UPDATE);
+            foreach (json_decode($this->ReadPropertyString($name), true) as $element) {
+                if ($element['Use']) {
+                    $id = $this->ReadPropertyInteger($element['ID']);
+                    if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                        $this->RegisterReference($id);
+                    }
                 }
             }
         }
 
+        //Register trigger list
         $triggerVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($triggerVariables as $variable) {
             if (!$variable['Use']) {
@@ -224,6 +265,7 @@ class Batteriemelder extends IPSModule
             }
         }
 
+        //Timer
         $this->SetTimerInterval('ResetImmediateNotificationLimit', $this->GetInterval('ImmediateNotificationResetTime'));
         $this->SetTimerInterval('DailyNotification', $this->GetInterval('DailyNotificationTime'));
         $this->SetTimerInterval('WeeklyNotification', $this->GetInterval('WeeklyNotificationTime'));
@@ -233,8 +275,11 @@ class Batteriemelder extends IPSModule
         IPS_SetHidden($this->GetIDForIdent('Status'), !$this->ReadPropertyBoolean('EnableStatus'));
         IPS_SetHidden($this->GetIDForIdent('TriggeringDetector'), !$this->ReadPropertyBoolean('EnableTriggeringDetector'));
         IPS_SetHidden($this->GetIDForIdent('BatteryReplacement'), !$this->ReadPropertyBoolean('EnableBatteryReplacement'));
+        IPS_SetHidden($this->GetIDForIdent('LastUpdate'), !$this->ReadPropertyBoolean('EnableLastUpdate'));
+        IPS_SetHidden($this->GetIDForIdent('UpdateStatus'), !$this->ReadPropertyBoolean('EnableUpdateStatus'));
         IPS_SetHidden($this->GetIDForIdent('BatteryList'), !$this->ReadPropertyBoolean('EnableBatteryList'));
 
+        //Update
         $this->CheckBatteries();
     }
 
@@ -244,7 +289,7 @@ class Batteriemelder extends IPSModule
         parent::Destroy();
 
         //Delete profiles
-        $profiles = ['Status'];
+        $profiles = ['Status', 'UpdateStatus'];
         foreach ($profiles as $profile) {
             $profileName = self::MODULE_PREFIX . '.' . $this->InstanceID . '.' . $profile;
             if (@IPS_VariableProfileExists($profileName)) {
@@ -275,15 +320,31 @@ class Batteriemelder extends IPSModule
     }
 
     /**
-     * Creates a notification instance
+     * Creates an instance.
      *
+     * @param string $ModuleName
      * @return void
      */
-    public function CreateNotificationInstance(): void
+    public function CreateInstance(string $ModuleName): void
     {
-        $id = IPS_CreateInstance(self::NOTIFICATION_MODULE_GUID);
+        $this->SendDebug(__FUNCTION__, 'Modul: ' . $ModuleName, 0);
+        switch ($ModuleName) {
+            case 'WebFront':
+            case 'WebFrontPush':
+                $guid = self::WEBFRONT_MODULE_GUID;
+                break;
+
+            case 'Mailer':
+                $guid = self::MAILER_MODULE_GUID;
+                break;
+
+            default:
+                return;
+        }
+        $this->SendDebug(__FUNCTION__, 'Guid: ' . $guid, 0);
+        $id = @IPS_CreateInstance($guid);
         if (is_int($id)) {
-            IPS_SetName($id, 'Benachrichtigung');
+            IPS_SetName($id, 'Mailer');
             echo 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
         } else {
             echo 'Instanz konnte nicht erstellt werden!';
@@ -292,26 +353,14 @@ class Batteriemelder extends IPSModule
 
     /**
      * Resets the notification limit for immediate notification.
+     *
      * @return void
      * @throws Exception
      */
     public function ResetImmediateNotificationLimit(): void
     {
         $this->SetTimerInterval('ResetImmediateNotificationLimit', $this->GetInterval('ImmediateNotificationResetTime'));
-        $this->ResetImmediateNotificationTotalState();
         $this->ResetImmediateNotificationDeviceState();
-    }
-
-    /**
-     * Resets the attributes for immediate notification of the total status to the default values.
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function ResetImmediateNotificationTotalState(): void
-    {
-        $this->WriteAttributeBoolean('UseImmediateNotificationTotalStatusOK', true);
-        $this->WriteAttributeBoolean('UseImmediateNotificationTotalStatusAlarm', true);
     }
 
     /**
@@ -353,6 +402,10 @@ class Batteriemelder extends IPSModule
                 $this->UpdateBatteryReplacement($variableID);
                 break;
 
+            case 'UpdateStatus':
+                $this->CheckBatteries();
+                break;
+
         }
     }
 
@@ -363,6 +416,13 @@ class Batteriemelder extends IPSModule
         $this->ApplyChanges();
     }
 
+    /**
+     * Gets an interval for a timer.
+     *
+     * @param string $TimerName
+     * @return int
+     * @throws Exception
+     */
     private function GetInterval(string $TimerName): int
     {
         $timer = json_decode($this->ReadPropertyString($TimerName));
@@ -379,6 +439,12 @@ class Batteriemelder extends IPSModule
         return ($timestamp - $now) * 1000;
     }
 
+    /**
+     * Set the values to default.
+     *
+     * @return void
+     * @throws Exception
+     */
     private function SetDefault(): void
     {
         $this->SetValue('Status', false);

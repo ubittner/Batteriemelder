@@ -82,7 +82,8 @@ trait BATM_Config
 
         ########## Elements
 
-        //Info
+        ##### Element: Info
+
         $form['elements'][0] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Info',
@@ -120,15 +121,27 @@ trait BATM_Config
             ]
         ];
 
-        //Functions
+        ##### Element: Functions
+
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Funktionen',
             'items'   => [
                 [
+                    'type'    => 'Label',
+                    'caption' => 'WebFront',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Optionen',
+                    'italic'  => true
+                ],
+                [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableActive',
-                    'caption' => 'Aktiv (Schalter im WebFront)'
+                    'caption' => 'Aktiv'
                 ],
                 [
                     'type'    => 'CheckBox',
@@ -143,31 +156,98 @@ trait BATM_Config
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableBatteryReplacement',
-                    'caption' => 'Batteriewechsel'
+                    'caption' => 'Batteriewechsel ID'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableLastUpdate',
+                    'caption' => 'Letzte Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableUpdateStatus',
+                    'caption' => 'Aktualisierung'
                 ],
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'EnableBatteryList',
                     'caption' => 'Batterieliste'
-                ]
-            ]
-        ];
-
-        //Location designation
-        $form['elements'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Standortbezeichnung',
-            'items'   => [
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Batterieliste',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableUpdateOverdue',
+                    'caption' => 'Aktualisierung überfällig'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableLowBattery',
+                    'caption' => 'Batterie schwach'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableBatteryOK',
+                    'caption' => 'Batterie OK'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableCheckDisabled',
+                    'caption' => 'Überwachung deaktiviert'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Batterieliste',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Gerätestatusbezeichnungen',
+                    'italic'  => true
+                ],
                 [
                     'type'    => 'ValidationTextBox',
-                    'name'    => 'LocationDesignation',
-                    'caption' => 'Standortbezeichnung',
-                    'width'   => '600px'
+                    'name'    => 'UpdateOverdueStatusText',
+                    'caption' => 'Aktualisierung überfällig'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'LowBatteryStatusText',
+                    'caption' => 'Batterie schwach'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'BatteryOKStatusText',
+                    'caption' => 'Batterie OK'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'MonitoringDisabledStatusText',
+                    'caption' => 'Überwachung deaktiviert'
                 ]
             ]
         ];
 
-        //Trigger list
+        ##### Trigger list
+
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($variables as $variable) {
@@ -222,6 +302,8 @@ trait BATM_Config
             $triggerListValues[] = ['ActualStatus' => $actualStatus, 'LastUpdate' => $lastUpdate, 'rowColor' => $rowColor];
         }
 
+        ##### Element: Trigger list
+
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Auslöser',
@@ -241,6 +323,12 @@ trait BATM_Config
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
+                        ],
+                        [
+                            'name'    => 'ActualStatus',
+                            'caption' => 'Aktueller Status',
+                            'width'   => '200px',
+                            'add'     => ''
                         ],
                         [
                             'caption' => 'Bezeichnung',
@@ -263,10 +351,73 @@ trait BATM_Config
                             ]
                         ],
                         [
-                            'name'    => 'ActualStatus',
-                            'caption' => 'Aktueller Status',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'BatteryType',
                             'width'   => '200px',
-                            'add'     => ''
+                            'add'     => '',
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Benutzerdefiniert',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => '1 x LR44',
+                                        'value'   => '1 x LR44'
+                                    ],
+                                    [
+                                        'caption' => '2 x LR44',
+                                        'value'   => '2 x LR44'
+                                    ],
+                                    [
+                                        'caption' => '1 x AAA',
+                                        'value'   => '1 x AAA'
+                                    ],
+                                    [
+                                        'caption' => '2 x AAA',
+                                        'value'   => '2 x AAA'
+                                    ],
+                                    [
+                                        'caption' => '3 x AAA',
+                                        'value'   => '3 x AAA'
+                                    ],
+                                    [
+                                        'caption' => '1 x AA',
+                                        'value'   => '1 x AA'
+                                    ],
+                                    [
+                                        'caption' => '2 x AA',
+                                        'value'   => '2 x AA'
+                                    ],
+                                    [
+                                        'caption' => '3 x AA',
+                                        'value'   => '3 x AA'
+                                    ],
+                                    [
+                                        'caption' => '1 x C',
+                                        'value'   => '1 x C'
+                                    ],
+                                    [
+                                        'caption' => '2 x C',
+                                        'value'   => '2 x C'
+                                    ],
+                                    [
+                                        'caption' => '3 x C',
+                                        'value'   => '3 x C'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Benutzerdefinierter Batterietyp',
+                            'name'    => 'UserDefinedBatteryType',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
                         ],
                         [
                             'caption' => ' ',
@@ -423,46 +574,56 @@ trait BATM_Config
             ]
         ];
 
+        ##### Immediate notification
+
         //Immediate notification
-        $id = $this->ReadPropertyInteger('ImmediateNotification');
-        $enableButton = false;
-        if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-            $enableButton = true;
+        $immediateNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('ImmediateNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $immediateNotificationValues[] = ['rowColor' => $rowColor];
         }
+
+        //Immediate push notification
+        $immediatePushNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('ImmediatePushNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $immediatePushNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Immediate mailer notification
+        $immediateNotificationMailerValues = [];
+        foreach (json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $immediateNotificationMailerValues[] = ['rowColor' => $rowColor];
+        }
+
+        ##### Element: Immediate Notification
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Sofortige Benachrichtigung',
             'items'   => [
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'     => 'SelectModule',
-                            'name'     => 'ImmediateNotification',
-                            'caption'  => 'Instanz',
-                            'moduleID' => self::NOTIFICATION_MODULE_GUID,
-                            'width'    => '600px',
-                            'onChange' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationConfigurationButton", "ID " . $ImmediateNotification . " Instanzkonfiguration", $ImmediateNotification);'
-                        ],
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateNotificationInstance($id);'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'caption'  => 'ID ' . $id . ' Instanzkonfiguration',
-                            'name'     => 'ImmediateNotificationConfigurationButton',
-                            'visible'  => $enableButton,
-                            'objectID' => $id
-                        ]
-                    ]
-                ],
                 [
                     'type'  => 'RowLayout',
                     'items' => [
@@ -482,1902 +643,301 @@ trait BATM_Config
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Gesamtstatus',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'UseImmediateNotificationTotalStateLimit',
-                    'caption' => 'Maximal eine Benachrichtigung'
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationTotalStatusAlarm',
-                    'caption'  => 'Alarm',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationTotalStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Gerätestatus',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'UseImmediateNotificationDeviceStateLimit',
-                    'caption' => 'Maximal eine Benachrichtigung',
-                    'enabled' => false
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationDeviceStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
 
-        //Daily notification
-        $id = $this->ReadPropertyInteger('DailyNotification');
-        $enableButton = false;
-        if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-            $enableButton = true;
-        }
+                ### Immediate notification
 
-        $form['elements'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Tägliche Benachrichtigung',
-            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'ImmediateNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationConfigurationButton", "ID " . $ImmediateNotification["ID"] . " Instanzkonfiguration", $ImmediateNotification["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'UpdateOverdueSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'UpdateOverdueIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseUpdateOverdueTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'UpdateOverdueDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'LowBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'BatteryOKDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ]
+                    ],
+                    'values' => $immediateNotificationValues,
+                ],
                 [
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'     => 'SelectModule',
-                            'name'     => 'DailyNotification',
-                            'caption'  => 'Instanz',
-                            'moduleID' => self::NOTIFICATION_MODULE_GUID,
-                            'width'    => '600px',
-                            'onChange' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationConfigurationButton", "ID " . $DailyNotification . " Instanzkonfiguration", $DailyNotification);'
-                        ],
-                        [
                             'type'    => 'Button',
                             'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateNotificationInstance($id);'
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
                             'type'    => 'Label',
@@ -2385,13 +945,912 @@ trait BATM_Config
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'caption'  => 'ID ' . $id . ' Instanzkonfiguration',
-                            'name'     => 'DailyNotificationConfigurationButton',
-                            'visible'  => $enableButton,
-                            'objectID' => $id
+                            'name'     => 'ImmediateNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+
+                ### Immediate push notification
+
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Push-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'ImmediatePushNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediatePushNotificationConfigurationButton", "ID " . $ImmediatePushNotification["ID"] . " Instanzkonfiguration", $ImmediatePushNotification["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'UpdateOverdueSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseUpdateOverdueTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'UpdateOverdueSound',
+                            'width'   => '200px',
+                            'add'     => 'alarm',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'UpdateOverdueTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
+                            'width'   => '200px',
+                            'add'     => 'alarm',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
+                            ]
+                        ]
+                    ],
+                    'values' => $immediatePushNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'ImmediatePushNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+
+                ### Immediate email notification
+
+                [
+                    'type'    => 'Label',
+                    'caption' => 'E-Mail',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'ImmediateMailerNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Mailer',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationMailerConfigurationButton", "ID " . $ImmediateNotificationMailer["ID"] . " Instanzkonfiguration", $ImmediateNotificationMailer["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::MAILER_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => 'Betreff',
+                            'name'    => 'Subject',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder (Standort)',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'UpdateOverdueSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseUpdateOverdueTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseUpdateOverdueVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseUpdateOverdueBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseLowBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseBatteryOKVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ]
+                    ],
+                    'values' => $immediateNotificationMailerValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'ImmediateNotificationMailerConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        ##### Daily notification
+
+        //Daily notification
+        $dailyNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('DailyNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $dailyNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Daily push notification
+        $dailyPushNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('DailyPushNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $dailyPushNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Daily mailer notification
+        $dailyNotificationMailerValues = [];
+        foreach (json_decode($this->ReadPropertyString('DailyMailerNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $dailyNotificationMailerValues[] = ['rowColor' => $rowColor];
+        }
+
+        ##### Element: Daily notification
+
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Tägliche Benachrichtigung',
+            'items'   => [
                 [
                     'type'  => 'RowLayout',
                     'items' => [
@@ -2466,63 +1925,107 @@ trait BATM_Config
                     'caption' => 'Benachrichtigung um (Uhrzeit)'
                 ],
                 [
+                    'type'    => 'CheckBox',
+                    'name'    => 'DailyNotificationAlwaysResetCriticalVariables',
+                    'caption' => 'Kritische Melder immer zurücksetzen, auch an nicht ausgewählten Tagen'
+                ],
+                [
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+
+                ### Daily notification
+
                 [
                     'type'    => 'Label',
-                    'caption' => 'Gesamtstatus',
-                    'italic'  => true,
-                    'bold'    => true
+                    'caption' => 'Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'DailyNotificationTotalStatusAlarm',
-                    'caption'  => 'Alarm',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'DailyNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationConfigurationButton", "ID " . $DailyNotification["ID"] . " Instanzkonfiguration", $DailyNotification["ID"]);',
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'UpdateOverdueIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -2530,63 +2033,19 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
                             ]
                         ],
                         [
                             'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
+                            'name'    => 'UpdateOverdueDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
                                 'type'   => 'NumberSpinner',
@@ -2595,619 +2054,274 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'LowBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'BatteryOKDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerSMS',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
+                            'caption' => 'Icon',
+                            'name'    => 'MonitoringDisabledIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'MonitoringDisabledTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
+                            'caption' => 'Meldungstext',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label'
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
                             ]
                         ],
                         [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'MonitoringDisabledDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ]
-                    ]
+                    ],
+                    'values' => $dailyNotificationValues,
                 ],
                 [
-                    'type'     => 'List',
-                    'name'     => 'DailyNotificationTotalStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
+                    'type'  => 'RowLayout',
+                    'items' => [
                         [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'    => 'Label',
+                            'caption' => ' '
                         ],
                         [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'DailyNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ],
@@ -3215,60 +2329,89 @@ trait BATM_Config
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+
+                ### Daily push notification
+
                 [
                     'type'    => 'Label',
-                    'caption' => 'Gerätestatus',
-                    'italic'  => true,
-                    'bold'    => true
+                    'caption' => 'Push-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'DailyNotificationDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'DailyPushNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyPushNotificationConfigurationButton", "ID " . $DailyPushNotification["ID"] . " Instanzkonfiguration", $DailyPushNotification["ID"]);',
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -3276,110 +2419,19 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
                             'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
+                            'name'    => 'UpdateOverdueSound',
                             'width'   => '200px',
+                            'add'     => 'alarm',
                             'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',
@@ -3469,8 +2521,9 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
+                            'name'    => 'UpdateOverdueTargetID',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectScript'
@@ -3478,533 +2531,607 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
                             'width'   => '200px',
+                            'add'     => 'alarm',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerSMS',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'MonitoringDisabledTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
+                            'caption' => 'Sound',
+                            'name'    => 'MonitoringDisabledSound',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
                             ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'MonitoringDisabledTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
+                            ]
+                        ]
+                    ],
+                    'values' => $dailyPushNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'DailyPushNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ],
                 [
-                    'type'     => 'List',
-                    'name'     => 'DailyNotificationDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+
+                ### Daily email notification
+
+                [
+                    'type'    => 'Label',
+                    'caption' => 'E-Mail',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'DailyNotificationDeviceStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'DailyMailerNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'Mailer',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationMailerConfigurationButton", "ID " . $DailyNotificationMailer["ID"] . " Instanzkonfiguration", $DailyNotificationMailer["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::MAILER_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => 'Betreff',
+                            'name'    => 'Subject',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder (Standort)',
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -4012,8 +3139,29 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseUpdateOverdueVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseUpdateOverdueBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
@@ -4021,319 +3169,292 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseLowBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
+                            'add'     => '🟢 %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseBatteryOKVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseMonitoringDisabledVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseMonitoringDisabledBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
+                        ]
+                    ],
+                    'values' => $dailyNotificationMailerValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'DailyNotificationMailerConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ]
             ]
         ];
 
+        ##### Weekly notification
+
         //Weekly notification
-        $id = $this->ReadPropertyInteger('WeeklyNotification');
-        $enableButton = false;
-        if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
-            $enableButton = true;
+        $weeklyNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('WeeklyNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $weeklyNotificationValues[] = ['rowColor' => $rowColor];
         }
+
+        //Weekly push notification
+        $weeklyPushNotificationValues = [];
+        foreach (json_decode($this->ReadPropertyString('WeeklyPushNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $weeklyPushNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Weekly mailer notification
+        $weeklyNotificationMailerValues = [];
+        foreach (json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true) as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $weeklyNotificationMailerValues[] = ['rowColor' => $rowColor];
+        }
+
+        ##### Element: Weekly notification
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
@@ -4342,36 +3463,6 @@ trait BATM_Config
                 [
                     'type'  => 'RowLayout',
                     'items' => [
-                        [
-                            'type'     => 'SelectModule',
-                            'name'     => 'WeeklyNotification',
-                            'caption'  => 'Instanz',
-                            'moduleID' => self::NOTIFICATION_MODULE_GUID,
-                            'width'    => '600px',
-                            'onChange' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationConfigurationButton", "ID " . $WeeklyNotification . " Instanzkonfiguration", $WeeklyNotification);'
-                        ],
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Neue Instanz erstellen',
-                            'onClick' => self::MODULE_PREFIX . '_CreateNotificationInstance($id);'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
-                            'type'     => 'OpenObjectButton',
-                            'caption'  => 'ID ' . $id . ' Instanzkonfiguration',
-                            'name'     => 'WeeklyNotificationConfigurationButton',
-                            'visible'  => $enableButton,
-                            'objectID' => $id
-                        ]
-                    ]
-                ],
-                [
-                    'type'  => 'RowLayout',
-                    'items' => [
-
                         [
                             'type'    => 'Select',
                             'name'    => 'WeeklyNotificationDay',
@@ -4422,60 +3513,99 @@ trait BATM_Config
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+
+                ### Weekly notification
+
                 [
                     'type'    => 'Label',
-                    'caption' => 'Gesamtstatus',
-                    'italic'  => true,
-                    'bold'    => true
+                    'caption' => 'Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'WeeklyNotificationTotalStatusAlarm',
-                    'caption'  => 'Alarm',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'WeeklyNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationConfigurationButton", "ID " . $WeeklyNotification["ID"] . " Instanzkonfiguration", $WeeklyNotification["ID"]);',
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'UpdateOverdueIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -4483,63 +3613,19 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
                             ]
                         ],
                         [
                             'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
+                            'name'    => 'UpdateOverdueDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
                                 'type'   => 'NumberSpinner',
@@ -4548,619 +3634,274 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'LowBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'BatteryOKDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerSMS',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
+                            'caption' => 'Icon',
+                            'name'    => 'MonitoringDisabledIcon',
                             'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'MonitoringDisabledTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
+                            'caption' => 'Meldungstext',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label'
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
                             ]
                         ],
                         [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'MonitoringDisabledDisplayDuration',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
                             ]
                         ]
-                    ]
+                    ],
+                    'values' => $weeklyNotificationValues,
                 ],
                 [
-                    'type'     => 'List',
-                    'name'     => 'WeeklyNotificationTotalStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
+                    'type'  => 'RowLayout',
+                    'items' => [
                         [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'    => 'Label',
+                            'caption' => ' '
                         ],
                         [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'WeeklyNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ],
@@ -5168,60 +3909,89 @@ trait BATM_Config
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+
+                ### Weekly push notification
+
                 [
                     'type'    => 'Label',
-                    'caption' => 'Gerätestatus',
-                    'italic'  => true,
-                    'bold'    => true
+                    'caption' => 'Push-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'WeeklyNotificationDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'WeeklyPushNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'WebFront',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyPushNotificationConfigurationButton", "ID " . $WeeklyPushNotification["ID"] . " Instanzkonfiguration", $WeeklyPushNotification["ID"]);',
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'UpdateOverdueTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -5229,110 +3999,19 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
                             'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
+                            'name'    => 'UpdateOverdueSound',
                             'width'   => '200px',
+                            'add'     => 'alarm',
                             'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',
@@ -5422,8 +4101,9 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
+                            'name'    => 'UpdateOverdueTargetID',
                             'width'   => '200px',
+                            'add'     => 0,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectScript'
@@ -5431,533 +4111,607 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
                             'width'   => '200px',
+                            'add'     => 'alarm',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerSMS',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'MonitoringDisabledTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
+                            'caption' => 'Sound',
+                            'name'    => 'MonitoringDisabledSound',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
                             ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'MonitoringDisabledTargetID',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectScript'
+                            ]
+                        ]
+                    ],
+                    'values' => $weeklyPushNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
+                        ],
+                        [
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'WeeklyPushNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ],
                 [
-                    'type'     => 'List',
-                    'name'     => 'WeeklyNotificationDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
-                    'columns'  => [
-                        [
-                            'caption' => 'Aktiviert',
-                            'name'    => 'Use',
-                            'width'   => '100px',
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
-                            'width'   => '300px',
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
-                            'edit'    => [
-                                'type'      => 'ValidationTextBox',
-                                'multiline' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
-                            'width'   => '100px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'CheckBox'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ]
-                    ]
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+
+                ### Weekly email notification
+
+                [
+                    'type'    => 'Label',
+                    'caption' => 'E-Mail',
+                    'bold'    => true,
+                    'italic'  => true
                 ],
                 [
                     'type'     => 'List',
-                    'name'     => 'WeeklyNotificationDeviceStatusOK',
-                    'caption'  => 'OK',
-                    'rowCount' => 1,
-                    'add'      => false,
-                    'delete'   => false,
+                    'name'     => 'WeeklyMailerNotification',
+                    'rowCount' => 5,
+                    'add'      => true,
+                    'delete'   => true,
                     'columns'  => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
                             'width'   => '100px',
+                            'add'     => true,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Bezeichnung',
-                            'name'    => 'Designation',
+                            'caption' => 'Mailer',
+                            'name'    => 'ID',
                             'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationMailerConfigurationButton", "ID " . $WeeklyNotificationMailer["ID"] . " Instanzkonfiguration", $WeeklyNotificationMailer["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::MAILER_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => 'Betreff',
+                            'name'    => 'Subject',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder (Standort)',
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerNotification',
+                            'name'    => 'UpdateOverdueSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Meldungstext:',
-                            'name'    => 'LabelMessageText',
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UpdateOverdueLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'Text der Meldung (maximal 256 Zeichen)',
-                            'name'    => 'MessageText',
-                            'width'   => '400px',
-                            'visible' => true,
+                            'caption' => 'Aktualisierung überfällig',
+                            'name'    => 'UseUpdateOverdue',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'UpdateOverdueMessageText',
+                            'width'   => '200px',
+                            'add'     => '❗ %1$s',
+                            'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
@@ -5965,8 +4719,29 @@ trait BATM_Config
                         ],
                         [
                             'caption' => 'Zeitstempel',
-                            'name'    => 'UseTimestamp',
+                            'name'    => 'UseUpdateOverdueTimestamp',
                             'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseUpdateOverdueVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseUpdateOverdueBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
@@ -5974,307 +4749,241 @@ trait BATM_Config
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontNotification',
+                            'name'    => 'LowBatterySpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Nachricht:',
-                            'name'    => 'LabelWebFrontNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Nachricht',
-                            'name'    => 'UseWebFrontNotification',
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
+                            'add'     => '⚠️ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontNotificationTitle',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseLowBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Icon',
-                            'name'    => 'WebFrontNotificationIcon',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectIcon'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Anzeigedauer',
-                            'name'    => 'WebFrontNotificationDisplayDuration',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type'   => 'NumberSpinner',
-                                'suffix' => 'Sekunden'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerWebFrontPushNotification',
+                            'name'    => 'BatteryOKSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'Push-Nachricht:',
-                            'name'    => 'LabelWebFrontPushNotification',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'WebFront Push-Nachricht',
-                            'name'    => 'UseWebFrontPushNotification',
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
+                            'add'     => '🟢 %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
-                            'name'    => 'WebFrontPushNotificationTitle',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseBatteryOKVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'ValidationTextBox'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Sound',
-                            'name'    => 'WebFrontPushNotificationSound',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
-                                'type'    => 'Select',
-                                'options' => [
-                                    [
-                                        'caption' => 'Standard',
-                                        'value'   => ''
-                                    ],
-                                    [
-                                        'caption' => 'Alarm',
-                                        'value'   => 'alarm'
-                                    ],
-                                    [
-                                        'caption' => 'Bell',
-                                        'value'   => 'bell'
-                                    ],
-                                    [
-                                        'caption' => 'Boom',
-                                        'value'   => 'boom'
-                                    ],
-                                    [
-                                        'caption' => 'Buzzer',
-                                        'value'   => 'buzzer'
-                                    ],
-                                    [
-                                        'caption' => 'Connected',
-                                        'value'   => 'connected'
-                                    ],
-                                    [
-                                        'caption' => 'Dark',
-                                        'value'   => 'dark'
-                                    ],
-                                    [
-                                        'caption' => 'Digital',
-                                        'value'   => 'digital'
-                                    ],
-                                    [
-                                        'caption' => 'Drums',
-                                        'value'   => 'drums'
-                                    ],
-                                    [
-                                        'caption' => 'Duck',
-                                        'value'   => 'duck'
-                                    ],
-                                    [
-                                        'caption' => 'Full',
-                                        'value'   => 'full'
-                                    ],
-                                    [
-                                        'caption' => 'Happy',
-                                        'value'   => 'happy'
-                                    ],
-                                    [
-                                        'caption' => 'Horn',
-                                        'value'   => 'horn'
-                                    ],
-                                    [
-                                        'caption' => 'Inception',
-                                        'value'   => 'inception'
-                                    ],
-                                    [
-                                        'caption' => 'Kazoo',
-                                        'value'   => 'kazoo'
-                                    ],
-                                    [
-                                        'caption' => 'Roll',
-                                        'value'   => 'roll'
-                                    ],
-                                    [
-                                        'caption' => 'Siren',
-                                        'value'   => 'siren'
-                                    ],
-                                    [
-                                        'caption' => 'Space',
-                                        'value'   => 'space'
-                                    ],
-                                    [
-                                        'caption' => 'Trickling',
-                                        'value'   => 'trickling'
-                                    ],
-                                    [
-                                        'caption' => 'Turn',
-                                        'value'   => 'turn'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'caption' => 'Zielscript',
-                            'name'    => 'WebFrontPushNotificationTargetID',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
                             'caption' => ' ',
-                            'name'    => 'SpacerMail',
+                            'name'    => 'MonitoringDisabledSpacer',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail:',
-                            'name'    => 'LabelMail',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'MonitoringDisabledLabel',
                             'width'   => '200px',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
                             ]
                         ],
                         [
-                            'caption' => 'E-Mail',
-                            'name'    => 'UseMailer',
+                            'caption' => 'Überwachung deaktiviert',
+                            'name'    => 'UseMonitoringDisabled',
+                            'width'   => '210px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
+                            'add'     => '❌ %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseMonitoringDisabledTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Betreff',
-                            'name'    => 'Subject',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS:',
-                            'name'    => 'LabelSMS',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'SMS',
-                            'name'    => 'UseSMS',
-                            'width'   => '200px',
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseMonitoringDisabledVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'SMSTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram:',
-                            'name'    => 'LabelTelegram',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'Label',
-                                'bold' => true
-                            ]
-                        ],
-                        [
-                            'caption' => 'Telegram',
-                            'name'    => 'UseTelegram',
-                            'width'   => '200px',
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseMonitoringDisabledBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
                             'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
+                        ]
+                    ],
+                    'values' => $weeklyNotificationMailerValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ],
                         [
-                            'caption' => 'Titel',
-                            'name'    => 'TelegramTitle',
-                            'width'   => '200px',
-                            'visible' => false,
-                            'edit'    => [
-                                'type' => 'ValidationTextBox'
-                            ]
+                            'type'    => 'Label',
+                            'caption' => ' '
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'WeeklyNotificationMailerConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
                         ]
                     ]
                 ]
@@ -6282,6 +4991,8 @@ trait BATM_Config
         ];
 
         ########## Actions
+
+        ##### Actions: Configuration
 
         $form['actions'][0] = [
             'type'    => 'ExpansionPanel',
@@ -6295,7 +5006,8 @@ trait BATM_Config
             ]
         ];
 
-        //Test center
+        ##### Actions: Test center
+
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Schaltfunktionen',
@@ -6315,7 +5027,8 @@ trait BATM_Config
             ]
         ];
 
-        //Registered references
+        ##### Registered references
+
         $registeredReferences = [];
         $references = $this->GetReferenceList();
         foreach ($references as $reference) {
@@ -6330,6 +5043,8 @@ trait BATM_Config
                 'Name'     => $name,
                 'rowColor' => $rowColor];
         }
+
+        ##### Actions: Registered references
 
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
@@ -6369,7 +5084,8 @@ trait BATM_Config
             ]
         ];
 
-        //Registered messages
+        ###### Registered messages
+
         $registeredMessages = [];
         $messages = $this->GetMessageList();
         foreach ($messages as $id => $messageID) {
@@ -6398,6 +5114,8 @@ trait BATM_Config
                 'MessageDescription' => $messageDescription,
                 'rowColor'           => $rowColor];
         }
+
+        ##### Actions: Registered messages
 
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
@@ -6447,7 +5165,8 @@ trait BATM_Config
             ]
         ];
 
-        //Trigger
+        ##### Actions: Trigger list
+
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Auslöser',
@@ -6569,86 +5288,107 @@ trait BATM_Config
             ]
         ];
 
-        //Immediate notification
+        ##### Immediate notification
 
         //Update overdue
         $updateOverdueVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue'), true);
-        foreach ($criticalVariables as $variable) {
-            $updateOverdueVariables[] = [
-                'ID'        => (int) $variable['ID'],
-                'Name'      => (string) $variable['Name'],
-                'Comment'   => (string) $variable['Comment'],
-                'Timestamp' => (string) $variable['Timestamp'],
-                'rowColor'  => '#FFC0C0']; //red
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $updateOverdueVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFC0C0']; //red
+                }
+            }
         }
 
         //Low battery
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
-        foreach ($criticalVariables as $variable) {
-            $lowBatteryVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#FFFFC0']; //yellow
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $lowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
         }
 
         //Normal battery
         $normalBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
-        foreach ($criticalVariables as $variable) {
-            $normalBatteryVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#C0FFC0']; //light green
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $normalBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#C0FFC0']; //light green
+                }
+            }
         }
+
+        ##### Actions: Immediate notification
 
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Sofortige Benachrichtigung',
             'items'   => [
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Gesamtstatus',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'UseImmediateNotificationTotalStatusAlarm',
-                    'caption' => 'Alarm',
-                    'enabled' => false,
-                    'value'   => $this->ReadAttributeBoolean('UseImmediateNotificationTotalStatusAlarm')
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'UseImmediateNotificationTotalStatusOK',
-                    'caption' => 'OK',
-                    'enabled' => false,
-                    'value'   => $this->ReadAttributeBoolean('UseImmediateNotificationTotalStatusOK')
-                ],
-                [
-                    'type'    => 'PopupButton',
-                    'caption' => 'Zurücksetzen',
-                    'popup'   => [
-                        'caption' => 'Benachrichtigung wirklich zurücksetzen?',
-                        'items'   => [
-                            [
-                                'type'    => 'Button',
-                                'caption' => 'Zurücksetzen',
-                                'onClick' => self::MODULE_PREFIX . '_ResetImmediateNotificationTotalState($id); echo "Die Benachrichtigung wurde zurückgesetzt!";' . self::MODULE_PREFIX . '_ReloadConfig($id);'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
                 [
                     'type'    => 'Label',
                     'caption' => 'Gerätestatus',
@@ -6658,7 +5398,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediateNotificationListDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
+                    'caption'  => 'Aktualisierung überfällig',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -6679,6 +5419,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -6709,7 +5454,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediateNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
+                    'caption'  => 'Batterie schwach',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -6730,6 +5475,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -6760,7 +5510,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediateNotificationListDeviceStatusNormal',
-                    'caption'  => 'OK',
+                    'caption'  => 'Batterie OK',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -6781,6 +5531,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -6807,31 +5562,71 @@ trait BATM_Config
             ]
         ];
 
-        //Daily notification
+        ##### Daily notification
 
         //Update overdue
         $dailyUpdateOverdueVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusUpdateOverdue'), true);
-        foreach ($criticalVariables as $variable) {
-            $dailyUpdateOverdueVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#FFC0C0']; //red
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $dailyUpdateOverdueVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFC0C0']; //red
+                }
+            }
         }
 
         //Low battery
         $dailyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
-        foreach ($criticalVariables as $variable) {
-            $dailyLowBatteryVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#FFFFC0']; //yellow
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $dailyLowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
         }
+
+        ##### Actions: Daily notification
 
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
@@ -6846,7 +5641,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'DailyNotificationListDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
+                    'caption'  => 'Aktualisierung überfällig',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -6867,6 +5662,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -6897,7 +5697,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'DailyNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
+                    'caption'  => 'Batterie schwach',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -6918,6 +5718,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -6962,31 +5767,71 @@ trait BATM_Config
             ]
         ];
 
-        //Weekly notification
+        ##### Weekly notification
 
         //Update overdue
         $weeklyUpdateOverdueVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue'), true);
-        foreach ($criticalVariables as $variable) {
-            $weeklyUpdateOverdueVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#FFC0C0']; //red
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $weeklyUpdateOverdueVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFC0C0']; //red
+                }
+            }
         }
 
         //Low battery
         $weeklyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
-        foreach ($criticalVariables as $variable) {
-            $weeklyLowBatteryVariables[] = [
-                'ID'        => $variable['ID'],
-                'Name'      => $variable['Name'],
-                'Comment'   => $variable['Comment'],
-                'Timestamp' => $variable['Timestamp'],
-                'rowColor'  => '#FFFFC0']; //yellow
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $weeklyLowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
         }
+
+        ##### Actions: Weekly notification
 
         $form['actions'][] = [
             'type'    => 'ExpansionPanel',
@@ -7001,7 +5846,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'WeeklyNotificationListDeviceStatusUpdateOverdue',
-                    'caption'  => 'Überfällige Aktualisierung',
+                    'caption'  => 'Aktualisierung überfällig',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -7022,6 +5867,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',
@@ -7052,7 +5902,7 @@ trait BATM_Config
                 [
                     'type'     => 'List',
                     'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Schwache Batterie',
+                    'caption'  => 'Batterie schwach',
                     'rowCount' => 5,
                     'sort'     => [
                         'column'    => 'Name',
@@ -7073,6 +5923,11 @@ trait BATM_Config
                             'name'    => 'Comment',
                             'caption' => 'Bemerkung',
                             'width'   => '250px'
+                        ],
+                        [
+                            'name'    => 'BatteryType',
+                            'caption' => 'Batterietyp',
+                            'width'   => '200px'
                         ],
                         [
                             'name'    => 'Timestamp',

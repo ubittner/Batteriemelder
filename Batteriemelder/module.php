@@ -55,10 +55,10 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyBoolean('EnableLowBattery', true);
         $this->RegisterPropertyBoolean('EnableBatteryOK', true);
         $this->RegisterPropertyBoolean('EnableCheckDisabled', true);
-        $this->RegisterPropertyString('UpdateOverdueStatusText', '❗️ Aktualisierung überfällig');
-        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️ Batterie schwach');
-        $this->RegisterPropertyString('BatteryOKStatusText', '🟢 Batterie OK');
-        $this->RegisterPropertyString('MonitoringDisabledStatusText', '❌ Überwachung deaktiviert');
+        $this->RegisterPropertyString('UpdateOverdueStatusText', '❗️  Aktualisierung überfällig');
+        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️  Batterie schwach');
+        $this->RegisterPropertyString('BatteryOKStatusText', '🟢  Batterie OK');
+        $this->RegisterPropertyString('MonitoringDisabledStatusText', '❌  Überwachung deaktiviert');
 
         ##### Trigger list
 

@@ -121,131 +121,6 @@ trait BATM_Config
             ]
         ];
 
-        ##### Element: Functions
-
-        $form['elements'][] = [
-            'type'    => 'ExpansionPanel',
-            'caption' => 'Funktionen',
-            'items'   => [
-                [
-                    'type'    => 'Label',
-                    'caption' => 'WebFront',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Optionen',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableActive',
-                    'caption' => 'Aktiv'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableStatus',
-                    'caption' => 'Status'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableTriggeringDetector',
-                    'caption' => 'Auslösender Melder'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableBatteryReplacement',
-                    'caption' => 'Batteriewechsel ID'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableLastUpdate',
-                    'caption' => 'Letzte Aktualisierung'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableUpdateStatus',
-                    'caption' => 'Aktualisierung'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableBatteryList',
-                    'caption' => 'Batterieliste'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Batterieliste',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoptionen',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableUpdateOverdue',
-                    'caption' => 'Aktualisierung überfällig'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableLowBattery',
-                    'caption' => 'Batterie schwach'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableBatteryOK',
-                    'caption' => 'Batterie OK'
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableCheckDisabled',
-                    'caption' => 'Überwachung deaktiviert'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Batterieliste',
-                    'bold'    => true,
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Gerätestatusbezeichnungen',
-                    'italic'  => true
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'UpdateOverdueStatusText',
-                    'caption' => 'Aktualisierung überfällig'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'LowBatteryStatusText',
-                    'caption' => 'Batterie schwach'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'BatteryOKStatusText',
-                    'caption' => 'Batterie OK'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'MonitoringDisabledStatusText',
-                    'caption' => 'Überwachung deaktiviert'
-                ]
-            ]
-        ];
-
         ##### Trigger list
 
         $triggerListValues = [];
@@ -574,6 +449,72 @@ trait BATM_Config
             ]
         ];
 
+        ##### Element: Battery list
+
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Batterieliste',
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'bold'    => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableUpdateOverdue',
+                    'caption' => 'Aktualisierung überfällig'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'UpdateOverdueStatusText',
+                    'caption' => 'Bezeichnung'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableLowBattery',
+                    'caption' => 'Batterie schwach'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'LowBatteryStatusText',
+                    'caption' => 'Bezeichnung'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableBatteryOK',
+                    'caption' => 'Batterie OK'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'BatteryOKStatusText',
+                    'caption' => 'Bezeichnung'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableCheckDisabled',
+                    'caption' => 'Überwachung deaktiviert'
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'MonitoringDisabledStatusText',
+                    'caption' => 'Bezeichnung'
+                ]
+            ]
+        ];
+
         ##### Immediate notification
 
         //Immediate notification
@@ -734,7 +675,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -817,7 +758,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️   %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -900,7 +841,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1037,7 +978,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1201,7 +1142,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️  %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1365,7 +1306,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1593,7 +1534,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s',
+                            'add'     => '❗  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1665,7 +1606,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s',
+                            'add'     => '⚠️  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1737,7 +1678,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s',
+                            'add'     => '🟢  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2024,7 +1965,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2107,7 +2048,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️  %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2190,7 +2131,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2273,7 +2214,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'add'     => '❌  %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2410,7 +2351,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2574,7 +2515,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️  %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2738,7 +2679,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2902,7 +2843,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'add'     => '❌  %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3130,7 +3071,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s',
+                            'add'     => '❗  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3202,7 +3143,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s',
+                            'add'     => '⚠️  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3274,7 +3215,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s',
+                            'add'     => '🟢  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3346,7 +3287,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s',
+                            'add'     => '❌  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3604,7 +3545,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3687,7 +3628,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️  %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3770,7 +3711,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3853,7 +3794,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'add'     => '❌  %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3990,7 +3931,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s Aktualisierung überfällig',
+                            'add'     => '❗  %1$s Aktualisierung überfällig',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4154,7 +4095,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s Batterie schwach',
+                            'add'     => '⚠️  %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4318,7 +4259,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s Batterie OK',
+                            'add'     => '🟢  %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4482,7 +4423,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s Überwachung deaktiviert',
+                            'add'     => '❌  %1$s Überwachung deaktiviert',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4710,7 +4651,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'UpdateOverdueMessageText',
                             'width'   => '200px',
-                            'add'     => '❗ %1$s',
+                            'add'     => '❗  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4782,7 +4723,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️ %1$s',
+                            'add'     => '⚠️  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4854,7 +4795,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s',
+                            'add'     => '🟢  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4926,7 +4867,7 @@ trait BATM_Config
                             'caption' => 'Meldungstext',
                             'name'    => 'MonitoringDisabledMessageText',
                             'width'   => '200px',
-                            'add'     => '❌ %1$s',
+                            'add'     => '❌  %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4986,6 +4927,61 @@ trait BATM_Config
                             'objectID' => 0
                         ]
                     ]
+                ]
+            ]
+        ];
+
+        ##### Element: Visualisation
+
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Visualisierung',
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => 'WebFront',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzeigeoptionen',
+                    'italic'  => true
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableActive',
+                    'caption' => 'Aktiv'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableStatus',
+                    'caption' => 'Status'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableTriggeringDetector',
+                    'caption' => 'Auslösender Melder'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableBatteryReplacement',
+                    'caption' => 'Batteriewechsel ID'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableLastUpdate',
+                    'caption' => 'Letzte Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableUpdateStatus',
+                    'caption' => 'Aktualisierung'
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'EnableBatteryList',
+                    'caption' => 'Batterieliste'
                 ]
             ]
         ];

@@ -644,9 +644,6 @@ trait BATM_MonitoredVariables
                                 }
                                 //Battery type
                                 $batteryType = $monitoredVariable['BatteryType'];
-                                if ($batteryType == '') {
-                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                }
                                 if ($mailer['UseBatteryOKBatteryType']) {
                                     $lineText = $lineText . ', Batterietyp: ' . $batteryType;
                                 }
@@ -784,9 +781,6 @@ trait BATM_MonitoredVariables
                             }
                             //Battery type
                             $batteryType = $monitoredVariable['BatteryType'];
-                            if ($batteryType == '') {
-                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                            }
                             if ($mailer['UseLowBatteryBatteryType']) {
                                 $lineText = $lineText . ', Batterietyp: ' . $batteryType;
                             }
@@ -922,9 +916,6 @@ trait BATM_MonitoredVariables
                             }
                             //Battery type
                             $batteryType = $monitoredVariable['BatteryType'];
-                            if ($batteryType == '') {
-                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                            }
                             if ($mailer['UseUpdateOverdueBatteryType']) {
                                 $lineText = $lineText . ', Batterietyp: ' . $batteryType;
                             }

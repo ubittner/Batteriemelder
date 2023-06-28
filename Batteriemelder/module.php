@@ -24,9 +24,9 @@ class Batteriemelder extends IPSModule
     use BATM_Reports;
 
     //Constants
-    private const MODULE_NAME = 'Batteriemelder';
+    private const LIBRARY_GUID = '{30910CF9-AC0D-A48F-267D-24CE177C6B8C}';
+    private const MODULE_GUID = '{3C878C9D-63E0-767D-494C-35AC950EA76D}';
     private const MODULE_PREFIX = 'BATM';
-    private const MODULE_VERSION = '3.0-5, 06.04.2023';
     private const NOTIFICATION_MODULE_GUID = '{BDAB70AA-B45D-4CB4-3D65-509CFF0969F9}';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
@@ -237,7 +237,7 @@ class Batteriemelder extends IPSModule
             foreach (json_decode($this->ReadPropertyString($name), true) as $element) {
                 if ($element['Use']) {
                     $id = $element['ID'];
-                    if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                    if ($id > 1 && @IPS_ObjectExists($id)) {
                         $this->RegisterReference($id);
                     }
                 }
@@ -256,7 +256,7 @@ class Batteriemelder extends IPSModule
                 if (array_key_exists(0, $primaryCondition)) {
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                        if ($id > 1 && @IPS_ObjectExists($id)) {
                             $this->RegisterReference($id);
                             $this->RegisterMessage($id, VM_UPDATE);
                         }
@@ -345,10 +345,12 @@ class Batteriemelder extends IPSModule
         $id = @IPS_CreateInstance($guid);
         if (is_int($id)) {
             IPS_SetName($id, 'Mailer');
-            echo 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
+            $infoText = 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
         } else {
-            echo 'Instanz konnte nicht erstellt werden!';
+            $infoText = 'Instanz konnte nicht erstellt werden!';
         }
+        $this->UpdateFormField('InfoMessage', 'visible', true);
+        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
     }
 
     /**
@@ -386,6 +388,23 @@ class Batteriemelder extends IPSModule
     public function ResetAttribute(string $Name): void
     {
         $this->WriteAttributeString($Name, '[]');
+    }
+
+    public function ResetNotificationLists(): void
+    {
+        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue', '[]');
+        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
+        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
+        $this->WriteAttributeString('DailyNotificationListDeviceStatusUpdateOverdue', '[]');
+        $this->WriteAttributeString('DailyNotificationListDeviceStatusLowBattery', '[]');
+        $this->WriteAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue', '[]');
+        $this->WriteAttributeString('WeeklyNotificationListDeviceStatusLowBattery', '[]');
+    }
+
+    public function UIShowMessage(string $Message): void
+    {
+        $this->UpdateFormField('InfoMessage', 'visible', true);
+        $this->UpdateFormField('InfoMessageLabel', 'caption', $Message);
     }
 
     #################### Request action

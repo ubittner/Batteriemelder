@@ -36,15 +36,25 @@ trait BATM_MonitoredVariables
         $this->SendDebug(__FUNCTION__, 'Variablenprofil: ' . $overrideText, 0);
         //Assign profile only for listed variables
         $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        $maximumVariables = count($monitoredVariables);
+        $this->UpdateFormField('VariableProfileProgress', 'minimum', 0);
+        $this->UpdateFormField('VariableProfileProgress', 'maximum', $maximumVariables);
+        $passedVariables = 0;
         if (!empty($monitoredVariables)) {
             foreach ($monitoredVariables as $variable) {
+                $passedVariables++;
+                $this->UpdateFormField('VariableProfileProgress', 'visible', true);
+                $this->UpdateFormField('VariableProfileProgress', 'current', $passedVariables);
+                $this->UpdateFormField('VariableProfileProgressInfo', 'visible', true);
+                $this->UpdateFormField('VariableProfileProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
+                IPS_Sleep(200);
                 //Primary condition
                 if ($variable['PrimaryCondition'] != '') {
                     $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                     if (array_key_exists(0, $primaryCondition)) {
                         if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                             $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                            if ($id > 1 && @IPS_ObjectExists($id)) {
                                 $variableType = @IPS_GetVariable($id)['VariableType'];
                                 $profileName = '';
                                 switch ($variableType) {
@@ -76,7 +86,9 @@ trait BATM_MonitoredVariables
                 }
             }
         }
-        echo 'Die Variablenprofile wurden zugewiesen!';
+        $this->UpdateFormField('VariableProfileProgress', 'visible', false);
+        $this->UpdateFormField('VariableProfileProgressInfo', 'visible', false);
+        $this->UIShowMessage('Die Variablenprofile wurden zugewiesen!');
     }
 
     /**
@@ -90,23 +102,33 @@ trait BATM_MonitoredVariables
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
         if ($LinkCategory == 1 || @!IPS_ObjectExists($LinkCategory)) {
-            echo 'Abbruch, bitte wählen Sie eine Kategorie aus!';
+            $this->UIShowMessage('Abbruch, bitte wählen Sie eine Kategorie aus!');
             return;
         }
         $icon = 'Battery';
         //Get all monitored variables
         $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        $maximumVariables = count($monitoredVariables);
+        $this->UpdateFormField('VariableLinkProgress', 'minimum', 0);
+        $this->UpdateFormField('VariableLinkProgress', 'maximum', $maximumVariables);
+        $passedVariables = 0;
         $targetIDs = [];
         $i = 0;
         foreach ($monitoredVariables as $variable) {
             if ($variable['CheckBattery'] || $variable['CheckUpdate']) {
+                $passedVariables++;
+                $this->UpdateFormField('VariableLinkProgress', 'visible', true);
+                $this->UpdateFormField('VariableLinkProgress', 'current', $passedVariables);
+                $this->UpdateFormField('VariableLinkProgressInfo', 'visible', true);
+                $this->UpdateFormField('VariableLinkProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
+                IPS_Sleep(200);
                 //Primary condition
                 if ($variable['PrimaryCondition'] != '') {
                     $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                     if (array_key_exists(0, $primaryCondition)) {
                         if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                             $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                            if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                            if ($id > 1 && @IPS_ObjectExists($id)) {
                                 $targetIDs[$i] = ['name' => $variable['Designation'], 'targetID' => $id];
                                 $i++;
                             }
@@ -173,26 +195,47 @@ trait BATM_MonitoredVariables
                 @IPS_SetIcon($linkID, $icon);
             }
         }
-        echo 'Die Variablenverknüpfungen wurden erfolgreich erstellt!';
+        $this->UpdateFormField('VariableLinkProgress', 'visible', false);
+        $this->UpdateFormField('VariableLinkProgressInfo', 'visible', false);
+        $this->UIShowMessage('Die Variablenverknüpfungen wurden erfolgreich erstellt!');
     }
 
     /**
      * Determines the trigger variables automatically.
      *
+     * @param string $SelectIdents
      * @param string $ObjectIdents
      * @return void
      * @throws Exception
      */
-    public function DetermineTriggerVariables(string $ObjectIdents): void
+    public function DetermineTriggerVariables(string $SelectIdents, string $ObjectIdents): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->SendDebug(__FUNCTION__, 'Auswahl: ' . $SelectIdents, 0);
         $this->SendDebug(__FUNCTION__, 'Identifikator: ' . $ObjectIdents, 0);
+        $this->UpdateFormField('DetermineVariableProgress', 'minimum', 0);
+        $maximumVariables = count(IPS_GetVariableList());
+        $this->UpdateFormField('DetermineVariableProgress', 'maximum', $maximumVariables);
         //Determine variables first
         $determinedVariables = [];
+        $passedVariables = 0;
         foreach (@IPS_GetVariableList() as $variable) {
-            if ($ObjectIdents == '') {
-                return;
+            if ($SelectIdents == '') {
+                if ($ObjectIdents == '') {
+                    $infoText = 'Abbruch, es wurde kein Identifikator angegeben!';
+                    $this->UpdateFormField('InfoMessage', 'visible', true);
+                    $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                    return;
+                }
+            } else {
+                $ObjectIdents = $SelectIdents;
             }
+            $passedVariables++;
+            $this->UpdateFormField('DetermineVariableProgress', 'visible', true);
+            $this->UpdateFormField('DetermineVariableProgress', 'current', $passedVariables);
+            $this->UpdateFormField('DetermineVariableProgressInfo', 'visible', true);
+            $this->UpdateFormField('DetermineVariableProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
+            IPS_Sleep(25);
             $objectIdents = str_replace(' ', '', $ObjectIdents);
             $objectIdents = explode(',', $objectIdents);
             foreach ($objectIdents as $objectIdent) {
@@ -202,7 +245,7 @@ trait BATM_MonitoredVariables
                     $address = '';
                     $lastBatteryReplacement = '{"year":0, "month":0, "day":0}';
                     $parent = @IPS_GetParent($variable);
-                    if ($parent > 1 && @IPS_ObjectExists($parent)) { //0 = main category, 1 = none
+                    if ($parent > 1 && @IPS_ObjectExists($parent)) {
                         $parentObject = @IPS_GetObject($parent);
                         if ($parentObject['ObjectType'] == 1) { //1 = instance
                             $name = strstr(@IPS_GetName($parent), ':', true);
@@ -292,13 +335,18 @@ trait BATM_MonitoredVariables
                 }
             }
         }
+        if (empty($determinedVariables)) {
+            $this->UpdateFormField('DetermineVariableProgress', 'visible', false);
+            $this->UpdateFormField('DetermineVariableProgressInfo', 'visible', false);
+            $this->UIShowMessage('Es wurden keinen Variablen gefunden!');
+            return;
+        }
         //Sort variables by name
         array_multisort(array_column($listedVariables, 'Designation'), SORT_ASC, $listedVariables);
         @IPS_SetProperty($this->InstanceID, 'TriggerList', json_encode(array_values($listedVariables)));
         if (@IPS_HasChanges($this->InstanceID)) {
             @IPS_ApplyChanges($this->InstanceID);
         }
-        echo 'Die Auslöser wurden erfolgreich hinzugefügt!';
     }
 
     /**
@@ -952,7 +1000,7 @@ trait BATM_MonitoredVariables
                 if (array_key_exists(0, $primaryCondition)) {
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        if ($id <= 1 || @!IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                        if ($id <= 1 || @!IPS_ObjectExists($id)) {
                             continue;
                         }
                     }

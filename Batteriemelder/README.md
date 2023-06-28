@@ -92,7 +92,7 @@ Eine Benachrichtigung über den Gerätestatus kann einmal wöchentlich zu der fe
 
 #### 6.1 Batteriestatus prüfen
 
-```
+```text
 boolean BATM_CheckBatteries(integer INSTANCE_ID);
 ```
 
@@ -102,6 +102,10 @@ Der Befehl liefert als Rückgabewert **TRUE**, wenn alle Batterien `OK` sind, an
 |---------------|-------|----------------|
 | `INSTANCE_ID` | 12345 | ID der Instanz |
 
-Beispiel:  
-> $result = BATM_CheckBatteries(12345);  
-> echo $result;
+**Beispiel**:
+```php
+$result = BATM_CheckBatteries(12345);  
+echo $result;
+```
+
+---

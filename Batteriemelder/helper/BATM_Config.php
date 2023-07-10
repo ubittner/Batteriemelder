@@ -374,7 +374,6 @@ trait BATM_Config
                             'name'    => 'UseMultipleAlerts',
                             'width'   => '200px',
                             'add'     => false,
-                            'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
@@ -436,10 +435,9 @@ trait BATM_Config
                             'name'    => 'UpdatePeriod',
                             'width'   => '100px',
                             'add'     => 3,
-                            'visible' => false,
                             'edit'    => [
                                 'type'   => 'NumberSpinner',
-                                'suffix' => 'Tage'
+                                'suffix' => ' Tage'
                             ]
                         ],
                         [
@@ -475,7 +473,6 @@ trait BATM_Config
                             'name'    => 'LastBatteryReplacement',
                             'width'   => '200px',
                             'add'     => '{"year":0,"month":0,"day":0}',
-                            'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectDate'
                             ]
@@ -498,64 +495,63 @@ trait BATM_Config
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel3',
-            'caption' => 'Batterieliste',
+            'caption' => 'Listenoptionen',
             'items'   => [
                 [
-                    'type'    => 'Label',
-                    'caption' => 'Anzeigeoptionen',
-                    'bold'    => true
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type' => 'CheckBox',
+                            'name' => 'EnableUpdateOverdue'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'UpdateOverdueStatusText',
+                            'caption' => 'Aktualisierung überfällig'
+                        ],
+                    ]
                 ],
                 [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableUpdateOverdue',
-                    'caption' => 'Aktualisierung überfällig'
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type' => 'CheckBox',
+                            'name' => 'EnableLowBattery',
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'LowBatteryStatusText',
+                            'caption' => 'Batterie schwach'
+                        ]
+                    ]
                 ],
                 [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'UpdateOverdueStatusText',
-                    'caption' => 'Bezeichnung'
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type' => 'CheckBox',
+                            'name' => 'EnableBatteryOK'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'BatteryOKStatusText',
+                            'caption' => 'Batterie OK'
+                        ],
+                    ]
                 ],
                 [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableLowBattery',
-                    'caption' => 'Batterie schwach'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'LowBatteryStatusText',
-                    'caption' => 'Bezeichnung'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableBatteryOK',
-                    'caption' => 'Batterie OK'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'BatteryOKStatusText',
-                    'caption' => 'Bezeichnung'
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'CheckBox',
-                    'name'    => 'EnableCheckDisabled',
-                    'caption' => 'Überwachung deaktiviert'
-                ],
-                [
-                    'type'    => 'ValidationTextBox',
-                    'name'    => 'MonitoringDisabledStatusText',
-                    'caption' => 'Bezeichnung'
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type' => 'CheckBox',
+                            'name' => 'EnableCheckDisabled'
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'MonitoringDisabledStatusText',
+                            'caption' => 'Überwachung deaktiviert'
+                        ]
+                    ]
                 ]
             ]
         ];
@@ -1915,7 +1911,7 @@ trait BATM_Config
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'DailyNotificationAlwaysResetCriticalVariables',
-                    'caption' => 'Kritische Melder immer zurücksetzen, auch an nicht ausgewählten Tagen'
+                    'caption' => 'Kritische Melder auch an nicht ausgewählten Tagen zurücksetzen'
                 ],
                 [
                     'type'    => 'Label',
@@ -5026,6 +5022,260 @@ trait BATM_Config
 
         ########## Actions
 
+        //Determine variables
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Auslöser'
+            ];
+
+        $form['actions'][] =
+            [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'Select',
+                        'name'    => 'VariableDeterminationType',
+                        'caption' => 'Ident / Profil',
+                        'options' => [
+                            [
+                                'caption' => 'Profil auswählen',
+                                'value'   => 0
+                            ],
+                            [
+                                'caption' => 'Profil: ~Battery',
+                                'value'   => 1
+                            ],
+                            [
+                                'caption' => 'Profil: ~Battery.Reversed',
+                                'value'   => 2
+                            ],
+                            [
+                                'caption' => 'Profil: BATM.Battery.Boolean',
+                                'value'   => 3
+                            ],
+                            [
+                                'caption' => 'Profil: BATM.Battery.Boolean.Reversed',
+                                'value'   => 4
+                            ],
+                            [
+                                'caption' => 'Profil: BATM.Battery.Integer',
+                                'value'   => 5
+                            ],
+                            [
+                                'caption' => 'Profil: BATM.Battery.Integer.Reversed',
+                                'value'   => 6
+                            ],
+                            [
+                                'caption' => 'Benutzerdefiniertes Profil',
+                                'value'   => 7
+                            ],
+                            [
+                                'caption' => 'Ident: LOWBAT',
+                                'value'   => 8
+                            ],
+                            [
+                                'caption' => 'Ident: LOW_BAT',
+                                'value'   => 9
+                            ],
+                            [
+                                'caption' => 'Ident: LOWBAT, LOW_BAT',
+                                'value'   => 10
+                            ],
+                            [
+                                'caption' => 'Benutzerdefiniert Ident',
+                                'value'   => 11
+                            ]
+                        ],
+                        'value'    => 0,
+                        'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
+                    ],
+                    [
+                        'type'    => 'SelectProfile',
+                        'name'    => 'ProfileSelection',
+                        'caption' => 'Profil',
+                        'visible' => true
+                    ],
+                    [
+                        'type'    => 'ValidationTextBox',
+                        'name'    => 'VariableDeterminationValue',
+                        'caption' => 'Identifikator',
+                        'visible' => false
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Variablen ermitteln',
+                        'popup'   => [
+                            'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Ermitteln',
+                                    'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue, $ProfileSelection);'
+                                ],
+                                [
+                                    'type'    => 'ProgressBar',
+                                    'name'    => 'VariableDeterminationProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type'    => 'Label',
+                                    'name'    => 'VariableDeterminationProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Variablenprofil zuweisen',
+                        'popup'   => [
+                            'caption' => 'Variablenprofile wirklich zuweisen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'CheckBox',
+                                    'name'    => 'OverrideProfiles',
+                                    'caption' => 'Bestehende Variablenprofile überschreiben',
+                                    'value'   => true
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Zuweisen',
+                                    'onClick' => self::MODULE_PREFIX . '_AssignVariableProfile($id, $OverrideProfiles);'
+                                ],
+                                [
+                                    'type'    => 'ProgressBar',
+                                    'name'    => 'VariableProfileProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type'    => 'Label',
+                                    'name'    => 'VariableProfileProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+        /*
+        $form['actions'][] =
+            [
+                'type' => 'RowLayout',
+                'items' => [
+                    [
+                        'type' => 'PopupButton',
+                        'caption' => 'Variablen ermitteln',
+                        'popup' => [
+                            'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
+                            'items' => [
+                                [
+                                    'type' => 'Button',
+                                    'caption' => 'Ermitteln',
+                                    'onClick' => self::MODULE_PREFIX . '_DetermineTriggerVariables($id, $SelectIdents, $ObjectIdents);'
+                                ],
+                                [
+                                    'type' => 'ProgressBar',
+                                    'name' => 'DetermineVariableProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type' => 'Label',
+                                    'name' => 'DetermineVariableProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'type' => 'Select',
+                        'name' => 'SelectIdents',
+                        'options' => [
+                            [
+                                'caption' => 'Benutzerdefiniert',
+                                'value' => ''
+                            ],
+                            [
+                                'caption' => 'LOWBAT',
+                                'value' => 'LOWBAT'
+                            ],
+                            [
+                                'caption' => 'LOW_BAT',
+                                'value' => 'LOW_BAT'
+                            ]
+                        ],
+                        'value' => ''
+                    ],
+                    [
+                        'type' => 'ValidationTextBox',
+                        'name' => 'ObjectIdents',
+                        'caption' => 'Identifikator',
+                        'value' => 'LOWBAT, LOW_BAT'
+                    ],
+                    [
+                        'type' => 'PopupButton',
+                        'caption' => 'Variablenprofil zuweisen',
+                        'popup' => [
+                            'caption' => 'Variablenprofile wirklich zuweisen?',
+                            'items' => [
+                                [
+                                    'type' => 'CheckBox',
+                                    'name' => 'OverrideProfiles',
+                                    'caption' => 'Bestehende Variablenprofile überschreiben',
+                                    'value' => true
+                                ],
+                                [
+                                    'type' => 'Button',
+                                    'caption' => 'Zuweisen',
+                                    'onClick' => self::MODULE_PREFIX . '_AssignVariableProfile($id, $OverrideProfiles);'
+                                ],
+                                [
+                                    'type' => 'ProgressBar',
+                                    'name' => 'VariableProfileProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type' => 'Label',
+                                    'name' => 'VariableProfileProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+         */
+
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => ' '
+            ];
+
+        //Notification
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Benachrichtigungen'
+            ];
+
         $form['actions'][] =
             [
                 'type'  => 'RowLayout',
@@ -5068,106 +5318,17 @@ trait BATM_Config
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Zurücksetzen',
-                                    'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt, bitte Konfiguration neu laden!");'
+                                    'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt!");'
                                 ]
-                            ]
-                        ]
-                    ],
-                ]
-            ];
-
-        //Determine variables
-        $form['actions'][] =
-            [
-                'type'  => 'RowLayout',
-                'items' => [
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Variablen ermitteln',
-                        'popup'   => [
-                            'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
-                            'items'   => [
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Ermitteln',
-                                    'onClick' => self::MODULE_PREFIX . '_DetermineTriggerVariables($id, $SelectIdents, $ObjectIdents);'
-                                ],
-                                [
-                                    'type'    => 'ProgressBar',
-                                    'name'    => 'DetermineVariableProgress',
-                                    'caption' => 'Fortschritt',
-                                    'minimum' => 0,
-                                    'maximum' => 100,
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'    => 'Label',
-                                    'name'    => 'DetermineVariableProgressInfo',
-                                    'caption' => '',
-                                    'visible' => false
-                                ]
-                            ]
-                        ]
-                    ],
-                    [
-                        'type'    => 'Select',
-                        'name'    => 'SelectIdents',
-                        'options' => [
-                            [
-                                'caption' => 'Benutzerdefiniert',
-                                'value'   => ''
                             ],
-                            [
-                                'caption' => 'LOWBAT',
-                                'value'   => 'LOWBAT'
-                            ],
-                            [
-                                'caption' => 'LOW_BAT',
-                                'value'   => 'LOW_BAT'
-                            ]
-                        ],
-                        'value' => ''
-                    ],
-                    [
-                        'type'    => 'ValidationTextBox',
-                        'name'    => 'ObjectIdents',
-                        'caption' => 'Identifikator',
-                        'value'   => 'LOWBAT, LOW_BAT'
-                    ],
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Variablenprofil zuweisen',
-                        'popup'   => [
-                            'caption' => 'Variablenprofile wirklich zuweisen?',
-                            'items'   => [
+                            'buttons' => [
                                 [
-                                    'type'    => 'CheckBox',
-                                    'name'    => 'OverrideProfiles',
-                                    'caption' => 'Bestehende Variablenprofile überschreiben',
-                                    'value'   => true
-                                ],
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Zuweisen',
-                                    'onClick' => self::MODULE_PREFIX . '_AssignVariableProfile($id, $OverrideProfiles);'
-                                ],
-                                [
-                                    'type'    => 'ProgressBar',
-                                    'name'    => 'VariableProfileProgress',
-                                    'caption' => 'Fortschritt',
-                                    'minimum' => 0,
-                                    'maximum' => 100,
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'    => 'Label',
-                                    'name'    => 'VariableProfileProgressInfo',
-                                    'caption' => '',
-                                    'visible' => false
+                                    'caption' => 'Konfiguration neu laden',
+                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
                                 ]
                             ]
                         ]
-                    ]
+                    ],
                 ]
             ];
 
@@ -5925,6 +6086,12 @@ trait BATM_Config
                     'caption' => ' '
                 ],
                 [
+                    'type'    => 'Label',
+                    'caption' => 'Registrierte Referenzen',
+                    'italic'  => true,
+                    'bold'    => true
+                ],
+                [
                     'type'     => 'List',
                     'name'     => 'RegisteredReferences',
                     'caption'  => 'Registrierte Referenzen',
@@ -5959,6 +6126,12 @@ trait BATM_Config
                 [
                     'type'    => 'Label',
                     'caption' => ' '
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Registrierte Nachrichten',
+                    'italic'  => true,
+                    'bold'    => true
                 ],
                 [
                     'type'     => 'List',

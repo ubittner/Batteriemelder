@@ -56,7 +56,7 @@ Die Überwachung der Melder und die Erstellung der Batterieliste wird immer durc
                       +------------------------+
                       | Batteriemelder (Modul) |
                       |                        |
-Auslöser<-------------+ Status                 |
+Auslöser------------->+ Status                 |
                       | Batterieliste          |
                       +------------------------+
 ```

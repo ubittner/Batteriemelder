@@ -5067,7 +5067,7 @@ trait BATM_Config
                                 'value'   => 6
                             ],
                             [
-                                'caption' => 'Benutzerdefiniertes Profil',
+                                'caption' => 'Profil: Benutzerdefiniert',
                                 'value'   => 7
                             ],
                             [
@@ -5083,7 +5083,7 @@ trait BATM_Config
                                 'value'   => 10
                             ],
                             [
-                                'caption' => 'Benutzerdefiniert Ident',
+                                'caption' => 'Ident: Benutzerdefiniert',
                                 'value'   => 11
                             ]
                         ],

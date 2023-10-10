@@ -54,6 +54,10 @@ class Batteriemelder extends IPSModule
         //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');
 
+        //Automatic status update
+        $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
+        $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
+
         //Immediate notification
         $this->RegisterPropertyString('ImmediateNotificationResetTime', '{"hour":7,"minute":0,"second":0}');
         $this->RegisterPropertyString('ImmediateNotification', '[]');
@@ -188,6 +192,7 @@ class Batteriemelder extends IPSModule
 
         ########## Timer
 
+        $this->RegisterTimer('CheckBatteries', 0, self::MODULE_PREFIX . '_CheckBatteries(' . $this->InstanceID . ');');
         $this->RegisterTimer('ResetImmediateNotificationLimit', 0, self::MODULE_PREFIX . '_ResetImmediateNotificationLimit(' . $this->InstanceID . ');');
         $this->RegisterTimer('DailyNotification', 0, self::MODULE_PREFIX . '_ExecuteDailyNotification(' . $this->InstanceID . ', true, true);');
         $this->RegisterTimer('WeeklyNotification', 0, self::MODULE_PREFIX . '_ExecuteWeeklyNotification(' . $this->InstanceID . ', true, true);');
@@ -279,12 +284,19 @@ class Batteriemelder extends IPSModule
             }
         }
 
-        //Timer
+        ########## Timer
+
+        $milliseconds = 0;
+        if ($this->ReadPropertyBoolean('AutomaticStatusUpdate')) {
+            $milliseconds = $this->ReadPropertyInteger('StatusUpdateInterval') * 1000;
+        }
+        $this->SetTimerInterval('CheckBatteries', $milliseconds);
         $this->SetTimerInterval('ResetImmediateNotificationLimit', $this->GetInterval('ImmediateNotificationResetTime'));
         $this->SetTimerInterval('DailyNotification', $this->GetInterval('DailyNotificationTime'));
         $this->SetTimerInterval('WeeklyNotification', $this->GetInterval('WeeklyNotificationTime'));
 
-        //WebFront options
+        ########## WebFront options
+
         IPS_SetHidden($this->GetIDForIdent('Active'), !$this->ReadPropertyBoolean('EnableActive'));
         IPS_SetHidden($this->GetIDForIdent('Status'), !$this->ReadPropertyBoolean('EnableStatus'));
         IPS_SetHidden($this->GetIDForIdent('TriggeringDetector'), !$this->ReadPropertyBoolean('EnableTriggeringDetector'));
@@ -481,5 +493,33 @@ class Batteriemelder extends IPSModule
         $this->ResetImmediateNotificationLimit();
         $this->ResetAttribute('DailyNotificationListDeviceStatusLowBattery');
         $this->ResetAttribute('WeeklyNotificationListDeviceStatusLowBattery');
+    }
+
+    /**
+     * Attempts to set a semaphore and repeats this up to 100 times if unsuccessful.
+     * @param string $Name
+     * @return bool
+     */
+    private function LockSemaphore(string $Name): bool
+    {
+        for ($i = 0; $i < 100; $i++) {
+            if (IPS_SemaphoreEnter(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name, 1)) {
+                $this->SendDebug(__FUNCTION__, 'Semaphore locked', 0);
+                return true;
+            } else {
+                IPS_Sleep(mt_rand(1, 5));
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Unlocks a semaphore.
+     * @param string $Name
+     */
+    private function UnlockSemaphore(string $Name): void
+    {
+        IPS_SemaphoreLeave(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name);
+        $this->SendDebug(__FUNCTION__, 'Semaphore unlocked', 0);
     }
 }

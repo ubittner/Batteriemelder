@@ -619,6 +619,12 @@ trait BATM_MonitoredVariables
     public function CheckBatteries(): bool
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        //Enter semaphore
+        if (!$this->LockSemaphore('CheckBatteries')) {
+            $this->SendDebug(__FUNCTION__, 'Abort, Semaphore reached!', 0);
+            $this->UnlockSemaphore('CheckBatteries');
+            return false;
+        }
         $monitoredVariables = json_decode($this->GetMonitoredVariables(), true);
         //Sort variables by name and rebase
         array_multisort(array_column($monitoredVariables, 'Name'), SORT_ASC, $monitoredVariables);
@@ -977,6 +983,8 @@ trait BATM_MonitoredVariables
                 }
             }
         }
+        //Leave semaphore
+        $this->UnlockSemaphore('CheckBatteries');
         return $result;
     }
 

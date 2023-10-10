@@ -36,7 +36,7 @@ trait BATM_ConfigurationForm
      */
     public function ExpandExpansionPanels(bool $State): void
     {
-        for ($i = 1; $i <= 8; $i++) {
+        for ($i = 1; $i <= 9; $i++) {
             $this->UpdateFormField('Panel' . $i, 'expanded', $State);
         }
     }
@@ -465,6 +465,26 @@ trait BATM_ConfigurationForm
             ]
         ];
 
+        //Automatic status update
+        $form['elements'][] = [
+            'type'    => 'ExpansionPanel',
+            'name'    => 'Panel5',
+            'caption' => 'Aktualisierung',
+            'items'   => [
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'AutomaticStatusUpdate',
+                    'caption' => 'Automatische Aktualisierung'
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'StatusUpdateInterval',
+                    'caption' => 'Intervall',
+                    'suffix'  => 'Sekunden'
+                ]
+            ]
+        ];
+
         //Immediate notification
         $immediateNotificationValues = [];
         foreach (json_decode($this->ReadPropertyString('ImmediateNotification'), true) as $element) {
@@ -509,7 +529,7 @@ trait BATM_ConfigurationForm
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
-            'name'    => 'Panel5',
+            'name'    => 'Panel6',
             'caption' => 'Sofortige Benachrichtigung',
             'items'   => [
                 [
@@ -1414,7 +1434,7 @@ trait BATM_ConfigurationForm
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
-            'name'    => 'Panel6',
+            'name'    => 'Panel7',
             'caption' => 'Tägliche Benachrichtigung',
             'items'   => [
                 [
@@ -2382,7 +2402,7 @@ trait BATM_ConfigurationForm
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
-            'name'    => 'Panel7',
+            'name'    => 'Panel8',
             'caption' => 'Wöchentliche Benachrichtigung',
             'items'   => [
                 [
@@ -3281,7 +3301,7 @@ trait BATM_ConfigurationForm
 
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
-            'name'    => 'Panel8',
+            'name'    => 'Panel9',
             'caption' => 'Visualisierung',
             'items'   => [
                 [

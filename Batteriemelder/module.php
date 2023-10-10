@@ -49,7 +49,7 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyBoolean('EnableLowBattery', true);
         $this->RegisterPropertyBoolean('EnableBatteryOK', true);
         $this->RegisterPropertyString('LowBatteryStatusText', '⚠️  Batterie schwach');
-        $this->RegisterPropertyString('BatteryOKStatusText', '🟢  Batterie OK');
+        $this->RegisterPropertyString('BatteryOKStatusText', '🟢  OK');
 
         //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');

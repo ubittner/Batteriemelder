@@ -115,7 +115,7 @@ trait BATM_MonitoredVariables
         $targetIDs = [];
         $i = 0;
         foreach ($monitoredVariables as $variable) {
-            if ($variable['CheckBattery'] || $variable['CheckUpdate']) {
+            if ($variable['Use']) {
                 $passedVariables++;
                 $this->UpdateFormField('VariableLinkProgress', 'visible', true);
                 $this->UpdateFormField('VariableLinkProgress', 'current', $passedVariables);
@@ -389,11 +389,8 @@ trait BATM_MonitoredVariables
                                 'Comment'                => $address,
                                 'BatteryType'            => '',
                                 'UserDefinedBatteryType' => '',
-                                'CheckBattery'           => true,
                                 'UseMultipleAlerts'      => false,
                                 'PrimaryCondition'       => json_encode($primaryCondition),
-                                'CheckUpdate'            => true,
-                                'UpdatePeriod'           => 3,
                                 'LastBatteryReplacement' => $lastBatteryReplacement];
                         }
                     }
@@ -474,11 +471,8 @@ trait BATM_MonitoredVariables
                                 'Comment'                => $address,
                                 'BatteryType'            => '',
                                 'UserDefinedBatteryType' => '',
-                                'CheckBattery'           => true,
                                 'UseMultipleAlerts'      => false,
                                 'PrimaryCondition'       => json_encode($primaryCondition),
-                                'CheckUpdate'            => true,
-                                'UpdatePeriod'           => 3,
                                 'LastBatteryReplacement' => $lastBatteryReplacement];
                         }
                     }
@@ -562,7 +556,7 @@ trait BATM_MonitoredVariables
             if ($monitoredVariable['ID'] == $VariableID) {
                 if ($monitoredVariable['ActualStatus'] == 0) { //0 = Battery OK
                     //Remove from daily and weekly critical lists
-                    $lists = ['DailyNotificationListDeviceStatusUpdateOverdue', 'DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusUpdateOverdue', 'WeeklyNotificationListDeviceStatusLowBattery'];
+                    $lists = ['DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusLowBattery'];
                     foreach ($lists as $list) {
                         $variables = json_decode($this->ReadAttributeString($list), true);
                         foreach ($variables as $key => $variable) {
@@ -591,19 +585,13 @@ trait BATM_MonitoredVariables
             if ($id <= 1 || @!IPS_ObjectExists($id)) {
                 continue;
             }
-            $batteryType = $variable['BatteryType'];
-            if ($batteryType == '') {
-                $batteryType = $variable['UserDefinedBatteryType'];
-            }
             $data[$index]['Use'] = $variable['Use'];
             $data[$index]['Designation'] = $variable['Designation'];
             $data[$index]['Comment'] = $variable['Comment'];
-            $data[$index]['BatteryType'] = $batteryType;
-            $data[$index]['CheckBattery'] = $variable['CheckBattery'];
+            $data[$index]['BatteryType'] = $variable['BatteryType'];
+            $data[$index]['UserDefinedBatteryType'] = $variable['UserDefinedBatteryType'];
             $data[$index]['UseMultipleAlerts'] = $variable['UseMultipleAlerts'];
             $data[$index]['PrimaryCondition'] = $variable['PrimaryCondition'];
-            $data[$index]['CheckUpdate'] = $variable['CheckUpdate'];
-            $data[$index]['UpdatePeriod'] = $variable['UpdatePeriod'];
             if ($id == $VariableID) {
                 $year = date('Y');
                 $month = date('n');
@@ -644,7 +632,9 @@ trait BATM_MonitoredVariables
             $actualOverallStatus = 1;
             $result = false;
         }
-        $this->SetValue('Status', $actualOverallStatus);
+        if ($this->GetValue('Status') != $actualOverallStatus) {
+            $this->SetValue('Status', $actualOverallStatus);
+        }
 
         ##### Triggering detector
 
@@ -659,7 +649,9 @@ trait BATM_MonitoredVariables
                 break;
             }
         }
-        $this->SetValue('TriggeringDetector', $name);
+        if ($this->GetValue('TriggeringDetector') != $name) {
+            $this->SetValue('TriggeringDetector', $name);
+        }
 
         ##### Last Update
 
@@ -673,25 +665,6 @@ trait BATM_MonitoredVariables
             $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Bemerkung</b></td><td><b>Batterietyp</b></td><td><b>ID</b></td><td><b>Letzter Batteriewechsel</b></td></tr>';
             if (!empty($monitoredVariables)) {
                 $data = 0;
-                //Show update overdue first
-                if ($this->ReadPropertyBoolean('EnableUpdateOverdue')) {
-                    $spacer = false;
-                    if (in_array(2, array_column($monitoredVariables, 'ActualStatus'))) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            $id = $monitoredVariable['ID'];
-                            if ($id != 0 && IPS_ObjectExists($id)) {
-                                if ($monitoredVariable['ActualStatus'] == 2) {
-                                    $string .= '<tr><td>' . $this->ReadPropertyString('UpdateOverdueStatusText') . '</td><td>' . $monitoredVariable['Name'] . '</td><td>' . $monitoredVariable['Comment'] . '</td><td>' . $monitoredVariable['BatteryType'] . '</td><td>' . $id . '</td><td>' . $monitoredVariable['LastBatteryReplacement'] . '</td></tr>';
-                                    $data++;
-                                    $spacer = true;
-                                }
-                            }
-                        }
-                        if ($spacer) {
-                            $string .= '<tr><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td></tr>';
-                        }
-                    }
-                }
                 //Low battery
                 if ($this->ReadPropertyBoolean('EnableLowBattery')) {
                     $spacer = false;
@@ -730,25 +703,6 @@ trait BATM_MonitoredVariables
                         }
                     }
                 }
-                //Disabled monitoring is last
-                if ($this->ReadPropertyBoolean('EnableCheckDisabled')) {
-                    $spacer = false;
-                    if (in_array(3, array_column($monitoredVariables, 'ActualStatus'))) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            $id = $monitoredVariable['ID'];
-                            if ($id != 0 && IPS_ObjectExists($id)) {
-                                if ($monitoredVariable['ActualStatus'] == 3) {
-                                    $string .= '<tr><td>' . $this->ReadPropertyString('MonitoringDisabledStatusText') . '</td><td>' . $monitoredVariable['Name'] . '</td><td>' . $monitoredVariable['Comment'] . '</td><td>' . $monitoredVariable['BatteryType'] . '</td><td>' . $id . '</td><td>' . $monitoredVariable['LastBatteryReplacement'] . '</td></tr>';
-                                    $data++;
-                                    $spacer = true;
-                                }
-                            }
-                        }
-                        if ($spacer) {
-                            $string .= '<tr><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td></tr>';
-                        }
-                    }
-                }
                 //Remove last spacer
                 if ($data > 0) {
                     $string = substr($string, 0, strrpos($string, '<tr><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td><td>&#8205;</td></tr>'));
@@ -761,23 +715,14 @@ trait BATM_MonitoredVariables
         ##### Device status
 
         foreach ($monitoredVariables as $monitoredVariable) {
-            $actualStatus = $monitoredVariable['ActualStatus']; //0 = OK, 1 = low battery, 2 = update overdue, 3 = monitoring disabled
-
-            ### Monitoring disabled
-
-            if ($actualStatus == 3) {
-                continue;
-            }
+            $actualStatus = $monitoredVariable['ActualStatus']; //0 = OK, 1 = low battery
 
             ### Battery OK
 
             if ($actualStatus == 0) {
                 $timeStamp = date('d.m.Y, H:i:s');
                 $statusChanged = false;
-                //Check if status was low battery or update overdue before
-                if (in_array($monitoredVariable['ID'], array_column(json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue'), true), 'ID'))) {
-                    $statusChanged = true;
-                }
+                //Check if status was low battery before
                 if (in_array($monitoredVariable['ID'], array_column(json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
                     $statusChanged = true;
                 }
@@ -1031,141 +976,6 @@ trait BATM_MonitoredVariables
                     }
                 }
             }
-
-            ### Update overdue
-
-            if ($actualStatus == 2) {
-                $timeStamp = date('d.m.Y, H:i:s');
-                $statusChanged = false;
-                //Add to immediate notification list
-                $variables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue'), true);
-                if (!in_array($monitoredVariable['ID'], array_column($variables, 'ID'))) {
-                    $statusChanged = true;
-                    $variables[] = [
-                        'ID'        => $monitoredVariable['ID'],
-                        'Timestamp' => $timeStamp];
-                    $this->WriteAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue', json_encode($variables));
-                }
-                //Add to daily notification list
-                $variables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusUpdateOverdue'), true);
-                if (!in_array($monitoredVariable['ID'], array_column($variables, 'ID'))) {
-                    $variables[] = [
-                        'ID'        => $monitoredVariable['ID'],
-                        'Timestamp' => $timeStamp];
-                    $this->WriteAttributeString('DailyNotificationListDeviceStatusUpdateOverdue', json_encode($variables));
-                }
-                //Add to weekly notification list
-                $variables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue'), true);
-                if (!in_array($monitoredVariable['ID'], array_column($variables, 'ID'))) {
-                    $variables[] = [
-                        'ID'        => $monitoredVariable['ID'],
-                        'Timestamp' => $timeStamp];
-                    $this->WriteAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue', json_encode($variables));
-                }
-                if ($statusChanged) {
-                    //Notify
-                    if ($this->GetValue('Active')) {
-
-                        # Immediate Notification: Update overdue
-
-                        foreach (json_decode($this->ReadPropertyString('ImmediateNotification'), true) as $notification) {
-                            if (!$notification['Use']) {
-                                continue;
-                            }
-                            $notificationID = $notification['ID'];
-                            if ($notificationID <= 1 || @!IPS_ObjectExists($notificationID)) {
-                                continue;
-                            }
-                            if (!$notification['UseUpdateOverdue']) {
-                                continue;
-                            }
-                            $text = $notification['UpdateOverdueMessageText'];
-                            //Check for placeholder
-                            if (strpos($text, '%1$s') !== false) {
-                                $text = sprintf($text, $monitoredVariable['Name']);
-                            }
-                            if ($notification['UseUpdateOverdueTimestamp']) {
-                                $text = $text . ' ' . $timeStamp;
-                            }
-                            $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['UpdateOverdueTitle'] . '", "' . $text . '", "' . $notification['UpdateOverdueIcon'] . '", ' . $notification['UpdateOverdueDisplayDuration'] . ');';
-                            @IPS_RunScriptText($scriptText);
-                            IPS_Sleep(100);
-                        }
-
-                        # Immediate push notification: Update overdue
-
-                        foreach (json_decode($this->ReadPropertyString('ImmediatePushNotification'), true) as $pushNotification) {
-                            if (!$pushNotification['Use']) {
-                                continue;
-                            }
-                            $pushNotificationID = $pushNotification['ID'];
-                            if ($pushNotificationID <= 1 || @!IPS_ObjectExists($pushNotificationID)) {
-                                continue;
-                            }
-                            if (!$pushNotification['UseUpdateOverdue']) {
-                                continue;
-                            }
-                            //Title length max 32 characters
-                            $title = substr($pushNotification['UpdateOverdueTitle'], 0, 32);
-                            $text = "\n" . $pushNotification['UpdateOverdueMessageText'];
-                            //Check for placeholder
-                            if (strpos($text, '%1$s') !== false) {
-                                $text = sprintf($text, $monitoredVariable['Name']);
-                            }
-                            if ($pushNotification['UseUpdateOverdueTimestamp']) {
-                                $text = $text . ' ' . $timeStamp;
-                            }
-                            //Text length max 256 characters
-                            $text = substr($text, 0, 256);
-                            $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['UpdateOverdueSound'] . '", ' . $pushNotification['UpdateOverdueTargetID'] . ');';
-                            @IPS_RunScriptText($scriptText);
-                            IPS_Sleep(100);
-                        }
-
-                        # Immediate email notification: Update overdue
-
-                        foreach (json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true) as $mailer) {
-                            $mailerID = $mailer['ID'];
-                            if ($mailerID <= 1 || @!IPS_ObjectExists($mailerID)) {
-                                continue;
-                            }
-                            if (!$mailer['Use']) {
-                                continue;
-                            }
-                            if (!$mailer['UseUpdateOverdue']) {
-                                continue;
-                            }
-                            $updateOverdueMessageText = "Aktualisierung überfällig:\n\n";
-                            //Message text
-                            $lineText = $mailer['UpdateOverdueMessageText'];
-                            $name = $monitoredVariable['Name'] . ' ';
-                            if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . $monitoredVariable['Comment'];
-                            }
-                            //Check for placeholder
-                            if (strpos($lineText, '%1$s') !== false) {
-                                $lineText = sprintf($lineText, $name);
-                            }
-                            //Timestamp
-                            if ($mailer['UseUpdateOverdueTimestamp']) {
-                                $lineText = $lineText . ', ' . $timeStamp;
-                            }
-                            //Variable ID
-                            if ($mailer['UseUpdateOverdueVariableID']) {
-                                $lineText = $lineText . ', ID: ' . $monitoredVariable['ID'];
-                            }
-                            //Battery type
-                            $batteryType = $monitoredVariable['BatteryType'];
-                            if ($mailer['UseUpdateOverdueBatteryType']) {
-                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
-                            }
-                            $updateOverdueMessageText .= $lineText . "\n";
-                            $scriptText = 'MA_SendMessage(' . $mailerID . ', "' . $mailer['Subject'] . '", "' . $updateOverdueMessageText . '");';
-                            @IPS_RunScriptText($scriptText);
-                        }
-                    }
-                }
-            }
         }
         return $result;
     }
@@ -1201,23 +1011,8 @@ trait BATM_MonitoredVariables
             if ($id > 1 && @IPS_ObjectExists($id)) {
                 $actualStatus = 0;
                 //Check low battery
-                if ($variable['CheckBattery']) {
-                    if (IPS_IsConditionPassing($variable['PrimaryCondition'])) {
-                        $actualStatus = 1;
-                    }
-                }
-                //Check update overdue
-                if ($variable['CheckUpdate']) {
-                    $now = time();
-                    $variableUpdate = IPS_GetVariable($id)['VariableUpdated'];
-                    $dateDifference = ($now - $variableUpdate) / (60 * 60 * 24);
-                    if ($dateDifference > $variable['UpdatePeriod']) {
-                        $actualStatus = 2;
-                    }
-                }
-                //Check monitoring disabled
-                if (!$variable['CheckBattery'] && !$variable['CheckUpdate']) {
-                    $actualStatus = 3;
+                if (IPS_IsConditionPassing($variable['PrimaryCondition'])) {
+                    $actualStatus = 1;
                 }
                 //Last battery replacement
                 $lastBatteryReplacement = 'Nie';
@@ -1233,7 +1028,7 @@ trait BATM_MonitoredVariables
                     $batteryType = $variable['UserDefinedBatteryType'];
                 }
                 $result[] = [
-                    'ActualStatus'           => $actualStatus, //0 = OK, 1 = low battery, 2 = update overdue, 3 = checks are disabled
+                    'ActualStatus'           => $actualStatus, //0 = OK, 1 = low battery
                     'Name'                   => $variable['Designation'],
                     'Comment'                => $variable['Comment'],
                     'BatteryType'            => $batteryType,

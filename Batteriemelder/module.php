@@ -19,7 +19,7 @@ include_once __DIR__ . '/helper/BATM_autoload.php';
 class Batteriemelder extends IPSModule
 {
     //Helper
-    use BATM_Config;
+    use BATM_ConfigurationForm;
     use BATM_MonitoredVariables;
     use BATM_Reports;
 
@@ -38,41 +38,29 @@ class Batteriemelder extends IPSModule
 
         ########## Properties
 
-        ##### Info
-
+        //Info
         $this->RegisterPropertyString('Note', '');
 
-        ##### Functions
+        //Status values
+        $this->RegisterPropertyString('StatusTextAlarm', 'Alarm');
+        $this->RegisterPropertyString('StatusTextOK', 'OK');
 
-        $this->RegisterPropertyBoolean('EnableActive', false);
-        $this->RegisterPropertyBoolean('EnableStatus', true);
-        $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
-        $this->RegisterPropertyBoolean('EnableBatteryReplacement', true);
-        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
-        $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
-        $this->RegisterPropertyBoolean('EnableBatteryList', true);
-        $this->RegisterPropertyBoolean('EnableUpdateOverdue', true);
+        //List options
         $this->RegisterPropertyBoolean('EnableLowBattery', true);
         $this->RegisterPropertyBoolean('EnableBatteryOK', true);
-        $this->RegisterPropertyBoolean('EnableCheckDisabled', true);
-        $this->RegisterPropertyString('UpdateOverdueStatusText', '❗️  Aktualisierung überfällig');
         $this->RegisterPropertyString('LowBatteryStatusText', '⚠️  Batterie schwach');
         $this->RegisterPropertyString('BatteryOKStatusText', '🟢  Batterie OK');
-        $this->RegisterPropertyString('MonitoringDisabledStatusText', '❌  Überwachung deaktiviert');
 
-        ##### Trigger list
-
+        //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');
 
-        ##### Immediate notification
-
+        //Immediate notification
         $this->RegisterPropertyString('ImmediateNotificationResetTime', '{"hour":7,"minute":0,"second":0}');
         $this->RegisterPropertyString('ImmediateNotification', '[]');
         $this->RegisterPropertyString('ImmediatePushNotification', '[]');
         $this->RegisterPropertyString('ImmediateMailerNotification', '[]');
 
-        ##### Daily notification
-
+        //Daily notification
         $this->RegisterPropertyBoolean('DailyNotificationMonday', true);
         $this->RegisterPropertyBoolean('DailyNotificationTuesday', true);
         $this->RegisterPropertyBoolean('DailyNotificationWednesday', true);
@@ -86,13 +74,21 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyString('DailyPushNotification', '[]');
         $this->RegisterPropertyString('DailyMailerNotification', '[]');
 
-        ##### Weekly notification
-
+        //Weekly notification
         $this->RegisterPropertyInteger('WeeklyNotificationDay', 0);
         $this->RegisterPropertyString('WeeklyNotificationTime', '{"hour":19,"minute":0,"second":0}');
         $this->RegisterPropertyString('WeeklyNotification', '[]');
         $this->RegisterPropertyString('WeeklyPushNotification', '[]');
         $this->RegisterPropertyString('WeeklyMailerNotification', '[]');
+
+        //Visualisation
+        $this->RegisterPropertyBoolean('EnableActive', false);
+        $this->RegisterPropertyBoolean('EnableStatus', true);
+        $this->RegisterPropertyBoolean('EnableTriggeringDetector', true);
+        $this->RegisterPropertyBoolean('EnableBatteryReplacement', true);
+        $this->RegisterPropertyBoolean('EnableLastUpdate', true);
+        $this->RegisterPropertyBoolean('EnableUpdateStatus', true);
+        $this->RegisterPropertyBoolean('EnableBatteryList', true);
 
         ########## General profiles
 
@@ -130,7 +126,7 @@ class Batteriemelder extends IPSModule
 
         ########## Variables
 
-        ##### Active
+        //Active
 
         $id = @$this->GetIDForIdent('Active');
         $this->RegisterVariableBoolean('Active', 'Aktiv', '~Switch', 10);
@@ -139,7 +135,7 @@ class Batteriemelder extends IPSModule
             $this->SetValue('Active', true);
         }
 
-        ##### Status
+        //Status
 
         $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.Status';
         if (!IPS_VariableProfileExists($profile)) {
@@ -149,7 +145,7 @@ class Batteriemelder extends IPSModule
         IPS_SetVariableProfileAssociation($profile, 1, 'Alarm', 'Warning', 0xFF0000);
         $this->RegisterVariableBoolean('Status', 'Status', $profile, 20);
 
-        ##### Triggering detector
+        //Triggering detector
 
         $id = @$this->GetIDForIdent('TriggeringDetector');
         $this->RegisterVariableString('TriggeringDetector', 'Auslösender Melder', '', 30);
@@ -158,8 +154,7 @@ class Batteriemelder extends IPSModule
             IPS_SetIcon($this->GetIDForIdent('TriggeringDetector'), 'Eyes');
         }
 
-        ##### Battery replacement
-
+        //Battery replacement
         $id = @$this->GetIDForIdent('BatteryReplacement');
         $this->RegisterVariableInteger('BatteryReplacement', 'Batteriewechsel ID', '', 40);
         $this->EnableAction('BatteryReplacement');
@@ -167,16 +162,14 @@ class Batteriemelder extends IPSModule
             IPS_SetIcon($this->GetIDForIdent('BatteryReplacement'), 'Gear');
         }
 
-        ##### Last update
-
+        //Last update
         $id = @$this->GetIDForIdent('LastUpdate');
         $this->RegisterVariableString('LastUpdate', 'Letzte Aktualisierung', '', 50);
         if (!$id) {
             IPS_SetIcon($this->GetIDForIdent('LastUpdate'), 'Clock');
         }
 
-        ##### Update status
-
+        //Update status
         $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.UpdateStatus';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 1);
@@ -185,7 +178,7 @@ class Batteriemelder extends IPSModule
         $this->RegisterVariableInteger('UpdateStatus', 'Aktualisierung', $profile, 60);
         $this->EnableAction('UpdateStatus');
 
-        ##### Battery list
+        //Battery list
 
         $id = @$this->GetIDForIdent('BatteryList');
         $this->RegisterVariableString('BatteryList', 'Batterieliste', 'HTMLBox', 70);
@@ -201,12 +194,9 @@ class Batteriemelder extends IPSModule
 
         ########## Attributes
 
-        $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
-        $this->RegisterAttributeString('DailyNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->RegisterAttributeString('DailyNotificationListDeviceStatusLowBattery', '[]');
-        $this->RegisterAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->RegisterAttributeString('WeeklyNotificationListDeviceStatusLowBattery', '[]');
     }
 
@@ -221,6 +211,14 @@ class Batteriemelder extends IPSModule
         //Check runlevel
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
+        }
+
+        //Update status profiles
+        $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.Status';
+        if (IPS_VariableProfileExists($profile)) {
+            //Set new values
+            IPS_SetVariableProfileAssociation($profile, 0, $this->ReadPropertyString('StatusTextOK'), 'Ok', 0x00FF00);
+            IPS_SetVariableProfileAssociation($profile, 1, $this->ReadPropertyString('StatusTextAlarm'), 'Warning', 0xFF0000);
         }
 
         //Delete all references
@@ -390,7 +388,6 @@ class Batteriemelder extends IPSModule
     public function ResetImmediateNotificationDeviceState(): void
     {
         $this->ResetAttribute('ImmediateNotificationListDeviceStatusLowBattery');
-        $this->ResetAttribute('ImmediateNotificationListDeviceStatusUpdateOverdue');
         $this->ResetAttribute('ImmediateNotificationListDeviceStatusNormal');
     }
 
@@ -408,12 +405,9 @@ class Batteriemelder extends IPSModule
 
     public function ResetNotificationLists(): void
     {
-        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->WriteAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
         $this->WriteAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
-        $this->WriteAttributeString('DailyNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->WriteAttributeString('DailyNotificationListDeviceStatusLowBattery', '[]');
-        $this->WriteAttributeString('WeeklyNotificationListDeviceStatusUpdateOverdue', '[]');
         $this->WriteAttributeString('WeeklyNotificationListDeviceStatusLowBattery', '[]');
     }
 
@@ -486,8 +480,6 @@ class Batteriemelder extends IPSModule
         $this->SetValue('BatteryList', '');
         $this->ResetImmediateNotificationLimit();
         $this->ResetAttribute('DailyNotificationListDeviceStatusLowBattery');
-        $this->ResetAttribute('DailyNotificationListDeviceStatusUpdateOverdue');
         $this->ResetAttribute('WeeklyNotificationListDeviceStatusLowBattery');
-        $this->ResetAttribute('WeeklyNotificationListDeviceStatusUpdateOverdue');
     }
 }

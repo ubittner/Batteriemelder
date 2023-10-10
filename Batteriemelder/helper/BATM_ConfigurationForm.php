@@ -235,13 +235,13 @@ trait BATM_ConfigurationForm
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
                         if ($id > 1 && @IPS_ObjectExists($id)) {
                             $rowColor = '#C0FFC0'; //light green
-                            $actualStatus = $this->ReadPropertyString('BatteryOKStatusText');
+                            $actualStatus = 'OK';
                             //Location
                             $variableLocation = IPS_GetLocation($id);
                             //Check battery
                             if ($variable['Use'] && IPS_IsConditionPassing($variable['PrimaryCondition'])) {
                                 $rowColor = '#FFFFC0'; //yellow
-                                $actualStatus = $this->ReadPropertyString('LowBatteryStatusText');
+                                $actualStatus = 'Batterie schwach!';
                             }
                             if (!$variable['Use']) {
                                 $rowColor = '#DFDFDF'; //grey

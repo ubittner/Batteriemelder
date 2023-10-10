@@ -252,6 +252,16 @@ trait BATM_MonitoredVariables
         foreach (@IPS_GetVariableList() as $variable) {
             switch ($DeterminationType) {
                 case 0: //Profile: select profile
+                    if ($ProfileSelection == '') {
+                        $infoText = 'Abbruch, es wurde kein Profil ausgewählt!';
+                        $this->UpdateFormField('InfoMessage', 'visible', true);
+                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                        return;
+                    } else {
+                        $determineProfile = true;
+                    }
+                    break;
+
                 case 1: //Profile: ~Battery
                 case 2: //Profile: ~Battery.Reversed
                 case 3: //Profile: BATM.Battery.Boolean

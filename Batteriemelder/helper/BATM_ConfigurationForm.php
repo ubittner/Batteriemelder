@@ -391,12 +391,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Mehrfachauslösung',
-                            'name'    => 'UseMultipleAlerts',
+                            'caption' => ' ',
+                            'name'    => 'SpacerCheckBatteryCondition',
                             'width'   => '200px',
-                            'add'     => false,
+                            'add'     => '',
+                            'visible' => false,
                             'edit'    => [
-                                'type' => 'CheckBox'
+                                'type' => 'Label'
                             ]
                         ],
                         [
@@ -407,7 +408,17 @@ trait BATM_ConfigurationForm
                             'visible' => false,
                             'edit'    => [
                                 'type'   => 'Label',
-                                'italic' => true
+                                'italic' => true,
+                                'bold'   => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Mehrfachauslösung',
+                            'name'    => 'UseMultipleAlerts',
+                            'width'   => '200px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -3409,14 +3420,14 @@ trait BATM_ConfigurationForm
                                 'value'   => 11
                             ]
                         ],
-                        'value'    => 0,
+                        'value'    => 10,
                         'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
                     ],
                     [
                         'type'    => 'SelectProfile',
                         'name'    => 'ProfileSelection',
                         'caption' => 'Profil',
-                        'visible' => true
+                        'visible' => false
                     ],
                     [
                         'type'    => 'ValidationTextBox',
@@ -3482,6 +3493,33 @@ trait BATM_ConfigurationForm
                                     'name'    => 'VariableProfileProgressInfo',
                                     'caption' => '',
                                     'visible' => false
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+        $form['actions'][] =
+            [
+                'type'  => 'RowLayout',
+                'items' => [
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Status aktualisieren',
+                        'popup'   => [
+                            'caption' => 'Status wirklich aktualisieren?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Aktualisieren',
+                                    'onClick' => self::MODULE_PREFIX . '_CheckBatteries($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
+                                ]
+                            ],
+                            'buttons' => [
+                                [
+                                    'caption' => 'Konfiguration neu laden',
+                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
                                 ]
                             ]
                         ]
@@ -3562,6 +3600,12 @@ trait BATM_ConfigurationForm
             [
                 'type'    => 'Label',
                 'caption' => ' '
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Schaltelemente'
             ];
 
         //Test center

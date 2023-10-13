@@ -3568,7 +3568,7 @@ trait BATM_ConfigurationForm
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Versenden',
-                                    'onClick' => self::MODULE_PREFIX . '_ExecuteWeeklyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die tägliche Benachrichtigung wurde versendet!");'
+                                    'onClick' => self::MODULE_PREFIX . '_ExecuteWeeklyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die wöchentliche Benachrichtigung wurde versendet!");'
                                 ]
                             ]
                         ]

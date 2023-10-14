@@ -222,6 +222,7 @@ trait BATM_ConfigurationForm
         //Trigger list
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        $amount = count($variables);
         foreach ($variables as $variable) {
             $id = 0;
             $actualStatus = 'Existiert nicht!';
@@ -263,7 +264,7 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'TriggerList',
                     'caption'  => 'Auslöser',
-                    'rowCount' => 20,
+                    'rowCount' => $amount,
                     'add'      => true,
                     'delete'   => true,
                     'sort'     => [
@@ -3367,80 +3368,77 @@ trait BATM_ConfigurationForm
                 'type'  => 'RowLayout',
                 'items' => [
                     [
-                        'type'    => 'Select',
-                        'name'    => 'VariableDeterminationType',
-                        'caption' => 'Ident / Profil',
-                        'options' => [
-                            [
-                                'caption' => 'Profil auswählen',
-                                'value'   => 0
-                            ],
-                            [
-                                'caption' => 'Profil: ~Battery',
-                                'value'   => 1
-                            ],
-                            [
-                                'caption' => 'Profil: ~Battery.Reversed',
-                                'value'   => 2
-                            ],
-                            [
-                                'caption' => 'Profil: BATM.Battery.Boolean',
-                                'value'   => 3
-                            ],
-                            [
-                                'caption' => 'Profil: BATM.Battery.Boolean.Reversed',
-                                'value'   => 4
-                            ],
-                            [
-                                'caption' => 'Profil: BATM.Battery.Integer',
-                                'value'   => 5
-                            ],
-                            [
-                                'caption' => 'Profil: BATM.Battery.Integer.Reversed',
-                                'value'   => 6
-                            ],
-                            [
-                                'caption' => 'Profil: Benutzerdefiniert',
-                                'value'   => 7
-                            ],
-                            [
-                                'caption' => 'Ident: LOWBAT',
-                                'value'   => 8
-                            ],
-                            [
-                                'caption' => 'Ident: LOW_BAT',
-                                'value'   => 9
-                            ],
-                            [
-                                'caption' => 'Ident: LOWBAT, LOW_BAT',
-                                'value'   => 10
-                            ],
-                            [
-                                'caption' => 'Ident: Benutzerdefiniert',
-                                'value'   => 11
-                            ]
-                        ],
-                        'value'    => 10,
-                        'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
-                    ],
-                    [
-                        'type'    => 'SelectProfile',
-                        'name'    => 'ProfileSelection',
-                        'caption' => 'Profil',
-                        'visible' => false
-                    ],
-                    [
-                        'type'    => 'ValidationTextBox',
-                        'name'    => 'VariableDeterminationValue',
-                        'caption' => 'Identifikator',
-                        'visible' => false
-                    ],
-                    [
                         'type'    => 'PopupButton',
                         'caption' => 'Variablen ermitteln',
                         'popup'   => [
                             'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
                             'items'   => [
+                                [
+                                    'type'    => 'Select',
+                                    'name'    => 'VariableDeterminationType',
+                                    'caption' => 'Auswahl',
+                                    'options' => [
+                                        [
+                                            'caption' => 'Profil auswählen',
+                                            'value'   => 0
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Battery',
+                                            'value'   => 1
+                                        ],
+                                        [
+                                            'caption' => 'Profil: ~Battery.Reversed',
+                                            'value'   => 2
+                                        ],
+                                        [
+                                            'caption' => 'Profil: BATM.Battery.Boolean',
+                                            'value'   => 3
+                                        ],
+                                        [
+                                            'caption' => 'Profil: BATM.Battery.Boolean.Reversed',
+                                            'value'   => 4
+                                        ],
+                                        [
+                                            'caption' => 'Profil: BATM.Battery.Integer',
+                                            'value'   => 5
+                                        ],
+                                        [
+                                            'caption' => 'Profil: BATM.Battery.Integer.Reversed',
+                                            'value'   => 6
+                                        ],
+                                        [
+                                            'caption' => 'Ident: LOWBAT',
+                                            'value'   => 7
+                                        ],
+                                        [
+                                            'caption' => 'Ident: LOW_BAT',
+                                            'value'   => 8
+                                        ],
+                                        [
+                                            'caption' => 'Ident: LOWBAT, LOW_BAT',
+                                            'value'   => 9
+                                        ],
+                                        [
+                                            'caption' => 'Ident: Benutzerdefiniert',
+                                            'value'   => 10
+                                        ]
+                                    ],
+                                    'value'    => 9,
+                                    'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
+                                ],
+                                [
+                                    'type'    => 'SelectProfile',
+                                    'name'    => 'ProfileSelection',
+                                    'caption' => 'Profil',
+                                    'visible' => false
+                                ],
+                                [
+                                    'type'    => 'ValidationTextBox',
+                                    'name'    => 'VariableDeterminationValue',
+                                    'caption' => 'Identifikator',
+                                    'visible' => false
+                                ],
+
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Ermitteln',
@@ -3459,6 +3457,75 @@ trait BATM_ConfigurationForm
                                     'name'    => 'VariableDeterminationProgressInfo',
                                     'caption' => '',
                                     'visible' => false
+                                ],
+                                [
+                                    'type'     => 'List',
+                                    'name'     => 'DeterminedVariableList',
+                                    'caption'  => 'Variablen',
+                                    'visible'  => false,
+                                    'rowCount' => 15,
+                                    'delete'   => true,
+                                    'sort'     => [
+                                        'column'    => 'ID',
+                                        'direction' => 'ascending'
+                                    ],
+                                    'columns'  => [
+                                        [
+                                            'caption' => 'Übernehmen',
+                                            'name'    => 'Use',
+                                            'width'   => '100px',
+                                            'add'     => true,
+                                            'edit'    => [
+                                                'type' => 'CheckBox'
+                                            ]
+                                        ],
+                                        [
+                                            'name'    => 'ID',
+                                            'caption' => 'ID',
+                                            'width'   => '80px',
+                                            'add'     => ''
+                                        ],
+                                        [
+                                            'caption' => 'Objektbaum',
+                                            'name'    => 'Location',
+                                            'width'   => '800px',
+                                            'add'     => ''
+                                        ],
+                                    ]
+                                ],
+                                [
+                                    'type'    => 'CheckBox',
+                                    'name'    => 'OverwriteVariableProfiles',
+                                    'caption' => 'Variablenprofile überschreiben',
+                                    'visible' => false,
+                                    'value'   => true
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'name'    => 'ApplyPreTriggerValues',
+                                    'caption' => 'Übernehmen',
+                                    'visible' => false,
+                                    'onClick' => self::MODULE_PREFIX . '_ApplyDeterminedVariables($id, $DeterminedVariableList, $OverwriteVariableProfiles);'
+                                ],
+                            ]
+                        ]
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Status aktualisieren',
+                        'popup'   => [
+                            'caption' => 'Status wirklich aktualisieren?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Aktualisieren',
+                                    'onClick' => self::MODULE_PREFIX . '_CheckBatteries($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
+                                ]
+                            ],
+                            'buttons' => [
+                                [
+                                    'caption' => 'Konfiguration neu laden',
+                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
                                 ]
                             ]
                         ]
@@ -3502,33 +3569,6 @@ trait BATM_ConfigurationForm
 
         $form['actions'][] =
             [
-                'type'  => 'RowLayout',
-                'items' => [
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Status aktualisieren',
-                        'popup'   => [
-                            'caption' => 'Status wirklich aktualisieren?',
-                            'items'   => [
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Aktualisieren',
-                                    'onClick' => self::MODULE_PREFIX . '_CheckBatteries($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
-                                ]
-                            ],
-                            'buttons' => [
-                                [
-                                    'caption' => 'Konfiguration neu laden',
-                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ];
-
-        $form['actions'][] =
-            [
                 'type'    => 'Label',
                 'caption' => ' '
             ];
@@ -3538,6 +3578,28 @@ trait BATM_ConfigurationForm
             [
                 'type'    => 'Label',
                 'caption' => 'Benachrichtigungen'
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'PopupButton',
+                'caption' => 'Alle Benachrichtigungslisten zurücksetzen',
+                'popup'   => [
+                    'caption' => 'Alle Benachrichtigungslisten wirklich zurücksetzen?',
+                    'items'   => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Zurücksetzen',
+                            'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt!");'
+                        ]
+                    ],
+                    'buttons' => [
+                        [
+                            'caption' => 'Konfiguration neu laden',
+                            'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
+                        ]
+                    ]
+                ]
             ];
 
         $form['actions'][] =
@@ -3572,27 +3634,7 @@ trait BATM_ConfigurationForm
                                 ]
                             ]
                         ]
-                    ],
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Alle Benachrichtigungslisten zurücksetzen',
-                        'popup'   => [
-                            'caption' => 'Alle Benachrichtigungslisten wirklich zurücksetzen?',
-                            'items'   => [
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Zurücksetzen',
-                                    'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt!");'
-                                ]
-                            ],
-                            'buttons' => [
-                                [
-                                    'caption' => 'Konfiguration neu laden',
-                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
-                                ]
-                            ]
-                        ]
-                    ],
+                    ]
                 ]
             ];
 

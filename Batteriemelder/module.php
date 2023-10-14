@@ -101,7 +101,7 @@ class Batteriemelder extends IPSModule
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 0);
         }
-        IPS_SetVariableProfileAssociation($profile, 0, 'OK', 'Information', 0x00FF00);
+        IPS_SetVariableProfileAssociation($profile, 0, 'OK', 'Battery', 0x00FF00);
         IPS_SetVariableProfileAssociation($profile, 1, 'Batterie schwach', 'Battery', 0xFF0000);
 
         //Battery boolean reversed
@@ -110,14 +110,14 @@ class Batteriemelder extends IPSModule
             IPS_CreateVariableProfile($profile, 0);
         }
         IPS_SetVariableProfileAssociation($profile, 0, 'Batterie schwach', 'Battery', 0xFF0000);
-        IPS_SetVariableProfileAssociation($profile, 1, 'OK', 'Information', 0x00FF00);
+        IPS_SetVariableProfileAssociation($profile, 1, 'OK', 'Battery', 0x00FF00);
 
         //Battery integer
         $profile = self::MODULE_PREFIX . '.Battery.Integer';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 1);
         }
-        IPS_SetVariableProfileAssociation($profile, 0, 'OK', 'Information', 0x00FF00);
+        IPS_SetVariableProfileAssociation($profile, 0, 'OK', 'Battery', 0x00FF00);
         IPS_SetVariableProfileAssociation($profile, 1, 'Batterie schwach', 'Battery', 0xFF0000);
 
         //Battery integer reversed
@@ -126,7 +126,7 @@ class Batteriemelder extends IPSModule
             IPS_CreateVariableProfile($profile, 1);
         }
         IPS_SetVariableProfileAssociation($profile, 0, 'Batterie schwach', 'Battery', 0xFF0000);
-        IPS_SetVariableProfileAssociation($profile, 1, 'OK', 'Information', 0x00FF00);
+        IPS_SetVariableProfileAssociation($profile, 1, 'OK', 'Battery', 0x00FF00);
 
         ########## Variables
 

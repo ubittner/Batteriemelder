@@ -795,8 +795,9 @@ trait BATM_MonitoredVariables
                                 if (strpos($text, '%1$s') !== false) {
                                     $text = sprintf($text, $monitoredVariable['Name']);
                                 }
+                                //Timestamp
                                 if ($notification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . $timeStamp;
+                                    $text = $text . ', ' . $timeStamp;
                                 }
                                 $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['BatteryOKTitle'] . '", "' . $text . '", "' . $notification['BatteryOKIcon'] . '", ' . $notification['BatteryOKDisplayDuration'] . ');';
                                 @IPS_RunScriptText($scriptText);
@@ -823,8 +824,9 @@ trait BATM_MonitoredVariables
                                 if (strpos($text, '%1$s') !== false) {
                                     $text = sprintf($text, $monitoredVariable['Name']);
                                 }
+                                //Timestamp
                                 if ($pushNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . $timeStamp;
+                                    $text = $text . ', ' . $timeStamp;
                                 }
                                 //Text length max 256 characters
                                 $text = substr($text, 0, 256);
@@ -868,7 +870,9 @@ trait BATM_MonitoredVariables
                                 //Battery type
                                 $batteryType = $monitoredVariable['BatteryType'];
                                 if ($mailer['UseBatteryOKBatteryType']) {
-                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                    if ($batteryType != '') {
+                                        $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                    }
                                 }
                                 $batteryOKMessageText .= $lineText . "\n";
                                 $scriptText = 'MA_SendMessage(' . $mailerID . ', "' . $mailer['Subject'] . '", "' . $batteryOKMessageText . '");';
@@ -932,8 +936,16 @@ trait BATM_MonitoredVariables
                             if (strpos($text, '%1$s') !== false) {
                                 $text = sprintf($text, $monitoredVariable['Name']);
                             }
+                            //Battery type
+                            $batteryType = $monitoredVariable['BatteryType'];
+                            if ($notification['UseLowBatteryBatteryType']) {
+                                if ($batteryType != '') {
+                                    $text = $text . ', ' . $batteryType;
+                                }
+                            }
+                            //Timestamp
                             if ($notification['UseLowBatteryTimestamp']) {
-                                $text = $text . ' ' . $timeStamp;
+                                $text = $text . ', ' . $timeStamp;
                             }
                             $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['LowBatteryTitle'] . '", "' . $text . '", "' . $notification['LowBatteryIcon'] . '", ' . $notification['LowBatteryDisplayDuration'] . ');';
                             @IPS_RunScriptText($scriptText);
@@ -960,8 +972,16 @@ trait BATM_MonitoredVariables
                             if (strpos($text, '%1$s') !== false) {
                                 $text = sprintf($text, $monitoredVariable['Name']);
                             }
-                            if ($pushNotification['UseBatteryOKTimestamp']) {
-                                $text = $text . ' ' . $timeStamp;
+                            //Battery type
+                            $batteryType = $monitoredVariable['BatteryType'];
+                            if ($pushNotification['UseLowBatteryBatteryType']) {
+                                if ($batteryType != '') {
+                                    $text = $text . ', ' . $batteryType;
+                                }
+                            }
+                            //Timestamp
+                            if ($pushNotification['UseLowBatteryTimestamp']) {
+                                $text = $text . ', ' . $timeStamp;
                             }
                             //Text length max 256 characters
                             $text = substr($text, 0, 256);
@@ -986,9 +1006,9 @@ trait BATM_MonitoredVariables
                             $lowBatteryMessageText = "Batterie schwach:\n\n";
                             //Message text
                             $lineText = $mailer['LowBatteryMessageText'];
-                            $name = $monitoredVariable['Name'] . ' ';
+                            $name = $monitoredVariable['Name'];
                             if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . $monitoredVariable['Comment'];
+                                $name = $name . ', ' . $monitoredVariable['Comment'];
                             }
                             //Check for placeholder
                             if (strpos($lineText, '%1$s') !== false) {
@@ -1005,7 +1025,9 @@ trait BATM_MonitoredVariables
                             //Battery type
                             $batteryType = $monitoredVariable['BatteryType'];
                             if ($mailer['UseLowBatteryBatteryType']) {
-                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                if ($batteryType != '') {
+                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                }
                             }
                             $lowBatteryMessageText .= $lineText . "\n";
                             $scriptText = 'MA_SendMessage(' . $mailerID . ', "' . $mailer['Subject'] . '", "' . $lowBatteryMessageText . '");';

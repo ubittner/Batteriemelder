@@ -119,8 +119,19 @@ trait BATM_Reports
                                                 if (strpos($text, '%1$s') !== false) {
                                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                                 }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($notification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
                                                 if ($notification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ' ' . $criticalVariable['Timestamp'];
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
                                                 }
                                                 $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['LowBatteryTitle'] . '", "' . $text . '", "' . $notification['LowBatteryIcon'] . '", ' . $notification['LowBatteryDisplayDuration'] . ');';
                                                 @IPS_RunScriptText($scriptText);
@@ -157,7 +168,7 @@ trait BATM_Reports
                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                 }
                                 if ($notification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . date('d.m.Y, H:i:s');
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
                                 }
                                 $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['BatteryOKTitle'] . '", "' . $text . '", "' . $notification['BatteryOKIcon'] . '", ' . $notification['BatteryOKDisplayDuration'] . ');';
                                 @IPS_RunScriptText($scriptText);
@@ -195,8 +206,19 @@ trait BATM_Reports
                                                 if (strpos($text, '%1$s') !== false) {
                                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                                 }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($pushNotification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
                                                 if ($pushNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ' ' . $criticalVariable['Timestamp'];
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
                                                 }
                                                 //Text length max 256 characters
                                                 $text = substr($text, 0, 256);
@@ -237,7 +259,7 @@ trait BATM_Reports
                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                 }
                                 if ($pushNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . date('d.m.Y, H:i:s');
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
                                 }
                                 //Text length max 256 characters
                                 $text = substr($text, 0, 256);
@@ -288,9 +310,9 @@ trait BATM_Reports
                                         if ($monitoredVariableID == $id) {
                                             //Message text
                                             $lineText = $mailer['LowBatteryMessageText'];
-                                            $name = $monitoredVariable['Designation'] . ' ';
+                                            $name = $monitoredVariable['Designation'];
                                             if ($monitoredVariable['Comment'] != '') {
-                                                $name = $name . $monitoredVariable['Comment'];
+                                                $name = $name . ', ' . $monitoredVariable['Comment'];
                                             }
                                             //Check for placeholder
                                             if (strpos($lineText, '%1$s') !== false) {
@@ -310,7 +332,9 @@ trait BATM_Reports
                                                 $batteryType = $monitoredVariable['UserDefinedBatteryType'];
                                             }
                                             if ($mailer['UseLowBatteryBatteryType']) {
-                                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                                if ($batteryType != '') {
+                                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                                }
                                             }
                                             $lowBatteryMessageText .= $lineText . "\n";
                                         }
@@ -346,9 +370,9 @@ trait BATM_Reports
                             $existing = true;
                             //Message text
                             $lineText = $mailer['BatteryOKMessageText'];
-                            $name = $monitoredVariable['Designation'] . ' ';
+                            $name = $monitoredVariable['Designation'];
                             if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . $monitoredVariable['Comment'];
+                                $name = $name . ', ' . $monitoredVariable['Comment'];
                             }
                             //Check for placeholder
                             if (strpos($lineText, '%1$s') !== false) {
@@ -368,7 +392,9 @@ trait BATM_Reports
                                 $batteryType = $monitoredVariable['UserDefinedBatteryType'];
                             }
                             if ($mailer['UseBatteryOKBatteryType']) {
-                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                if ($batteryType != '') {
+                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                }
                             }
                             $batteryOKMessageText .= $lineText . "\n";
                         }
@@ -504,8 +530,19 @@ trait BATM_Reports
                                                 if (strpos($text, '%1$s') !== false) {
                                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                                 }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($notification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
                                                 if ($notification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ' ' . $criticalVariable['Timestamp'];
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
                                                 }
                                                 $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['LowBatteryTitle'] . '", "' . $text . '", "' . $notification['LowBatteryIcon'] . '", ' . $notification['LowBatteryDisplayDuration'] . ');';
                                                 @IPS_RunScriptText($scriptText);
@@ -542,7 +579,7 @@ trait BATM_Reports
                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                 }
                                 if ($notification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . date('d.m.Y, H:i:s');
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
                                 }
                                 $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['BatteryOKTitle'] . '", "' . $text . '", "' . $notification['BatteryOKIcon'] . '", ' . $notification['BatteryOKDisplayDuration'] . ');';
                                 @IPS_RunScriptText($scriptText);
@@ -580,8 +617,19 @@ trait BATM_Reports
                                                 if (strpos($text, '%1$s') !== false) {
                                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                                 }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($pushNotification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
                                                 if ($pushNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ' ' . $criticalVariable['Timestamp'];
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
                                                 }
                                                 //Text length max 256 characters
                                                 $text = substr($text, 0, 256);
@@ -622,7 +670,7 @@ trait BATM_Reports
                                     $text = sprintf($text, $monitoredVariable['Designation']);
                                 }
                                 if ($pushNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ' ' . date('d.m.Y, H:i:s');
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
                                 }
                                 //Text length max 256 characters
                                 $text = substr($text, 0, 256);
@@ -673,9 +721,9 @@ trait BATM_Reports
                                         if ($monitoredVariableID == $id) {
                                             //Message text
                                             $lineText = $mailer['LowBatteryMessageText'];
-                                            $name = $monitoredVariable['Designation'] . ' ';
+                                            $name = $monitoredVariable['Designation'];
                                             if ($monitoredVariable['Comment'] != '') {
-                                                $name = $name . $monitoredVariable['Comment'];
+                                                $name = $name . ', ' . $monitoredVariable['Comment'];
                                             }
                                             //Check for placeholder
                                             if (strpos($lineText, '%1$s') !== false) {
@@ -695,7 +743,9 @@ trait BATM_Reports
                                                 $batteryType = $monitoredVariable['UserDefinedBatteryType'];
                                             }
                                             if ($mailer['UseLowBatteryBatteryType']) {
-                                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                                if ($batteryType != '') {
+                                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                                }
                                             }
                                             $lowBatteryMessageText .= $lineText . "\n";
                                         }
@@ -731,9 +781,9 @@ trait BATM_Reports
                             $existing = true;
                             //Message text
                             $lineText = $mailer['BatteryOKMessageText'];
-                            $name = $monitoredVariable['Designation'] . ' ';
+                            $name = $monitoredVariable['Designation'];
                             if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . $monitoredVariable['Comment'];
+                                $name = $name . ', ' . $monitoredVariable['Comment'];
                             }
                             //Check for placeholder
                             if (strpos($lineText, '%1$s') !== false) {
@@ -753,7 +803,9 @@ trait BATM_Reports
                                 $batteryType = $monitoredVariable['UserDefinedBatteryType'];
                             }
                             if ($mailer['UseBatteryOKBatteryType']) {
-                                $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                if ($batteryType != '') {
+                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
+                                }
                             }
                             $batteryOKMessageText .= $lineText . "\n";
                         }

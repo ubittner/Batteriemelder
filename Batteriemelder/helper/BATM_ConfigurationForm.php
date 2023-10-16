@@ -662,6 +662,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -882,6 +892,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -895,7 +915,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Sound',
                             'name'    => 'LowBatterySound',
                             'width'   => '200px',
-                            'add'     => 'alarm',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',
@@ -1630,6 +1650,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -1850,6 +1880,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -1863,7 +1903,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Sound',
                             'name'    => 'LowBatterySound',
                             'width'   => '200px',
-                            'add'     => 'alarm',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',
@@ -2569,6 +2609,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -2789,6 +2839,16 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
                             'caption' => 'Zeitstempel',
                             'name'    => 'UseLowBatteryTimestamp',
                             'width'   => '100px',
@@ -2802,7 +2862,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Sound',
                             'name'    => 'LowBatterySound',
                             'width'   => '200px',
-                            'add'     => 'alarm',
+                            'add'     => '',
                             'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',

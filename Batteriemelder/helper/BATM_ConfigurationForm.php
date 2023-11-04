@@ -3726,6 +3726,7 @@ trait BATM_ConfigurationForm
         //Low battery
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
+        $amountImmediateLowBatteryVariables = count($criticalVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3757,6 +3758,7 @@ trait BATM_ConfigurationForm
         //Normal battery
         $normalBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
+        $amountImmediateNormalBatteryVariables = count($criticalVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3789,6 +3791,7 @@ trait BATM_ConfigurationForm
         //Low battery
         $dailyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
+        $amountDailyLowBatteryVariables = count($criticalVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3821,6 +3824,7 @@ trait BATM_ConfigurationForm
         //Low battery
         $weeklyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
+        $amountWeeklyLowBatteryVariables = count($criticalVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3852,6 +3856,7 @@ trait BATM_ConfigurationForm
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
+        $amountReferences = count($references);
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
@@ -3868,6 +3873,7 @@ trait BATM_ConfigurationForm
         //Registered messages
         $registeredMessages = [];
         $messages = $this->GetMessageList();
+        $amountMessages = count($messages);
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
@@ -3910,17 +3916,17 @@ trait BATM_ConfigurationForm
                     'type'  => 'RowLayout',
                     'items' => [
                         [
-                            'type'    => 'SelectCategory',
-                            'name'    => 'LinkCategory',
-                            'caption' => 'Kategorie',
-                            'width'   => '610px'
-                        ],
-                        [
                             'type'    => 'PopupButton',
                             'caption' => 'Verknüpfung erstellen',
                             'popup'   => [
                                 'caption' => 'Variablenverknüpfungen wirklich erstellen?',
                                 'items'   => [
+                                    [
+                                        'type'    => 'SelectCategory',
+                                        'name'    => 'LinkCategory',
+                                        'caption' => 'Kategorie',
+                                        'width'   => '610px'
+                                    ],
                                     [
                                         'type'    => 'Button',
                                         'caption' => 'Erstellen',
@@ -3959,7 +3965,9 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'ImmediateNotificationListDeviceStatusLowBattery',
                     'caption'  => 'Batterie schwach',
-                    'rowCount' => 5,
+                    'delete'   => true,
+                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusLowBattery", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);',
+                    'rowCount' => $amountImmediateLowBatteryVariables,
                     'sort'     => [
                         'column'    => 'Name',
                         'direction' => 'ascending'
@@ -4015,7 +4023,9 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'ImmediateNotificationListDeviceStatusNormal',
                     'caption'  => 'Batterie OK',
-                    'rowCount' => 5,
+                    'delete'   => true,
+                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusNormal", $ImmediateNotificationListDeviceStatusNormal["ID"]);',
+                    'rowCount' => $amountImmediateNormalBatteryVariables,
                     'sort'     => [
                         'column'    => 'Name',
                         'direction' => 'ascending'
@@ -4077,7 +4087,9 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'DailyNotificationListDeviceStatusLowBattery',
                     'caption'  => 'Batterie schwach',
-                    'rowCount' => 5,
+                    'delete'   => true,
+                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
+                    'rowCount' => $amountDailyLowBatteryVariables,
                     'sort'     => [
                         'column'    => 'Name',
                         'direction' => 'ascending'
@@ -4139,7 +4151,9 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
                     'caption'  => 'Batterie schwach',
-                    'rowCount' => 5,
+                    'delete'   => true,
+                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "WeeklyNotificationListDeviceStatusLowBattery", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);',
+                    'rowCount' => $amountWeeklyLowBatteryVariables,
                     'sort'     => [
                         'column'    => 'Name',
                         'direction' => 'ascending'
@@ -4200,7 +4214,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'RegisteredReferences',
-                    'rowCount' => 10,
+                    'rowCount' => $amountReferences,
                     'sort'     => [
                         'column'    => 'ObjectID',
                         'direction' => 'ascending'
@@ -4241,7 +4255,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'RegisteredMessages',
-                    'rowCount' => 10,
+                    'rowCount' => $amountMessages,
                     'sort'     => [
                         'column'    => 'ObjectID',
                         'direction' => 'ascending'

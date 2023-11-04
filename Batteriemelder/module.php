@@ -243,7 +243,8 @@ class Batteriemelder extends IPSModule
         //Register references and update messages
 
         //Register notifications
-        $names = ['ImmediateNotification',
+        $names = [
+            'ImmediateNotification',
             'ImmediatePushNotification',
             'ImmediateMailerNotification',
             'DailyNotification',
@@ -304,6 +305,8 @@ class Batteriemelder extends IPSModule
         IPS_SetHidden($this->GetIDForIdent('LastUpdate'), !$this->ReadPropertyBoolean('EnableLastUpdate'));
         IPS_SetHidden($this->GetIDForIdent('UpdateStatus'), !$this->ReadPropertyBoolean('EnableUpdateStatus'));
         IPS_SetHidden($this->GetIDForIdent('BatteryList'), !$this->ReadPropertyBoolean('EnableBatteryList'));
+
+        $this->CleanUpAttributes();
 
         //Update
         $this->CheckBatteries();
@@ -413,6 +416,60 @@ class Batteriemelder extends IPSModule
     public function ResetAttribute(string $Name): void
     {
         $this->WriteAttributeString($Name, '[]');
+    }
+
+    public function ListAttribute(string $Name): void
+    {
+        print_r(json_decode($this->ReadAttributeString($Name), true));
+    }
+
+    public function CleanUpAttributes(): void
+    {
+        $attributes = [
+            'ImmediateNotificationListDeviceStatusLowBattery',
+            'ImmediateNotificationListDeviceStatusNormal',
+            'DailyNotificationListDeviceStatusLowBattery',
+            'WeeklyNotificationListDeviceStatusLowBattery'];
+        foreach ($attributes as $attribute) {
+            $elements = json_decode($this->ReadAttributeString($attribute), true);
+            foreach ($elements as $key => $element) {
+                $id = $element['ID'];
+                $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+                $exists = false;
+                foreach ($monitoredVariables as $monitoredVariable) {
+                    if ($monitoredVariable['Use']) {
+                        if ($monitoredVariable['PrimaryCondition'] != '') {
+                            $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                            if (array_key_exists(0, $primaryCondition)) {
+                                if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                    $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                    if ($monitoredVariableID == $id) {
+                                        $exists = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!$exists) {
+                    unset($elements[$key]);
+                }
+            }
+            $elements = array_values($elements);
+            $this->WriteAttributeString($attribute, json_encode($elements));
+        }
+    }
+
+    public function DeleteElementFromAttribute(string $AttributeName, int $VariableID): void
+    {
+        $elements = json_decode($this->ReadAttributeString($AttributeName), true);
+        foreach ($elements as $key => $element) {
+            if ($element['ID'] == $VariableID) {
+                unset($elements[$key]);
+            }
+        }
+        $elements = array_values($elements);
+        $this->WriteAttributeString($AttributeName, json_encode($elements));
     }
 
     public function ResetNotificationLists(): void

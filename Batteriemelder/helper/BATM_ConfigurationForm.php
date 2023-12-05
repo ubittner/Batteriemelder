@@ -1,15 +1,14 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder
+ * @project       Batteriemelder/Batteriemelder/helper
  * @file          BATM_ConfigurationForm.php
  * @author        Ulrich Bittner
  * @copyright     2022 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
-/** @noinspection PhpUndefinedFunctionInspection */
-/** @noinspection PhpUnused */
+/** @noinspection SpellCheckingInspection */
 
 declare(strict_types=1);
 
@@ -84,6 +83,17 @@ trait BATM_ConfigurationForm
         $this->UpdateFormField($Field, 'caption', 'ID ' . $id . ' Bearbeiten');
         $this->UpdateFormField($Field, 'visible', $state);
         $this->UpdateFormField($Field, 'objectID', $id);
+    }
+
+    public function ModifyActualVariableStatesVariableButton(string $Field, int $VariableID): void
+    {
+        $state = false;
+        if ($VariableID > 1 && @IPS_ObjectExists($VariableID)) { //0 = main category, 1 = none
+            $state = true;
+        }
+        $this->UpdateFormField($Field, 'caption', 'ID ' . $VariableID . ' Bearbeiten');
+        $this->UpdateFormField($Field, 'visible', $state);
+        $this->UpdateFormField($Field, 'objectID', $VariableID);
     }
 
     /**
@@ -225,7 +235,6 @@ trait BATM_ConfigurationForm
         $amount = count($variables);
         foreach ($variables as $variable) {
             $id = 0;
-            $actualStatus = 'Existiert nicht!';
             $variableLocation = '';
             $rowColor = '#FFC0C0'; //red
             //Primary condition
@@ -236,23 +245,16 @@ trait BATM_ConfigurationForm
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
                         if ($id > 1 && @IPS_ObjectExists($id)) {
                             $rowColor = '#C0FFC0'; //light green
-                            $actualStatus = 'OK';
                             //Location
                             $variableLocation = IPS_GetLocation($id);
-                            //Check battery
-                            if ($variable['Use'] && IPS_IsConditionPassing($variable['PrimaryCondition'])) {
-                                $rowColor = '#FFFFC0'; //yellow
-                                $actualStatus = 'Batterie schwach!';
-                            }
                             if (!$variable['Use']) {
                                 $rowColor = '#DFDFDF'; //grey
-                                $actualStatus = 'Deaktiviert!';
                             }
                         }
                     }
                 }
             }
-            $triggerListValues[] = ['ActualStatus' => $actualStatus, 'ID' => $id, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
+            $triggerListValues[] = ['ID' => $id, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
         }
 
         $form['elements'][] = [
@@ -261,6 +263,74 @@ trait BATM_ConfigurationForm
             'caption' => 'Auslöser',
             'items'   => [
                 [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Aktueller Status',
+                    'popup'   => [
+                        'caption' => 'Aktueller Status',
+                        'items'   => [
+                            [
+                                'type'     => 'List',
+                                'name'     => 'ActualVariableStates',
+                                'caption'  => 'Variablen',
+                                'add'      => false,
+                                'visible'  => false,
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'ActualStatus',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns'  => [
+                                    [
+                                        'name'    => 'ActualStatus',
+                                        'caption' => 'Aktueller Status',
+                                        'width'   => '200px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'SensorID',
+                                        'caption' => 'ID',
+                                        'width'   => '80px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyActualVariableStatesVariableButton($id, "ActualVariableStatesConfigurationButton", $ActualVariableStates["SensorID"]);',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Designation',
+                                        'caption' => 'Name',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'LastBatteryReplacement',
+                                        'caption' => 'Letzter Batteriewechsel',
+                                        'width'   => '200px',
+                                        'save'    => false
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'ActualVariableStatesConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
+                        ]
+                    ],
+                    'onClick' => self::MODULE_PREFIX . '_GetActualVariableStates($id);'
+                ],
+                [
                     'type'     => 'List',
                     'name'     => 'TriggerList',
                     'caption'  => 'Auslöser',
@@ -268,7 +338,7 @@ trait BATM_ConfigurationForm
                     'add'      => true,
                     'delete'   => true,
                     'sort'     => [
-                        'column'    => 'ActualStatus',
+                        'column'    => 'ID',
                         'direction' => 'ascending'
                     ],
                     'columns'  => [
@@ -281,30 +351,32 @@ trait BATM_ConfigurationForm
                                 'type' => 'CheckBox'
                             ]
                         ],
+                        /*
                         [
                             'name'    => 'ActualStatus',
                             'caption' => 'Aktueller Status',
                             'width'   => '200px',
                             'add'     => ''
                         ],
+                         */
                         [
                             'name'    => 'ID',
                             'caption' => 'ID',
                             'width'   => '80px',
                             'add'     => '',
                             'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
+                            'save'    => false
                         ],
                         [
                             'caption' => 'Objektbaum',
                             'name'    => 'VariableLocation',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                             'width'   => '350px',
-                            'add'     => ''
+                            'add'     => '',
+                            'save'    => false
                         ],
                         [
                             'caption' => 'Name',
                             'name'    => 'Designation',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                             'width'   => '300px',
                             'add'     => '',
                             'edit'    => [
@@ -314,7 +386,6 @@ trait BATM_ConfigurationForm
                         [
                             'caption' => 'Bemerkung',
                             'name'    => 'Comment',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                             'width'   => '200px',
                             'add'     => '',
                             'edit'    => [
@@ -384,7 +455,7 @@ trait BATM_ConfigurationForm
                         [
                             'caption' => 'Benutzerdefinierter Batterietyp',
                             'name'    => 'UserDefinedBatteryType',
-                            'width'   => '200px',
+                            'width'   => '300px',
                             'add'     => '',
                             'visible' => false,
                             'edit'    => [
@@ -397,6 +468,7 @@ trait BATM_ConfigurationForm
                             'width'   => '200px',
                             'add'     => '',
                             'visible' => false,
+                            'save'    => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
@@ -407,6 +479,7 @@ trait BATM_ConfigurationForm
                             'width'   => '200px',
                             'add'     => '',
                             'visible' => false,
+                            'save'    => false,
                             'edit'    => [
                                 'type'   => 'Label',
                                 'italic' => true,
@@ -438,6 +511,7 @@ trait BATM_ConfigurationForm
                             'width'   => '200px',
                             'add'     => '',
                             'visible' => false,
+                            'save'    => false,
                             'edit'    => [
                                 'type' => 'Label'
                             ]
@@ -448,6 +522,7 @@ trait BATM_ConfigurationForm
                             'width'   => '200px',
                             'add'     => '',
                             'visible' => false,
+                            'save'    => false,
                             'edit'    => [
                                 'type'   => 'Label',
                                 'italic' => true,
@@ -499,7 +574,12 @@ trait BATM_ConfigurationForm
 
         //Immediate notification
         $immediateNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('ImmediateNotification'), true) as $element) {
+        $immediateNotification = json_decode($this->ReadPropertyString('ImmediateNotification'), true);
+        $amountImmediateNotification = count($immediateNotification);
+        if ($amountImmediateNotification == 0) {
+            $amountImmediateNotification = 1;
+        }
+        foreach ($immediateNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -513,7 +593,12 @@ trait BATM_ConfigurationForm
 
         //Immediate push notification
         $immediatePushNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('ImmediatePushNotification'), true) as $element) {
+        $immediatePushNotification = json_decode($this->ReadPropertyString('ImmediatePushNotification'), true);
+        $amountImmediatePushNotification = count($immediatePushNotification);
+        if ($amountImmediatePushNotification == 0) {
+            $amountImmediatePushNotification = 1;
+        }
+        foreach ($immediatePushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -527,7 +612,12 @@ trait BATM_ConfigurationForm
 
         //Immediate mailer notification
         $immediateNotificationMailerValues = [];
-        foreach (json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true) as $element) {
+        $immediateMailerNotification = json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true);
+        $amountImmediateMailerNotification = count($immediateMailerNotification);
+        if ($amountImmediateMailerNotification == 0) {
+            $amountImmediateMailerNotification = 1;
+        }
+        foreach ($immediateMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -575,7 +665,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediateNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountImmediateNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -815,7 +905,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediatePushNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountImmediatePushNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1217,7 +1307,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'ImmediateMailerNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountImmediateMailerNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1424,7 +1514,12 @@ trait BATM_ConfigurationForm
 
         //Daily notification
         $dailyNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('DailyNotification'), true) as $element) {
+        $dailyNotification = json_decode($this->ReadPropertyString('DailyNotification'), true);
+        $amountDailyNotification = count($dailyNotification);
+        if ($amountDailyNotification == 0) {
+            $amountDailyNotification = 1;
+        }
+        foreach ($dailyNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -1438,7 +1533,12 @@ trait BATM_ConfigurationForm
 
         //Daily push notification
         $dailyPushNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('DailyPushNotification'), true) as $element) {
+        $dailyPushNotification = json_decode($this->ReadPropertyString('DailyPushNotification'), true);
+        $amountDailyPushNotification = count($dailyPushNotification);
+        if ($amountDailyPushNotification == 0) {
+            $amountDailyPushNotification = 1;
+        }
+        foreach ($dailyPushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -1452,7 +1552,12 @@ trait BATM_ConfigurationForm
 
         //Daily mailer notification
         $dailyNotificationMailerValues = [];
-        foreach (json_decode($this->ReadPropertyString('DailyMailerNotification'), true) as $element) {
+        $dailyMailerNotification = json_decode($this->ReadPropertyString('DailyMailerNotification'), true);
+        $amountDailyMailerNotification = count($dailyMailerNotification);
+        if ($amountDailyMailerNotification == 0) {
+            $amountDailyMailerNotification = 1;
+        }
+        foreach ($dailyMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -1563,7 +1668,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'DailyNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountDailyNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -1803,7 +1908,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'DailyPushNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountDailyPushNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -2205,7 +2310,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'DailyMailerNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountDailyMailerNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -2412,7 +2517,12 @@ trait BATM_ConfigurationForm
 
         //Weekly notification
         $weeklyNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('WeeklyNotification'), true) as $element) {
+        $weeklyNotification = json_decode($this->ReadPropertyString('WeeklyNotification'), true);
+        $amountWeeklyNotification = count($weeklyNotification);
+        if ($amountWeeklyNotification == 0) {
+            $amountWeeklyNotification = 1;
+        }
+        foreach ($weeklyNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -2426,7 +2536,12 @@ trait BATM_ConfigurationForm
 
         //Weekly push notification
         $weeklyPushNotificationValues = [];
-        foreach (json_decode($this->ReadPropertyString('WeeklyPushNotification'), true) as $element) {
+        $weeklyPushNotification = json_decode($this->ReadPropertyString('WeeklyPushNotification'), true);
+        $amountWeeklyPushNotification = count($weeklyPushNotification);
+        if ($amountWeeklyPushNotification == 0) {
+            $amountWeeklyPushNotification = 1;
+        }
+        foreach ($weeklyPushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -2440,7 +2555,12 @@ trait BATM_ConfigurationForm
 
         //Weekly mailer notification
         $weeklyNotificationMailerValues = [];
-        foreach (json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true) as $element) {
+        $weeklyMailerNotification = json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true);
+        $amountWeeklyMailerNotification = count($weeklyMailerNotification);
+        if ($amountWeeklyMailerNotification == 0) {
+            $amountWeeklyMailerNotification = 1;
+        }
+        foreach ($weeklyMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
             $id = $element['ID'];
             if ($id > 1 && @IPS_ObjectExists($id)) {
@@ -2522,7 +2642,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'WeeklyNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountWeeklyNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -2762,7 +2882,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'WeeklyPushNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountWeeklyPushNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -3164,7 +3284,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'List',
                     'name'     => 'WeeklyMailerNotification',
-                    'rowCount' => 5,
+                    'rowCount' => $amountWeeklyMailerNotification,
                     'add'      => true,
                     'delete'   => true,
                     'columns'  => [
@@ -3727,6 +3847,9 @@ trait BATM_ConfigurationForm
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
         $amountImmediateLowBatteryVariables = count($criticalVariables);
+        if ($amountImmediateLowBatteryVariables == 0) {
+            $amountImmediateLowBatteryVariables = 1;
+        }
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3759,6 +3882,9 @@ trait BATM_ConfigurationForm
         $normalBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
         $amountImmediateNormalBatteryVariables = count($criticalVariables);
+        if ($amountImmediateNormalBatteryVariables == 0) {
+            $amountImmediateNormalBatteryVariables = 1;
+        }
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3792,6 +3918,9 @@ trait BATM_ConfigurationForm
         $dailyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
         $amountDailyLowBatteryVariables = count($criticalVariables);
+        if ($amountDailyLowBatteryVariables == 0) {
+            $amountDailyLowBatteryVariables = 1;
+        }
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3825,6 +3954,9 @@ trait BATM_ConfigurationForm
         $weeklyLowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
         $amountWeeklyLowBatteryVariables = count($criticalVariables);
+        if ($amountWeeklyLowBatteryVariables == 0) {
+            $amountWeeklyLowBatteryVariables = 1;
+        }
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
             foreach ($variables as $variable) {
@@ -3857,6 +3989,9 @@ trait BATM_ConfigurationForm
         $registeredReferences = [];
         $references = $this->GetReferenceList();
         $amountReferences = count($references);
+        if ($amountReferences == 0) {
+            $amountReferences = 1;
+        }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red
@@ -3874,6 +4009,9 @@ trait BATM_ConfigurationForm
         $registeredMessages = [];
         $messages = $this->GetMessageList();
         $amountMessages = count($messages);
+        if ($amountMessages == 0) {
+            $amountMessages = 1;
+        }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
             $rowColor = '#FFC0C0'; //red

@@ -1,15 +1,15 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder
+ * @project       Batteriemelder/Batteriemelder/helper
  * @file          BATM_Reports.php
  * @author        Ulrich Bittner
  * @copyright     2022 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
+/** @noinspection SpellCheckingInspection */
 /** @noinspection DuplicatedCode */
-/** @noinspection PhpUnused */
 
 declare(strict_types=1);
 

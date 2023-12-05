@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder
+ * @project       Batteriemelder/Batteriemelder/helper
  * @file          BATM_MonitoredVariables.php
  * @author        Ulrich Bittner
  * @copyright     2022 Ulrich Bittner
@@ -9,8 +9,8 @@
  */
 
 /** @noinspection PhpUndefinedFunctionInspection */
+/** @noinspection SpellCheckingInspection */
 /** @noinspection DuplicatedCode */
-/** @noinspection PhpUnused */
 
 declare(strict_types=1);
 
@@ -463,6 +463,70 @@ trait BATM_MonitoredVariables
     }
 
     /**
+     * Gets the actual variable states
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function GetActualVariableStates(): void
+    {
+        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->UpdateFormField('ActualVariableStatesConfigurationButton', 'visible', false);
+        $actualVariableStates = [];
+        $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($variables as $variable) {
+            if (!$variable['Use']) {
+                continue;
+            }
+            $sensorID = 0;
+            if ($variable['PrimaryCondition'] != '') {
+                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                if (array_key_exists(0, $primaryCondition)) {
+                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                        $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                    }
+                }
+            }
+            //Check conditions first
+            $conditions = true;
+            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
+                $conditions = false;
+            }
+            $variableDesignation = $variable['Designation'];
+            $variableComment = $variable['Comment'];
+            //Last battery replacement
+            $lastBatteryReplacement = 'Nie';
+            $replacementDate = json_decode($variable['LastBatteryReplacement']);
+            $lastBatteryReplacementYear = $replacementDate->year;
+            $lastBatteryReplacementMonth = $replacementDate->month;
+            $lastBatteryReplacementDay = $replacementDate->day;
+            if ($lastBatteryReplacementYear != 0 && $lastBatteryReplacementMonth != 0 && $lastBatteryReplacementDay != 0) {
+                $lastBatteryReplacement = sprintf('%02d', $lastBatteryReplacementDay) . '.' . sprintf('%02d', $lastBatteryReplacementMonth) . '.' . $lastBatteryReplacementYear;
+            }
+            //Battery type
+            $batteryType = $variable['BatteryType'];
+            if ($batteryType == '') {
+                $batteryType = $variable['UserDefinedBatteryType'];
+            }
+            $stateName = 'fehlerhaft';
+            if ($conditions) {
+                $stateName = $this->ReadPropertyString('BatteryOKStatusText');
+                if (IPS_IsConditionPassing($variable['PrimaryCondition'])) {
+                    $stateName = $this->ReadPropertyString('LowBatteryStatusText');
+                }
+            }
+            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment, 'BatteryType' => $batteryType, 'LastBatteryReplacement' => $lastBatteryReplacement];
+        }
+        $amount = count($actualVariableStates);
+        if ($amount == 0) {
+            $amount = 1;
+        }
+        $this->UpdateFormField('ActualVariableStates', 'visible', true);
+        $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
+        $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualVariableStates));
+    }
+
+    /**
      * Creates links of monitored variables.
      *
      * @param int $LinkCategory
@@ -591,8 +655,8 @@ trait BATM_MonitoredVariables
         foreach (json_decode($this->GetMonitoredVariables(), true) as $monitoredVariable) {
             if ($monitoredVariable['ID'] == $VariableID) {
                 if ($monitoredVariable['ActualStatus'] == 0) { //0 = Battery OK
-                    //Remove from daily and weekly critical lists
-                    $lists = ['DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusLowBattery'];
+                    //Remove from all lists, immediate, daily and weekly critical lists
+                    $lists = ['ImmediateNotificationListDeviceStatusLowBattery', 'ImmediateNotificationListDeviceStatusNormal', 'DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusLowBattery'];
                     foreach ($lists as $list) {
                         $variables = json_decode($this->ReadAttributeString($list), true);
                         foreach ($variables as $key => $variable) {

@@ -508,14 +508,18 @@ trait BATM_MonitoredVariables
             if ($batteryType == '') {
                 $batteryType = $variable['UserDefinedBatteryType'];
             }
-            $stateName = 'fehlerhaft';
             if ($conditions) {
                 $stateName = $this->ReadPropertyString('BatteryOKStatusText');
                 if (IPS_IsConditionPassing($variable['PrimaryCondition'])) {
                     $stateName = $this->ReadPropertyString('LowBatteryStatusText');
                 }
+                $variableUpdate = IPS_GetVariable($sensorID)['VariableUpdated']; //timestamp or 0 = never
+                $lastUpdate = 'Nie';
+                if ($variableUpdate != 0) {
+                    $lastUpdate = date('d.m.Y H:i:s', $variableUpdate);
+                }
+                $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment, 'BatteryType' => $batteryType, 'LastBatteryReplacement' => $lastBatteryReplacement, 'LastUpdate' => $lastUpdate];
             }
-            $actualVariableStates[] = ['ActualStatus' => $stateName, 'SensorID' => $sensorID, 'Designation' => $variableDesignation, 'Comment' => $variableComment, 'BatteryType' => $batteryType, 'LastBatteryReplacement' => $lastBatteryReplacement];
         }
         $amount = count($actualVariableStates);
         if ($amount == 0) {

@@ -316,6 +316,12 @@ trait BATM_ConfigurationForm
                                         'caption' => 'Letzter Batteriewechsel',
                                         'width'   => '200px',
                                         'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'LastUpdate',
+                                        'caption' => 'Letzte Aktualisierung',
+                                        'width'   => '200px',
+                                        'save'    => false
                                     ]
                                 ]
                             ],

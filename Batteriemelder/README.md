@@ -22,8 +22,6 @@ Der Nutzer stimmt den o.a. Bedingungen, sowie den Lizenzbedingungen ausdrücklic
 
 Dieses Modul überwacht den Batteriestatus von Geräten in [IP-Symcon](https://www.symcon.de).
 
-[![Image](../imgs/WebFront.png)]()
-
 Aktiv:  
 Es erfolgt immer eine überwachung der Melder.  
 Ist der Schalter `Aktiv` in WebFront auf `Aus`, werden lediglich keine Benachrichtigungen versendet.  

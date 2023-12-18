@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder/helper
+ * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_Reports.php
  * @author        Ulrich Bittner
- * @copyright     2022 Ulrich Bittner
+ * @copyright     2023 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -15,6 +15,172 @@ declare(strict_types=1);
 
 trait BATM_Reports
 {
+    ##### Notification status
+
+    /**
+     * Gets the actual status of the immediate notification.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function GetImmediateNotificationStatus(): void
+    {
+        $this->UpdateFormField('ImmediateNotificationLowBatteryConfigurationButton', 'visible', false);
+        $this->UpdateFormField('ImmediateNotificationNormalConfigurationButton', 'visible', false);
+        //Low battery
+        $lowBatteryVariables = [];
+        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
+        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $this->UpdateFormField('ImmediateNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $lowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
+        }
+        $this->UpdateFormField('ImmediateNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
+        //Normal battery
+        $normalBatteryVariables = [];
+        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
+        $amountNormalBatteryVariables = count($criticalVariables) + 1;
+        $this->UpdateFormField('ImmediateNotificationListDeviceStatusNormal', 'rowCount', $amountNormalBatteryVariables);
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $normalBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#C0FFC0']; //light green
+                }
+            }
+        }
+        $this->UpdateFormField('ImmediateNotificationListDeviceStatusNormal', 'values', json_encode($normalBatteryVariables));
+    }
+
+    /**
+     * Gets the actual status of the daily notification.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function GetDailyNotificationStatus(): void
+    {
+        $this->UpdateFormField('DailyNotificationLowBatteryConfigurationButton', 'visible', false);
+        $lowBatteryVariables = [];
+        $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
+        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $this->UpdateFormField('DailyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $lowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
+        }
+        $this->UpdateFormField('DailyNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
+    }
+
+    /**
+     * Gets the actual status of the weekly notification.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function GetWeeklyNotificationStatus(): void
+    {
+        $this->UpdateFormField('WeeklyNotificationLowBatteryConfigurationButton', 'visible', false);
+        $lowBatteryVariables = [];
+        $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
+        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $this->UpdateFormField('WeeklyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
+        foreach ($criticalVariables as $criticalVariable) {
+            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
+            foreach ($variables as $variable) {
+                $id = 0;
+                if ($variable['PrimaryCondition'] != '') {
+                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        }
+                    }
+                }
+                if ($criticalVariable['ID'] == $id) {
+                    $batteryType = $variable['BatteryType'];
+                    if ($batteryType == '') {
+                        $batteryType = $variable['UserDefinedBatteryType'];
+                    }
+                    $lowBatteryVariables[] = [
+                        'ID'          => $criticalVariable['ID'],
+                        'Name'        => $variable['Designation'],
+                        'Comment'     => $variable['Comment'],
+                        'BatteryType' => $batteryType,
+                        'Timestamp'   => $criticalVariable['Timestamp'],
+                        'rowColor'    => '#FFFFC0']; //yellow
+                }
+            }
+        }
+        $this->UpdateFormField('WeeklyNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
+    }
+
     ########### Daily notification
 
     /**

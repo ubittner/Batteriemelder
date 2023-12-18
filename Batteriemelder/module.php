@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder
+ * @project       Batteriemelder/Batteriemelder/
  * @file          module.php
  * @author        Ulrich Bittner
- * @copyright     2022 Ulrich Bittner
+ * @copyright     2023 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -49,15 +49,15 @@ class Batteriemelder extends IPSModule
         //List options
         $this->RegisterPropertyBoolean('EnableLowBattery', true);
         $this->RegisterPropertyBoolean('EnableBatteryOK', true);
-        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️  Batterie schwach');
-        $this->RegisterPropertyString('BatteryOKStatusText', '🟢  OK');
+        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️Batterie schwach');
+        $this->RegisterPropertyString('BatteryOKStatusText', '🟢 OK');
 
         //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');
 
         //Automatic status update
         $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
-        $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
+        $this->RegisterPropertyInteger('StatusUpdateInterval', 900);
 
         //Immediate notification
         $this->RegisterPropertyString('ImmediateNotificationResetTime', '{"hour":7,"minute":0,"second":0}');
@@ -132,7 +132,6 @@ class Batteriemelder extends IPSModule
         ########## Variables
 
         //Active
-
         $id = @$this->GetIDForIdent('Active');
         $this->RegisterVariableBoolean('Active', 'Aktiv', '~Switch', 10);
         $this->EnableAction('Active');
@@ -141,7 +140,6 @@ class Batteriemelder extends IPSModule
         }
 
         //Status
-
         $profile = self::MODULE_PREFIX . '.' . $this->InstanceID . '.Status';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 0);
@@ -151,7 +149,6 @@ class Batteriemelder extends IPSModule
         $this->RegisterVariableBoolean('Status', 'Status', $profile, 20);
 
         //Triggering detector
-
         $id = @$this->GetIDForIdent('TriggeringDetector');
         $this->RegisterVariableString('TriggeringDetector', 'Auslösender Melder', '', 30);
         $this->SetValue('TriggeringDetector', '');
@@ -184,7 +181,6 @@ class Batteriemelder extends IPSModule
         $this->EnableAction('UpdateStatus');
 
         //Battery list
-
         $id = @$this->GetIDForIdent('BatteryList');
         $this->RegisterVariableString('BatteryList', 'Batterieliste', 'HTMLBox', 70);
         if (!$id) {

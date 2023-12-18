@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder/helper
+ * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_MonitoredVariables.php
  * @author        Ulrich Bittner
- * @copyright     2022 Ulrich Bittner
+ * @copyright     2023 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -16,6 +16,198 @@ declare(strict_types=1);
 
 trait BATM_MonitoredVariables
 {
+    /**
+     * Checks the determination value for the variable.
+     *
+     * @param int $VariableDeterminationType
+     * @return void
+     */
+    public function CheckVariableDeterminationValue(int $VariableDeterminationType): void
+    {
+        $profileSelection = false;
+        $determinationValue = false;
+        //Profile selection
+        if ($VariableDeterminationType == 0) {
+            $profileSelection = true;
+        }
+        //Custom ident
+        if ($VariableDeterminationType == 4) {
+            $this->UpdateFormfield('VariableDeterminationValue', 'caption', 'Identifikator');
+            $determinationValue = true;
+        }
+        $this->UpdateFormfield('ProfileSelection', 'visible', $profileSelection);
+        $this->UpdateFormfield('VariableDeterminationValue', 'visible', $determinationValue);
+    }
+
+    /**
+     * Determines the variables.
+     *
+     * @param int $DeterminationType
+     * @param string $DeterminationValue
+     * @param string $ProfileSelection
+     * @return void
+     * @throws Exception
+     */
+    public function DetermineVariables(int $DeterminationType, string $DeterminationValue, string $ProfileSelection = ''): void
+    {
+        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->SendDebug(__FUNCTION__, 'Auswahl: ' . $DeterminationType, 0);
+        $this->SendDebug(__FUNCTION__, 'Identifikator: ' . $DeterminationValue, 0);
+        //Set minimum an d maximum of existing variables
+        $this->UpdateFormField('VariableDeterminationProgress', 'minimum', 0);
+        $maximumVariables = count(IPS_GetVariableList());
+        $this->UpdateFormField('VariableDeterminationProgress', 'maximum', $maximumVariables);
+        //Determine variables first
+        $determineIdent = false;
+        $determineProfile = false;
+        $determinedVariables = [];
+        $passedVariables = 0;
+        foreach (@IPS_GetVariableList() as $variable) {
+            switch ($DeterminationType) {
+                case 0: //Profile: Select profile
+                    if ($ProfileSelection == '') {
+                        $infoText = 'Abbruch, es wurde kein Profil ausgewählt!';
+                        $this->UpdateFormField('InfoMessage', 'visible', true);
+                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                        return;
+                    } else {
+                        $determineProfile = true;
+                    }
+                    break;
+
+                case 1: //Ident: LOWBAT
+                case 2: //Ident: LOW_BAT
+                case 3: //Ident: LOWBAT, LOW_BAT
+                    $determineIdent = true;
+                    break;
+
+                case 4: //Custom Ident
+                    if ($DeterminationValue == '') {
+                        $infoText = 'Abbruch, es wurde kein Identifikator angegeben!';
+                        $this->UpdateFormField('InfoMessage', 'visible', true);
+                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+                        return;
+                    } else {
+                        $determineIdent = true;
+                    }
+                    break;
+
+            }
+            $passedVariables++;
+            $this->UpdateFormField('VariableDeterminationProgress', 'visible', true);
+            $this->UpdateFormField('VariableDeterminationProgress', 'current', $passedVariables);
+            $this->UpdateFormField('VariableDeterminationProgressInfo', 'visible', true);
+            $this->UpdateFormField('VariableDeterminationProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
+            IPS_Sleep(10);
+
+            ##### Profile
+
+            //Determine via profile
+            if ($determineProfile && !$determineIdent) {
+                //Select profile
+                if ($DeterminationType == 0) {
+                    $profileNames = $ProfileSelection;
+                }
+                if (isset($profileNames)) {
+                    $profileNames = str_replace(' ', '', $profileNames);
+                    $profileNames = explode(',', $profileNames);
+                    foreach ($profileNames as $profileName) {
+                        $variableData = IPS_GetVariable($variable);
+                        if ($variableData['VariableCustomProfile'] == $profileName || $variableData['VariableProfile'] == $profileName) {
+                            $location = @IPS_GetLocation($variable);
+                            $determinedVariables[] = [
+                                'Use'      => false,
+                                'ID'       => $variable,
+                                'Location' => $location];
+                        }
+                    }
+                }
+            }
+
+            ##### Ident
+
+            //Determine via ident
+            if ($determineIdent && !$determineProfile) {
+                switch ($DeterminationType) {
+                    case 1:
+                        $objectIdents = 'LOWBAT';
+                        break;
+
+                    case 2:
+                        $objectIdents = 'LOW_BAT';
+                        break;
+
+                    case 3:
+                        $objectIdents = 'LOWBAT, LOW_BAT';
+                        break;
+
+                    case 4: //Custom ident
+                        $objectIdents = $DeterminationValue;
+                        break;
+
+                }
+                if (isset($objectIdents)) {
+                    $objectIdents = str_replace(' ', '', $objectIdents);
+                    $objectIdents = explode(',', $objectIdents);
+                    foreach ($objectIdents as $objectIdent) {
+                        $object = @IPS_GetObject($variable);
+                        if ($object['ObjectIdent'] == $objectIdent) {
+                            $location = @IPS_GetLocation($variable);
+                            $determinedVariables[] = [
+                                'Use'      => true,
+                                'ID'       => $variable,
+                                'Location' => $location];
+                        }
+                    }
+                }
+            }
+        }
+        $amount = count($determinedVariables);
+        //Get already listed variables
+        $listedVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($listedVariables as $listedVariable) {
+            if (array_key_exists('PrimaryCondition', $listedVariable)) {
+                $primaryCondition = json_decode($listedVariable['PrimaryCondition'], true);
+                if ($primaryCondition != '') {
+                    if (array_key_exists(0, $primaryCondition)) {
+                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                            $listedVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                            if ($listedVariableID > 1 && @IPS_ObjectExists($listedVariableID)) {
+                                foreach ($determinedVariables as $key => $determinedVariable) {
+                                    $determinedVariableID = $determinedVariable['ID'];
+                                    if ($determinedVariableID > 1 && @IPS_ObjectExists($determinedVariableID)) {
+                                        //Check if variable id is already a listed variable id
+                                        if ($determinedVariableID == $listedVariableID) {
+                                            unset($determinedVariables[$key]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (empty($determinedVariables)) {
+            $this->UpdateFormField('VariableDeterminationProgress', 'visible', false);
+            $this->UpdateFormField('VariableDeterminationProgressInfo', 'visible', false);
+            if ($amount > 0) {
+                $infoText = 'Es wurden keine weiteren Variablen gefunden!';
+            } else {
+                $infoText = 'Es wurden keine Variablen gefunden!';
+            }
+            $this->UpdateFormField('InfoMessage', 'visible', true);
+            $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+            return;
+        }
+        $determinedVariables = array_values($determinedVariables);
+        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
+        $this->UpdateFormField('DeterminedVariableList', 'rowCount', count($determinedVariables));
+        $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
+        $this->UpdateFormField('OverwriteVariableProfiles', 'visible', true);
+        $this->UpdateFormField('ApplyPreTriggerValues', 'visible', true);
+    }
+
     /**
      * Applies the determined variables to the trigger list.
      *
@@ -160,309 +352,6 @@ trait BATM_MonitoredVariables
     }
 
     /**
-     * Checks the determination value for the variable.
-     *
-     * @param int $VariableDeterminationType
-     * @return void
-     */
-    public function CheckVariableDeterminationValue(int $VariableDeterminationType): void
-    {
-        $profileSelection = false;
-        $determinationValue = false;
-        //Profile selection
-        if ($VariableDeterminationType == 0) {
-            $profileSelection = true;
-        }
-        //Custom ident
-        if ($VariableDeterminationType == 10) {
-            $this->UpdateFormfield('VariableDeterminationValue', 'caption', 'Identifikator');
-            $determinationValue = true;
-        }
-        $this->UpdateFormfield('ProfileSelection', 'visible', $profileSelection);
-        $this->UpdateFormfield('VariableDeterminationValue', 'visible', $determinationValue);
-    }
-
-    /**
-     * Determines the variables.
-     *
-     * @param int $DeterminationType
-     * @param string $DeterminationValue
-     * @param string $ProfileSelection
-     * @return void
-     * @throws Exception
-     */
-    public function DetermineVariables(int $DeterminationType, string $DeterminationValue, string $ProfileSelection = ''): void
-    {
-        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
-        $this->SendDebug(__FUNCTION__, 'Auswahl: ' . $DeterminationType, 0);
-        $this->SendDebug(__FUNCTION__, 'Identifikator: ' . $DeterminationValue, 0);
-        //Set minimum an d maximum of existing variables
-        $this->UpdateFormField('VariableDeterminationProgress', 'minimum', 0);
-        $maximumVariables = count(IPS_GetVariableList());
-        $this->UpdateFormField('VariableDeterminationProgress', 'maximum', $maximumVariables);
-        //Determine variables first
-        $determineIdent = false;
-        $determineProfile = false;
-        $determinedVariables = [];
-        $passedVariables = 0;
-        foreach (@IPS_GetVariableList() as $variable) {
-            switch ($DeterminationType) {
-                case 0: //Profile: Select profile
-                    if ($ProfileSelection == '') {
-                        $infoText = 'Abbruch, es wurde kein Profil ausgewählt!';
-                        $this->UpdateFormField('InfoMessage', 'visible', true);
-                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
-                        return;
-                    } else {
-                        $determineProfile = true;
-                    }
-                    break;
-
-                case 1: //Profile: ~Battery
-                case 2: //Profile: ~Battery.Reversed
-                case 3: //Profile: BATM.Battery.Boolean
-                case 4: //Profile: BATM.Battery.Boolean.Reversed
-                case 5: //Profile: BATM.Battery.Integer
-                case 6: //Profile: BATM.Battery.Integer.reversed
-                    $determineProfile = true;
-                    break;
-
-                case 7: //Ident: LOWBAT
-                case 8: //Ident: LOW_BAT
-                case 9: //Ident: LOWBAT, LOW_BAT
-                    $determineIdent = true;
-                    break;
-
-                case 10: //Custom Ident
-                    if ($DeterminationValue == '') {
-                        $infoText = 'Abbruch, es wurde kein Identifikator angegeben!';
-                        $this->UpdateFormField('InfoMessage', 'visible', true);
-                        $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
-                        return;
-                    } else {
-                        $determineIdent = true;
-                    }
-                    break;
-
-            }
-            $passedVariables++;
-            $this->UpdateFormField('VariableDeterminationProgress', 'visible', true);
-            $this->UpdateFormField('VariableDeterminationProgress', 'current', $passedVariables);
-            $this->UpdateFormField('VariableDeterminationProgressInfo', 'visible', true);
-            $this->UpdateFormField('VariableDeterminationProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
-            IPS_Sleep(10);
-
-            ##### Profile
-
-            //Determine via profile
-            if ($determineProfile && !$determineIdent) {
-                switch ($DeterminationType) {
-
-                    case 0: //Select profile
-                        $profileNames = $ProfileSelection;
-                        break;
-
-                    case 1:
-                        $profileNames = '~Battery';
-                        break;
-
-                    case 2:
-                        $profileNames = '~Battery.Reversed';
-                        break;
-
-                    case 3:
-                        $profileNames = 'BATM.Battery.Boolean';
-                        break;
-
-                    case 4:
-                        $profileNames = 'BATM.Battery.Boolean.Reversed';
-                        break;
-
-                    case 5:
-                        $profileNames = 'BATM.Battery.Integer';
-                        break;
-
-                    case 6:
-                        $profileNames = 'BATM.Battery.Integer.Reversed';
-                        break;
-
-                }
-                if (isset($profileNames)) {
-                    $profileNames = str_replace(' ', '', $profileNames);
-                    $profileNames = explode(',', $profileNames);
-                    foreach ($profileNames as $profileName) {
-                        $variableData = IPS_GetVariable($variable);
-                        if ($variableData['VariableCustomProfile'] == $profileName || $variableData['VariableProfile'] == $profileName) {
-                            $location = @IPS_GetLocation($variable);
-                            $determinedVariables[] = [
-                                'Use'      => true,
-                                'ID'       => $variable,
-                                'Location' => $location];
-                        }
-                    }
-                }
-            }
-
-            ##### Ident
-
-            //Determine via ident
-            if ($determineIdent && !$determineProfile) {
-                switch ($DeterminationType) {
-                    case 7:
-                        $objectIdents = 'LOWBAT';
-                        break;
-
-                    case 8:
-                        $objectIdents = 'LOW_BAT';
-                        break;
-
-                    case 9:
-                        $objectIdents = 'LOWBAT, LOW_BAT';
-                        break;
-
-                    case 10: //Custom ident
-                        $objectIdents = $DeterminationValue;
-                        break;
-
-                }
-                if (isset($objectIdents)) {
-                    $objectIdents = str_replace(' ', '', $objectIdents);
-                    $objectIdents = explode(',', $objectIdents);
-                    foreach ($objectIdents as $objectIdent) {
-                        $object = @IPS_GetObject($variable);
-                        if ($object['ObjectIdent'] == $objectIdent) {
-                            $location = @IPS_GetLocation($variable);
-                            $determinedVariables[] = [
-                                'Use'      => true,
-                                'ID'       => $variable,
-                                'Location' => $location];
-                        }
-                    }
-                }
-            }
-        }
-        $amount = count($determinedVariables);
-        //Get already listed variables
-        $listedVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        foreach ($listedVariables as $listedVariable) {
-            if (array_key_exists('PrimaryCondition', $listedVariable)) {
-                $primaryCondition = json_decode($listedVariable['PrimaryCondition'], true);
-                if ($primaryCondition != '') {
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $listedVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                            if ($listedVariableID > 1 && @IPS_ObjectExists($listedVariableID)) {
-                                foreach ($determinedVariables as $key => $determinedVariable) {
-                                    $determinedVariableID = $determinedVariable['ID'];
-                                    if ($determinedVariableID > 1 && @IPS_ObjectExists($determinedVariableID)) {
-                                        //Check if variable id is already a listed variable id
-                                        if ($determinedVariableID == $listedVariableID) {
-                                            unset($determinedVariables[$key]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (empty($determinedVariables)) {
-            $this->UpdateFormField('VariableDeterminationProgress', 'visible', false);
-            $this->UpdateFormField('VariableDeterminationProgressInfo', 'visible', false);
-            if ($amount > 0) {
-                $infoText = 'Es wurden keine weiteren Variablen gefunden!';
-            } else {
-                $infoText = 'Es wurden keine Variablen gefunden!';
-            }
-            $this->UpdateFormField('InfoMessage', 'visible', true);
-            $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
-            return;
-        }
-        $determinedVariables = array_values($determinedVariables);
-        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
-        $this->UpdateFormField('DeterminedVariableList', 'rowCount', count($determinedVariables));
-        $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
-        $this->UpdateFormField('OverwriteVariableProfiles', 'visible', true);
-        $this->UpdateFormField('ApplyPreTriggerValues', 'visible', true);
-    }
-
-    /**
-     * Assigns the profile to the monitored variables.
-     *
-     * @param bool $Override
-     * false =  Profile will only be assigned, if the variables have no existing profile
-     * true =   Profile will always be assigned to the variables
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function AssignVariableProfile(bool $Override): void
-    {
-        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
-        $overrideText = 'Bestehendes Profil behalten';
-        if ($Override) {
-            $overrideText = 'Bestehendes Profil überschreiben!';
-        }
-        $this->SendDebug(__FUNCTION__, 'Variablenprofil: ' . $overrideText, 0);
-        //Assign profile only for listed variables
-        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $maximumVariables = count($monitoredVariables);
-        $this->UpdateFormField('VariableProfileProgress', 'minimum', 0);
-        $this->UpdateFormField('VariableProfileProgress', 'maximum', $maximumVariables);
-        $passedVariables = 0;
-        if (!empty($monitoredVariables)) {
-            foreach ($monitoredVariables as $variable) {
-                $passedVariables++;
-                $this->UpdateFormField('VariableProfileProgress', 'visible', true);
-                $this->UpdateFormField('VariableProfileProgress', 'current', $passedVariables);
-                $this->UpdateFormField('VariableProfileProgressInfo', 'visible', true);
-                $this->UpdateFormField('VariableProfileProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
-                IPS_Sleep(200);
-                //Primary condition
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                $variableType = @IPS_GetVariable($id)['VariableType'];
-                                $profileName = '';
-                                switch ($variableType) {
-                                    case 0: //Boolean
-                                        $profileName = self::MODULE_PREFIX . '.Battery.Boolean';
-                                        break;
-
-                                    case 1: //Integer
-                                        $profileName = self::MODULE_PREFIX . '.Battery.Integer';
-                                        break;
-
-                                }
-                                if ($profileName != '') {
-                                    //Always assign profile
-                                    if ($Override) {
-                                        @IPS_SetVariableCustomProfile($id, $profileName);
-                                    } //Only assign profile, if variable has no profile
-                                    else {
-                                        //Check if variable has a profile
-                                        $assignedProfile = @IPS_GetVariable($id)['VariableProfile'];
-                                        if (empty($assignedProfile)) {
-                                            @IPS_SetVariableCustomProfile($id, $profileName);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        $this->UpdateFormField('VariableProfileProgress', 'visible', false);
-        $this->UpdateFormField('VariableProfileProgressInfo', 'visible', false);
-        $this->UIShowMessage('Die Variablenprofile wurden zugewiesen!');
-    }
-
-    /**
      * Gets the actual variable states
      *
      * @return void
@@ -471,6 +360,7 @@ trait BATM_MonitoredVariables
     public function GetActualVariableStates(): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->CheckBatteries();
         $this->UpdateFormField('ActualVariableStatesConfigurationButton', 'visible', false);
         $actualVariableStates = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
@@ -531,29 +421,119 @@ trait BATM_MonitoredVariables
     }
 
     /**
-     * Creates links of monitored variables.
+     * Assigns the variable profile to the variables.
      *
-     * @param int $LinkCategory
+     * @param object $ListValues
      * @return void
      * @throws Exception
      */
-    public function CreateVariableLinks(int $LinkCategory): void
+    public function AssignVariableProfile(object $ListValues): void
+    {
+        $reflection = new ReflectionObject($ListValues);
+        $property = $reflection->getProperty('array');
+        $property->setAccessible(true);
+        $variables = $property->getValue($ListValues);
+        $amountVariables = 0;
+        foreach ($variables as $variable) {
+            if ($variable['Use']) {
+                $amountVariables++;
+            }
+        }
+        if ($amountVariables == 0) {
+            $this->UpdateFormField('InfoMessage', 'visible', true);
+            $this->UpdateFormField('InfoMessageLabel', 'caption', 'Es wurden keine Variablen ausgewählt!');
+            return;
+        }
+        $maximumVariables = $amountVariables;
+        $this->UpdateFormField('VariableProfileProgress', 'minimum', 0);
+        $this->UpdateFormField('VariableProfileProgress', 'maximum', $maximumVariables);
+        $passedVariables = 0;
+        foreach ($variables as $variable) {
+            if (!$variable['Use']) {
+                continue;
+            }
+            $passedVariables++;
+            $this->UpdateFormField('VariableProfileProgress', 'visible', true);
+            $this->UpdateFormField('VariableProfileProgress', 'current', $passedVariables);
+            $this->UpdateFormField('VariableProfileProgressInfo', 'visible', true);
+            $this->UpdateFormField('VariableProfileProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
+            IPS_Sleep(250);
+            $id = $variable['SensorID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) {
+                $object = IPS_GetObject($id)['ObjectType'];
+                //0: Category, 1: Instance, 2: Variable, 3: Script, 4: Event, 5: Media, 6: Link
+                if ($object == 2) {
+                    $variableType = IPS_GetVariable($id)['VariableType'];
+                    switch ($variableType) {
+                        //0: Boolean, 1: Integer, 2: Float, 3: String
+                        case 0:
+                            $profileName = self::MODULE_PREFIX . '.Battery.Boolean';
+                            if ($variable['UseReversedProfile']) {
+                                $profileName = self::MODULE_PREFIX . '.Battery.Boolean.Reversed';
+                            }
+                            break;
+
+                        case 1:
+                            $profileName = self::MODULE_PREFIX . '.Battery.Integer';
+                            if ($variable['UseReversedProfile']) {
+                                $profileName = self::MODULE_PREFIX . '.Battery.Integer.Reversed';
+                            }
+                            break;
+
+                        default:
+                            $profileName = '';
+                    }
+                    if (!empty($profileName)) {
+                        //Assign profile
+                        IPS_SetVariableCustomProfile($id, $profileName);
+                        //Deactivate standard action
+                        IPS_SetVariableCustomAction($id, 1);
+                    }
+                }
+            }
+        }
+        $this->UpdateFormField('VariableProfileProgress', 'visible', false);
+        $this->UpdateFormField('VariableProfileProgressInfo', 'visible', false);
+        $this->ReloadConfig();
+    }
+
+    /**
+     * Creates links of monitored variables.
+     *
+     * @param int $LinkCategory
+     * @param object $ListValues
+     * @return void
+     * @throws ReflectionException
+     */
+    public function CreateVariableLinks(int $LinkCategory, object $ListValues): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
         if ($LinkCategory == 1 || @!IPS_ObjectExists($LinkCategory)) {
             $this->UIShowMessage('Abbruch, bitte wählen Sie eine Kategorie aus!');
             return;
         }
-        $icon = 'Battery';
-        //Get all monitored variables
-        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $maximumVariables = count($monitoredVariables);
+        $reflection = new ReflectionObject($ListValues);
+        $property = $reflection->getProperty('array');
+        $property->setAccessible(true);
+        $variables = $property->getValue($ListValues);
+        $amountVariables = 0;
+        foreach ($variables as $variable) {
+            if ($variable['Use']) {
+                $amountVariables++;
+            }
+        }
+        if ($amountVariables == 0) {
+            $this->UpdateFormField('InfoMessage', 'visible', true);
+            $this->UpdateFormField('InfoMessageLabel', 'caption', 'Es wurden keine Variablen ausgewählt!');
+            return;
+        }
+        $maximumVariables = $amountVariables;
         $this->UpdateFormField('VariableLinkProgress', 'minimum', 0);
         $this->UpdateFormField('VariableLinkProgress', 'maximum', $maximumVariables);
         $passedVariables = 0;
         $targetIDs = [];
         $i = 0;
-        foreach ($monitoredVariables as $variable) {
+        foreach ($variables as $variable) {
             if ($variable['Use']) {
                 $passedVariables++;
                 $this->UpdateFormField('VariableLinkProgress', 'visible', true);
@@ -561,18 +541,10 @@ trait BATM_MonitoredVariables
                 $this->UpdateFormField('VariableLinkProgressInfo', 'visible', true);
                 $this->UpdateFormField('VariableLinkProgressInfo', 'caption', $passedVariables . '/' . $maximumVariables);
                 IPS_Sleep(200);
-                //Primary condition
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                $targetIDs[$i] = ['name' => $variable['Designation'], 'targetID' => $id];
-                                $i++;
-                            }
-                        }
-                    }
+                $id = $variable['SensorID'];
+                if ($id > 1 && @IPS_ObjectExists($id)) {
+                    $targetIDs[$i] = ['name' => $variable['Designation'], 'targetID' => $id];
+                    $i++;
                 }
             }
         }
@@ -616,7 +588,6 @@ trait BATM_MonitoredVariables
                 @IPS_SetName($linkID, $name);
                 @IPS_SetLinkTargetID($linkID, $targetID);
                 @IPS_SetInfo($linkID, self::MODULE_PREFIX . '.' . $this->InstanceID);
-                @IPS_SetIcon($linkID, $icon);
             }
         }
         //Edit existing links
@@ -631,84 +602,15 @@ trait BATM_MonitoredVariables
                 $name = $targetIDs[$position]['name'];
                 @IPS_SetName($linkID, $name);
                 @IPS_SetInfo($linkID, self::MODULE_PREFIX . '.' . $this->InstanceID);
-                @IPS_SetIcon($linkID, $icon);
             }
         }
         $this->UpdateFormField('VariableLinkProgress', 'visible', false);
         $this->UpdateFormField('VariableLinkProgressInfo', 'visible', false);
-        $this->UIShowMessage('Die Variablenverknüpfungen wurden erfolgreich erstellt!');
-    }
-
-    /**
-     * Updates the battery replacement date.
-     *
-     * @param int $VariableID
-     * @return void
-     * @throws Exception
-     */
-    public function UpdateBatteryReplacement(int $VariableID): void
-    {
-        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
-        $this->SendDebug(__FUNCTION__, 'Variable ID: ' . $VariableID, 0);
-        $data = [];
-        if ($VariableID <= 1 || @!IPS_ObjectExists($VariableID)) {
-            $this->SendDebug(__FUNCTION__, 'Abbruch, Die Variable mit der ID ' . $VariableID . 'existiert nicht!', 0);
-            return;
+        $infoText = 'Die Variablenverknüpfung wurde erfolgreich erstellt!';
+        if ($amountVariables > 1) {
+            $infoText = 'Die Variablenverknüpfungen wurden erfolgreich erstellt!';
         }
-        //Check actual status and remove from critical lists if battery status is okay
-        foreach (json_decode($this->GetMonitoredVariables(), true) as $monitoredVariable) {
-            if ($monitoredVariable['ID'] == $VariableID) {
-                if ($monitoredVariable['ActualStatus'] == 0) { //0 = Battery OK
-                    //Remove from all lists, immediate, daily and weekly critical lists
-                    $lists = ['ImmediateNotificationListDeviceStatusLowBattery', 'ImmediateNotificationListDeviceStatusNormal', 'DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusLowBattery'];
-                    foreach ($lists as $list) {
-                        $variables = json_decode($this->ReadAttributeString($list), true);
-                        foreach ($variables as $key => $variable) {
-                            if ($variable['ID'] == $VariableID) {
-                                unset($variables[$key]);
-                            }
-                        }
-                        $variables = array_values($variables);
-                        $this->WriteAttributeString($list, json_encode($variables));
-                    }
-                }
-            }
-        }
-        //Update trigger list configuration
-        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        foreach ($monitoredVariables as $index => $variable) {
-            $id = 0;
-            if ($variable['PrimaryCondition'] != '') {
-                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                if (array_key_exists(0, $primaryCondition)) {
-                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                    }
-                }
-            }
-            if ($id <= 1 || @!IPS_ObjectExists($id)) {
-                continue;
-            }
-            $data[$index]['Use'] = $variable['Use'];
-            $data[$index]['Designation'] = $variable['Designation'];
-            $data[$index]['Comment'] = $variable['Comment'];
-            $data[$index]['BatteryType'] = $variable['BatteryType'];
-            $data[$index]['UserDefinedBatteryType'] = $variable['UserDefinedBatteryType'];
-            $data[$index]['UseMultipleAlerts'] = $variable['UseMultipleAlerts'];
-            $data[$index]['PrimaryCondition'] = $variable['PrimaryCondition'];
-            if ($id == $VariableID) {
-                $year = date('Y');
-                $month = date('n');
-                $day = date('j');
-                $data[$index]['LastBatteryReplacement'] = '{"year":' . $year . ',"month":' . $month . ',"day":' . $day . '}';
-            } else {
-                $data[$index]['LastBatteryReplacement'] = $variable['LastBatteryReplacement'];
-            }
-        }
-        IPS_SetProperty($this->InstanceID, 'TriggerList', json_encode($data));
-        if (IPS_HasChanges($this->InstanceID)) {
-            IPS_ApplyChanges($this->InstanceID);
-        }
+        $this->UIShowMessage($infoText);
     }
 
     /**
@@ -1108,6 +1010,78 @@ trait BATM_MonitoredVariables
         //Leave semaphore
         $this->UnlockSemaphore('CheckBatteries');
         return $result;
+    }
+
+    /**
+     * Updates the battery replacement date.
+     *
+     * @param int $VariableID
+     * @return void
+     * @throws Exception
+     */
+    public function UpdateBatteryReplacement(int $VariableID): void
+    {
+        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->SendDebug(__FUNCTION__, 'Variable ID: ' . $VariableID, 0);
+        $data = [];
+        if ($VariableID <= 1 || @!IPS_ObjectExists($VariableID)) {
+            $this->SendDebug(__FUNCTION__, 'Abbruch, Die Variable mit der ID ' . $VariableID . 'existiert nicht!', 0);
+            return;
+        }
+        //Check actual status and remove from critical lists if battery status is okay
+        foreach (json_decode($this->GetMonitoredVariables(), true) as $monitoredVariable) {
+            if ($monitoredVariable['ID'] == $VariableID) {
+                if ($monitoredVariable['ActualStatus'] == 0) { //0 = Battery OK
+                    //Remove from all lists, immediate, daily and weekly critical lists
+                    $lists = ['ImmediateNotificationListDeviceStatusLowBattery', 'ImmediateNotificationListDeviceStatusNormal', 'DailyNotificationListDeviceStatusLowBattery', 'WeeklyNotificationListDeviceStatusLowBattery'];
+                    foreach ($lists as $list) {
+                        $variables = json_decode($this->ReadAttributeString($list), true);
+                        foreach ($variables as $key => $variable) {
+                            if ($variable['ID'] == $VariableID) {
+                                unset($variables[$key]);
+                            }
+                        }
+                        $variables = array_values($variables);
+                        $this->WriteAttributeString($list, json_encode($variables));
+                    }
+                }
+            }
+        }
+        //Update trigger list configuration
+        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($monitoredVariables as $index => $variable) {
+            $id = 0;
+            if ($variable['PrimaryCondition'] != '') {
+                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
+                if (array_key_exists(0, $primaryCondition)) {
+                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                    }
+                }
+            }
+            if ($id <= 1 || @!IPS_ObjectExists($id)) {
+                continue;
+            }
+            $data[$index]['Use'] = $variable['Use'];
+            $data[$index]['Designation'] = $variable['Designation'];
+            $data[$index]['Comment'] = $variable['Comment'];
+            $data[$index]['BatteryType'] = $variable['BatteryType'];
+            $data[$index]['UserDefinedBatteryType'] = $variable['UserDefinedBatteryType'];
+            $data[$index]['UseMultipleAlerts'] = $variable['UseMultipleAlerts'];
+            $data[$index]['PrimaryCondition'] = $variable['PrimaryCondition'];
+            if ($id == $VariableID) {
+                $year = date('Y');
+                $month = date('n');
+                $day = date('j');
+                $data[$index]['LastBatteryReplacement'] = '{"year":' . $year . ',"month":' . $month . ',"day":' . $day . '}';
+            } else {
+                $data[$index]['LastBatteryReplacement'] = $variable['LastBatteryReplacement'];
+            }
+        }
+        IPS_SetProperty($this->InstanceID, 'TriggerList', json_encode($data));
+        if (IPS_HasChanges($this->InstanceID)) {
+            IPS_ApplyChanges($this->InstanceID);
+        }
     }
 
     #################### Private

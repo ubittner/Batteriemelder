@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @project       Batteriemelder/Batteriemelder/helper
+ * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_ConfigurationForm.php
  * @author        Ulrich Bittner
- * @copyright     2022 Ulrich Bittner
+ * @copyright     2023 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -223,7 +223,7 @@ trait BATM_ConfigurationForm
                             'type'    => 'ValidationTextBox',
                             'name'    => 'BatteryOKStatusText',
                             'caption' => 'Batterie OK'
-                        ],
+                        ]
                     ]
                 ]
             ]
@@ -231,10 +231,14 @@ trait BATM_ConfigurationForm
 
         //Trigger list
         $triggerListValues = [];
+        $variableProfileListValues = [];
+        $variableLinksListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $amount = count($variables);
+        $amountVariables = count($variables);
+        $amountRows = count($variables) + 1;
         foreach ($variables as $variable) {
             $id = 0;
+            $primaryVariableTriggerValue = '';
             $variableLocation = '';
             $rowColor = '#FFC0C0'; //red
             //Primary condition
@@ -243,6 +247,8 @@ trait BATM_ConfigurationForm
                 if (array_key_exists(0, $primaryCondition)) {
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        $primaryVariableTriggerValue = GetValueFormattedEx($id, $primaryCondition[0]['rules']['variable'][0]['value']);
+
                         if ($id > 1 && @IPS_ObjectExists($id)) {
                             $rowColor = '#C0FFC0'; //light green
                             //Location
@@ -254,7 +260,9 @@ trait BATM_ConfigurationForm
                     }
                 }
             }
-            $triggerListValues[] = ['ID' => $id, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
+            $triggerListValues[] = ['ID' => $id, 'VariableLocation' => $variableLocation, 'PrimaryTriggerValue' => $primaryVariableTriggerValue, 'rowColor' => $rowColor];
+            $variableProfileListValues[] = ['SensorID' => $id, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
+            $variableLinksListValues[] = ['SensorID' => $id, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
         }
 
         $form['elements'][] = [
@@ -262,6 +270,124 @@ trait BATM_ConfigurationForm
             'name'    => 'Panel4',
             'caption' => 'Auslöser',
             'items'   => [
+                [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Variablen ermitteln',
+                    'popup'   => [
+                        'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
+                        'items'   => [
+                            [
+                                'type'    => 'Select',
+                                'name'    => 'VariableDeterminationType',
+                                'caption' => 'Auswahl',
+                                'options' => [
+                                    [
+                                        'caption' => 'Profil auswählen',
+                                        'value'   => 0
+                                    ],
+                                    [
+                                        'caption' => 'Ident: LOWBAT',
+                                        'value'   => 1
+                                    ],
+                                    [
+                                        'caption' => 'Ident: LOW_BAT',
+                                        'value'   => 2
+                                    ],
+                                    [
+                                        'caption' => 'Ident: LOWBAT, LOW_BAT',
+                                        'value'   => 3
+                                    ],
+                                    [
+                                        'caption' => 'Ident: Benutzerdefiniert',
+                                        'value'   => 4
+                                    ]
+                                ],
+                                'value'    => 0,
+                                'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
+                            ],
+                            [
+                                'type'    => 'SelectProfile',
+                                'name'    => 'ProfileSelection',
+                                'caption' => 'Profil',
+                                'visible' => true
+                            ],
+                            [
+                                'type'    => 'ValidationTextBox',
+                                'name'    => 'VariableDeterminationValue',
+                                'caption' => 'Identifikator',
+                                'visible' => false
+                            ],
+                            [
+                                'type'    => 'Button',
+                                'caption' => 'Ermitteln',
+                                'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue, $ProfileSelection);'
+                            ],
+                            [
+                                'type'    => 'ProgressBar',
+                                'name'    => 'VariableDeterminationProgress',
+                                'caption' => 'Fortschritt',
+                                'minimum' => 0,
+                                'maximum' => 100,
+                                'visible' => false
+                            ],
+                            [
+                                'type'    => 'Label',
+                                'name'    => 'VariableDeterminationProgressInfo',
+                                'caption' => '',
+                                'visible' => false
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'DeterminedVariableList',
+                                'caption'  => 'Variablen',
+                                'visible'  => false,
+                                'rowCount' => 15,
+                                'delete'   => true,
+                                'sort'     => [
+                                    'column'    => 'ID',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'caption' => 'Übernehmen',
+                                        'name'    => 'Use',
+                                        'width'   => '100px',
+                                        'add'     => false,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'ID',
+                                        'width'   => '80px',
+                                        'add'     => ''
+                                    ],
+                                    [
+                                        'caption' => 'Objektbaum',
+                                        'name'    => 'Location',
+                                        'width'   => '800px',
+                                        'add'     => ''
+                                    ],
+                                ]
+                            ],
+                            [
+                                'type'    => 'CheckBox',
+                                'name'    => 'OverwriteVariableProfiles',
+                                'caption' => 'Variablenprofile überschreiben',
+                                'visible' => false,
+                                'value'   => true
+                            ],
+                            [
+                                'type'    => 'Button',
+                                'name'    => 'ApplyPreTriggerValues',
+                                'caption' => 'Übernehmen',
+                                'visible' => false,
+                                'onClick' => self::MODULE_PREFIX . '_ApplyDeterminedVariables($id, $DeterminedVariableList, $OverwriteVariableProfiles);'
+                            ]
+                        ]
+                    ]
+                ],
                 [
                     'type'    => 'PopupButton',
                     'caption' => 'Aktueller Status',
@@ -279,7 +405,7 @@ trait BATM_ConfigurationForm
                                     'column'    => 'ActualStatus',
                                     'direction' => 'ascending'
                                 ],
-                                'columns'  => [
+                                'columns' => [
                                     [
                                         'name'    => 'ActualStatus',
                                         'caption' => 'Aktueller Status',
@@ -331,7 +457,7 @@ trait BATM_ConfigurationForm
                                 'caption'  => 'Bearbeiten',
                                 'visible'  => false,
                                 'objectID' => 0
-                            ],
+                            ]
                         ]
                     ],
                     'onClick' => self::MODULE_PREFIX . '_GetActualVariableStates($id);'
@@ -340,14 +466,14 @@ trait BATM_ConfigurationForm
                     'type'     => 'List',
                     'name'     => 'TriggerList',
                     'caption'  => 'Auslöser',
-                    'rowCount' => $amount,
+                    'rowCount' => $amountRows,
                     'add'      => true,
                     'delete'   => true,
                     'sort'     => [
                         'column'    => 'ID',
                         'direction' => 'ascending'
                     ],
-                    'columns'  => [
+                    'columns' => [
                         [
                             'caption' => 'Aktiviert',
                             'name'    => 'Use',
@@ -357,14 +483,6 @@ trait BATM_ConfigurationForm
                                 'type' => 'CheckBox'
                             ]
                         ],
-                        /*
-                        [
-                            'name'    => 'ActualStatus',
-                            'caption' => 'Aktueller Status',
-                            'width'   => '200px',
-                            'add'     => ''
-                        ],
-                         */
                         [
                             'name'    => 'ID',
                             'caption' => 'ID',
@@ -502,6 +620,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
+                            'caption' => 'Bedingung',
+                            'name'    => 'PrimaryTriggerValue',
+                            'width'   => '250px',
+                            'add'     => '',
+                            'save'    => false
+                        ],
+                        [
                             'caption' => ' ',
                             'name'    => 'PrimaryCondition',
                             'width'   => '200px',
@@ -554,6 +679,177 @@ trait BATM_ConfigurationForm
                     'caption'  => 'Bearbeiten',
                     'visible'  => false,
                     'objectID' => 0
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Anzahl Auslöser: ' . $amountVariables
+                ],
+                [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Variablenprofil zuweisen',
+                    'popup'   => [
+                        'caption' => 'Variablenprofil wirklich automatisch zuweisen?',
+                        'items'   => [
+                            [
+                                'type'     => 'List',
+                                'name'     => 'VariableProfileList',
+                                'caption'  => 'Variablen',
+                                'add'      => false,
+                                'rowCount' => $amountVariables,
+                                'sort'     => [
+                                    'column'    => 'SensorID',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'caption' => 'Auswahl',
+                                        'name'    => 'Use',
+                                        'width'   => '100px',
+                                        'add'     => true,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'caption' => 'Profil umkehren',
+                                        'name'    => 'UseReversedProfile',
+                                        'width'   => '150px',
+                                        'add'     => false,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'name'    => 'SensorID',
+                                        'caption' => 'ID',
+                                        'width'   => '80px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'caption' => 'Objektbaum',
+                                        'name'    => 'VariableLocation',
+                                        'width'   => '350px',
+                                        'add'     => '',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Designation',
+                                        'caption' => 'Name',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ]
+                                ],
+                                'values' => $variableProfileListValues,
+                            ],
+                            [
+                                'type'    => 'Button',
+                                'caption' => 'Zuweisen',
+                                'onClick' => self::MODULE_PREFIX . '_AssignVariableProfile($id, $VariableProfileList);'
+                            ],
+                            [
+                                'type'    => 'ProgressBar',
+                                'name'    => 'VariableProfileProgress',
+                                'caption' => 'Fortschritt',
+                                'minimum' => 0,
+                                'maximum' => 100,
+                                'visible' => false
+                            ],
+                            [
+                                'type'    => 'Label',
+                                'name'    => 'VariableProfileProgressInfo',
+                                'caption' => '',
+                                'visible' => false
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Verknüpfung erstellen',
+                    'popup'   => [
+                        'caption' => 'Variablenverknüpfungen wirklich erstellen?',
+                        'items'   => [
+                            [
+                                'type'    => 'SelectCategory',
+                                'name'    => 'LinkCategory',
+                                'caption' => 'Kategorie',
+                                'width'   => '610px'
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'VariableLinkList',
+                                'caption'  => 'Variablen',
+                                'add'      => false,
+                                'rowCount' => $amountVariables,
+                                'sort'     => [
+                                    'column'    => 'SensorID',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'caption' => 'Auswahl',
+                                        'name'    => 'Use',
+                                        'width'   => '100px',
+                                        'add'     => false,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'name'    => 'SensorID',
+                                        'caption' => 'ID',
+                                        'width'   => '80px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'caption' => 'Objektbaum',
+                                        'name'    => 'VariableLocation',
+                                        'width'   => '350px',
+                                        'add'     => '',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Designation',
+                                        'caption' => 'Name',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '400px',
+                                        'save'    => false
+                                    ]
+                                ],
+                                'values' => $variableLinksListValues,
+                            ],
+                            [
+                                'type'    => 'Button',
+                                'caption' => 'Erstellen',
+                                'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory, $VariableLinkList);'
+                            ],
+                            [
+                                'type'    => 'ProgressBar',
+                                'name'    => 'VariableLinkProgress',
+                                'caption' => 'Fortschritt',
+                                'minimum' => 0,
+                                'maximum' => 100,
+                                'visible' => false
+                            ],
+                            [
+                                'type'    => 'Label',
+                                'name'    => 'VariableLinkProgressInfo',
+                                'caption' => '',
+                                'visible' => false
+                            ]
+                        ]
+                    ]
                 ]
             ]
         ];
@@ -581,7 +877,7 @@ trait BATM_ConfigurationForm
         //Immediate notification
         $immediateNotificationValues = [];
         $immediateNotification = json_decode($this->ReadPropertyString('ImmediateNotification'), true);
-        $amountImmediateNotification = count($immediateNotification);
+        $amountImmediateNotification = count($immediateNotification) + 1;
         if ($amountImmediateNotification == 0) {
             $amountImmediateNotification = 1;
         }
@@ -600,7 +896,7 @@ trait BATM_ConfigurationForm
         //Immediate push notification
         $immediatePushNotificationValues = [];
         $immediatePushNotification = json_decode($this->ReadPropertyString('ImmediatePushNotification'), true);
-        $amountImmediatePushNotification = count($immediatePushNotification);
+        $amountImmediatePushNotification = count($immediatePushNotification) + 1;
         if ($amountImmediatePushNotification == 0) {
             $amountImmediatePushNotification = 1;
         }
@@ -619,7 +915,7 @@ trait BATM_ConfigurationForm
         //Immediate mailer notification
         $immediateNotificationMailerValues = [];
         $immediateMailerNotification = json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true);
-        $amountImmediateMailerNotification = count($immediateMailerNotification);
+        $amountImmediateMailerNotification = count($immediateMailerNotification) + 1;
         if ($amountImmediateMailerNotification == 0) {
             $amountImmediateMailerNotification = 1;
         }
@@ -659,9 +955,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Immediate notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Nachricht',
@@ -750,7 +1044,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️   %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -843,7 +1137,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -883,10 +1177,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'ImmediateNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -899,9 +1189,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Immediate push notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Push-Nachricht',
@@ -980,7 +1268,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1154,7 +1442,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1285,10 +1573,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'ImmediatePushNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -1301,9 +1585,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Immediate email notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'E-Mail',
@@ -1331,7 +1613,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationMailerConfigurationButton", "ID " . $ImmediateNotificationMailer["ID"] . " konfigurieren", $ImmediateNotificationMailer["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationMailerConfigurationButton", "ID " . $ImmediateMailerNotification["ID"] . " konfigurieren", $ImmediateMailerNotification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::MAILER_MODULE_GUID
@@ -1382,7 +1664,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s',
+                            'add'     => '⚠️%1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1454,7 +1736,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s',
+                            'add'     => '🟢 %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1503,10 +1785,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'ImmediateNotificationMailerConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -1521,7 +1799,7 @@ trait BATM_ConfigurationForm
         //Daily notification
         $dailyNotificationValues = [];
         $dailyNotification = json_decode($this->ReadPropertyString('DailyNotification'), true);
-        $amountDailyNotification = count($dailyNotification);
+        $amountDailyNotification = count($dailyNotification) + 1;
         if ($amountDailyNotification == 0) {
             $amountDailyNotification = 1;
         }
@@ -1540,7 +1818,7 @@ trait BATM_ConfigurationForm
         //Daily push notification
         $dailyPushNotificationValues = [];
         $dailyPushNotification = json_decode($this->ReadPropertyString('DailyPushNotification'), true);
-        $amountDailyPushNotification = count($dailyPushNotification);
+        $amountDailyPushNotification = count($dailyPushNotification) + 1;
         if ($amountDailyPushNotification == 0) {
             $amountDailyPushNotification = 1;
         }
@@ -1559,7 +1837,7 @@ trait BATM_ConfigurationForm
         //Daily mailer notification
         $dailyNotificationMailerValues = [];
         $dailyMailerNotification = json_decode($this->ReadPropertyString('DailyMailerNotification'), true);
-        $amountDailyMailerNotification = count($dailyMailerNotification);
+        $amountDailyMailerNotification = count($dailyMailerNotification) + 1;
         if ($amountDailyMailerNotification == 0) {
             $amountDailyMailerNotification = 1;
         }
@@ -1662,9 +1940,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Daily notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Nachricht',
@@ -1753,7 +2029,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1846,7 +2122,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1886,10 +2162,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'DailyNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -1902,9 +2174,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Daily push notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Push-Nachricht',
@@ -1983,7 +2253,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2157,7 +2427,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2288,10 +2558,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'DailyPushNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -2304,9 +2570,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Daily email notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'E-Mail',
@@ -2334,7 +2598,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationMailerConfigurationButton", "ID " . $DailyNotificationMailer["ID"] . " konfigurieren", $DailyNotificationMailer["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationMailerConfigurationButton", "ID " . $DailyMailerNotification["ID"] . " konfigurieren", $DailyMailerNotification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::MAILER_MODULE_GUID
@@ -2385,7 +2649,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s',
+                            'add'     => '⚠️%1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2457,7 +2721,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s',
+                            'add'     => '🟢 %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2506,10 +2770,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'DailyNotificationMailerConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -2524,7 +2784,7 @@ trait BATM_ConfigurationForm
         //Weekly notification
         $weeklyNotificationValues = [];
         $weeklyNotification = json_decode($this->ReadPropertyString('WeeklyNotification'), true);
-        $amountWeeklyNotification = count($weeklyNotification);
+        $amountWeeklyNotification = count($weeklyNotification) + 1;
         if ($amountWeeklyNotification == 0) {
             $amountWeeklyNotification = 1;
         }
@@ -2543,7 +2803,7 @@ trait BATM_ConfigurationForm
         //Weekly push notification
         $weeklyPushNotificationValues = [];
         $weeklyPushNotification = json_decode($this->ReadPropertyString('WeeklyPushNotification'), true);
-        $amountWeeklyPushNotification = count($weeklyPushNotification);
+        $amountWeeklyPushNotification = count($weeklyPushNotification) + 1;
         if ($amountWeeklyPushNotification == 0) {
             $amountWeeklyPushNotification = 1;
         }
@@ -2562,7 +2822,7 @@ trait BATM_ConfigurationForm
         //Weekly mailer notification
         $weeklyNotificationMailerValues = [];
         $weeklyMailerNotification = json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true);
-        $amountWeeklyMailerNotification = count($weeklyMailerNotification);
+        $amountWeeklyMailerNotification = count($weeklyMailerNotification) + 1;
         if ($amountWeeklyMailerNotification == 0) {
             $amountWeeklyMailerNotification = 1;
         }
@@ -2636,9 +2896,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Weekly notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Nachricht',
@@ -2727,7 +2985,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2820,7 +3078,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2860,10 +3118,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'WeeklyNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -2876,9 +3130,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Weekly push notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'Push-Nachricht',
@@ -2957,7 +3209,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s Batterie schwach',
+                            'add'     => '⚠️%1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3131,7 +3383,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s Batterie OK',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3262,10 +3514,6 @@ trait BATM_ConfigurationForm
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "WebFront");'
                         ],
                         [
-                            'type'    => 'Label',
-                            'caption' => ' '
-                        ],
-                        [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'WeeklyPushNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
@@ -3278,9 +3526,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-
                 //Weekly email notification
-
                 [
                     'type'    => 'Label',
                     'caption' => 'E-Mail',
@@ -3308,7 +3554,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'ID',
                             'width'   => '300px',
                             'add'     => 0,
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationMailerConfigurationButton", "ID " . $WeeklyNotificationMailer["ID"] . " konfigurieren", $WeeklyNotificationMailer["ID"]);',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationMailerConfigurationButton", "ID " . $WeeklyMailerNotification["ID"] . " konfigurieren", $WeeklyMailerNotification["ID"]);',
                             'edit'    => [
                                 'type'     => 'SelectModule',
                                 'moduleID' => self::MAILER_MODULE_GUID
@@ -3359,7 +3605,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️  %1$s',
+                            'add'     => '⚠️%1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3431,7 +3677,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢  %1$s',
+                            'add'     => '🟢 %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3478,10 +3724,6 @@ trait BATM_ConfigurationForm
                             'type'    => 'Button',
                             'caption' => 'Neue Instanz erstellen',
                             'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "Mailer");'
-                        ],
-                        [
-                            'type'    => 'Label',
-                            'caption' => ' '
                         ],
                         [
                             'type'     => 'OpenObjectButton',
@@ -3542,250 +3784,11 @@ trait BATM_ConfigurationForm
 
         ########## Actions
 
-        //Determine variables
-        $form['actions'][] =
-            [
-                'type'    => 'Label',
-                'caption' => 'Auslöser'
-            ];
-
-        $form['actions'][] =
-            [
-                'type'  => 'RowLayout',
-                'items' => [
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Variablen ermitteln',
-                        'popup'   => [
-                            'caption' => 'Variablen wirklich automatisch ermitteln und hinzufügen?',
-                            'items'   => [
-                                [
-                                    'type'    => 'Select',
-                                    'name'    => 'VariableDeterminationType',
-                                    'caption' => 'Auswahl',
-                                    'options' => [
-                                        [
-                                            'caption' => 'Profil auswählen',
-                                            'value'   => 0
-                                        ],
-                                        [
-                                            'caption' => 'Profil: ~Battery',
-                                            'value'   => 1
-                                        ],
-                                        [
-                                            'caption' => 'Profil: ~Battery.Reversed',
-                                            'value'   => 2
-                                        ],
-                                        [
-                                            'caption' => 'Profil: BATM.Battery.Boolean',
-                                            'value'   => 3
-                                        ],
-                                        [
-                                            'caption' => 'Profil: BATM.Battery.Boolean.Reversed',
-                                            'value'   => 4
-                                        ],
-                                        [
-                                            'caption' => 'Profil: BATM.Battery.Integer',
-                                            'value'   => 5
-                                        ],
-                                        [
-                                            'caption' => 'Profil: BATM.Battery.Integer.Reversed',
-                                            'value'   => 6
-                                        ],
-                                        [
-                                            'caption' => 'Ident: LOWBAT',
-                                            'value'   => 7
-                                        ],
-                                        [
-                                            'caption' => 'Ident: LOW_BAT',
-                                            'value'   => 8
-                                        ],
-                                        [
-                                            'caption' => 'Ident: LOWBAT, LOW_BAT',
-                                            'value'   => 9
-                                        ],
-                                        [
-                                            'caption' => 'Ident: Benutzerdefiniert',
-                                            'value'   => 10
-                                        ]
-                                    ],
-                                    'value'    => 9,
-                                    'onChange' => self::MODULE_PREFIX . '_CheckVariableDeterminationValue($id, $VariableDeterminationType);'
-                                ],
-                                [
-                                    'type'    => 'SelectProfile',
-                                    'name'    => 'ProfileSelection',
-                                    'caption' => 'Profil',
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'    => 'ValidationTextBox',
-                                    'name'    => 'VariableDeterminationValue',
-                                    'caption' => 'Identifikator',
-                                    'visible' => false
-                                ],
-
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Ermitteln',
-                                    'onClick' => self::MODULE_PREFIX . '_DetermineVariables($id, $VariableDeterminationType, $VariableDeterminationValue, $ProfileSelection);'
-                                ],
-                                [
-                                    'type'    => 'ProgressBar',
-                                    'name'    => 'VariableDeterminationProgress',
-                                    'caption' => 'Fortschritt',
-                                    'minimum' => 0,
-                                    'maximum' => 100,
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'    => 'Label',
-                                    'name'    => 'VariableDeterminationProgressInfo',
-                                    'caption' => '',
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'     => 'List',
-                                    'name'     => 'DeterminedVariableList',
-                                    'caption'  => 'Variablen',
-                                    'visible'  => false,
-                                    'rowCount' => 15,
-                                    'delete'   => true,
-                                    'sort'     => [
-                                        'column'    => 'ID',
-                                        'direction' => 'ascending'
-                                    ],
-                                    'columns'  => [
-                                        [
-                                            'caption' => 'Übernehmen',
-                                            'name'    => 'Use',
-                                            'width'   => '100px',
-                                            'add'     => true,
-                                            'edit'    => [
-                                                'type' => 'CheckBox'
-                                            ]
-                                        ],
-                                        [
-                                            'name'    => 'ID',
-                                            'caption' => 'ID',
-                                            'width'   => '80px',
-                                            'add'     => ''
-                                        ],
-                                        [
-                                            'caption' => 'Objektbaum',
-                                            'name'    => 'Location',
-                                            'width'   => '800px',
-                                            'add'     => ''
-                                        ],
-                                    ]
-                                ],
-                                [
-                                    'type'    => 'CheckBox',
-                                    'name'    => 'OverwriteVariableProfiles',
-                                    'caption' => 'Variablenprofile überschreiben',
-                                    'visible' => false,
-                                    'value'   => true
-                                ],
-                                [
-                                    'type'    => 'Button',
-                                    'name'    => 'ApplyPreTriggerValues',
-                                    'caption' => 'Übernehmen',
-                                    'visible' => false,
-                                    'onClick' => self::MODULE_PREFIX . '_ApplyDeterminedVariables($id, $DeterminedVariableList, $OverwriteVariableProfiles);'
-                                ],
-                            ]
-                        ]
-                    ],
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Status aktualisieren',
-                        'popup'   => [
-                            'caption' => 'Status wirklich aktualisieren?',
-                            'items'   => [
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Aktualisieren',
-                                    'onClick' => self::MODULE_PREFIX . '_CheckBatteries($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
-                                ]
-                            ],
-                            'buttons' => [
-                                [
-                                    'caption' => 'Konfiguration neu laden',
-                                    'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
-                                ]
-                            ]
-                        ]
-                    ],
-                    [
-                        'type'    => 'PopupButton',
-                        'caption' => 'Variablenprofil zuweisen',
-                        'popup'   => [
-                            'caption' => 'Variablenprofile wirklich zuweisen?',
-                            'items'   => [
-                                [
-                                    'type'    => 'CheckBox',
-                                    'name'    => 'OverrideProfiles',
-                                    'caption' => 'Bestehende Variablenprofile überschreiben',
-                                    'value'   => true
-                                ],
-                                [
-                                    'type'    => 'Button',
-                                    'caption' => 'Zuweisen',
-                                    'onClick' => self::MODULE_PREFIX . '_AssignVariableProfile($id, $OverrideProfiles);'
-                                ],
-                                [
-                                    'type'    => 'ProgressBar',
-                                    'name'    => 'VariableProfileProgress',
-                                    'caption' => 'Fortschritt',
-                                    'minimum' => 0,
-                                    'maximum' => 100,
-                                    'visible' => false
-                                ],
-                                [
-                                    'type'    => 'Label',
-                                    'name'    => 'VariableProfileProgressInfo',
-                                    'caption' => '',
-                                    'visible' => false
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ];
-
-        $form['actions'][] =
-            [
-                'type'    => 'Label',
-                'caption' => ' '
-            ];
-
-        //Notification
+        //Notifications
         $form['actions'][] =
             [
                 'type'    => 'Label',
                 'caption' => 'Benachrichtigungen'
-            ];
-
-        $form['actions'][] =
-            [
-                'type'    => 'PopupButton',
-                'caption' => 'Alle Benachrichtigungslisten zurücksetzen',
-                'popup'   => [
-                    'caption' => 'Alle Benachrichtigungslisten wirklich zurücksetzen?',
-                    'items'   => [
-                        [
-                            'type'    => 'Button',
-                            'caption' => 'Zurücksetzen',
-                            'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt!");'
-                        ]
-                    ],
-                    'buttons' => [
-                        [
-                            'caption' => 'Konfiguration neu laden',
-                            'onClick' => self::MODULE_PREFIX . '_ReloadConfig($id);'
-                        ]
-                    ]
-                ]
             ];
 
         $form['actions'][] =
@@ -3820,6 +3823,20 @@ trait BATM_ConfigurationForm
                                 ]
                             ]
                         ]
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Alle Benachrichtigungslisten zurücksetzen',
+                        'popup'   => [
+                            'caption' => 'Alle Benachrichtigungslisten wirklich zurücksetzen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Zurücksetzen',
+                                    'onClick' => self::MODULE_PREFIX . '_ResetNotificationLists($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Listen wurden zurückgesetzt!");'
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ];
@@ -3848,181 +3865,43 @@ trait BATM_ConfigurationForm
                 'caption' => ' '
             ];
 
-        //Immediate notification
-        //Low battery
-        $lowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
-        $amountImmediateLowBatteryVariables = count($criticalVariables);
-        if ($amountImmediateLowBatteryVariables == 0) {
-            $amountImmediateLowBatteryVariables = 1;
-        }
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $lowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-
-        //Normal battery
-        $normalBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
-        $amountImmediateNormalBatteryVariables = count($criticalVariables);
-        if ($amountImmediateNormalBatteryVariables == 0) {
-            $amountImmediateNormalBatteryVariables = 1;
-        }
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $normalBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#C0FFC0']; //light green
-                }
-            }
-        }
-
-        //Daily notification
-        //Low battery
-        $dailyLowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
-        $amountDailyLowBatteryVariables = count($criticalVariables);
-        if ($amountDailyLowBatteryVariables == 0) {
-            $amountDailyLowBatteryVariables = 1;
-        }
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $dailyLowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-
-        //Weekly notification
-        //Low battery
-        $weeklyLowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
-        $amountWeeklyLowBatteryVariables = count($criticalVariables);
-        if ($amountWeeklyLowBatteryVariables == 0) {
-            $amountWeeklyLowBatteryVariables = 1;
-        }
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $weeklyLowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
-        $amountReferences = count($references);
+        $amountReferences = count($references) + 1;
         if ($amountReferences == 0) {
             $amountReferences = 1;
         }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
+            $location = '';
             $rowColor = '#FFC0C0'; //red
             if (@IPS_ObjectExists($reference)) {
                 $name = IPS_GetName($reference);
+                $location = IPS_GetLocation($reference);
                 $rowColor = '#C0FFC0'; //light green
             }
             $registeredReferences[] = [
-                'ObjectID' => $reference,
-                'Name'     => $name,
-                'rowColor' => $rowColor];
+                'ObjectID'         => $reference,
+                'Name'             => $name,
+                'VariableLocation' => $location,
+                'rowColor'         => $rowColor];
         }
 
         //Registered messages
         $registeredMessages = [];
         $messages = $this->GetMessageList();
-        $amountMessages = count($messages);
+        $amountMessages = count($messages) + 1;
         if ($amountMessages == 0) {
             $amountMessages = 1;
         }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
+            $location = '';
             $rowColor = '#FFC0C0'; //red
             if (@IPS_ObjectExists($id)) {
                 $name = IPS_GetName($id);
+                $location = IPS_GetLocation($id);
                 $rowColor = '#C0FFC0'; //light green
             }
             switch ($messageID) {
@@ -4040,6 +3919,7 @@ trait BATM_ConfigurationForm
             $registeredMessages[] = [
                 'ObjectID'           => $id,
                 'Name'               => $name,
+                'VariableLocation'   => $location,
                 'MessageID'          => $messageID,
                 'MessageDescription' => $messageDescription,
                 'rowColor'           => $rowColor];
@@ -4052,303 +3932,296 @@ trait BATM_ConfigurationForm
             'items'   => [
                 [
                     'type'    => 'Label',
-                    'caption' => 'Auslöser',
+                    'caption' => 'Benachrichtigungen',
                     'italic'  => true,
                     'bold'    => true
                 ],
+                //Immediate notification
                 [
-                    'type'  => 'RowLayout',
-                    'items' => [
-                        [
-                            'type'    => 'PopupButton',
-                            'caption' => 'Verknüpfung erstellen',
-                            'popup'   => [
-                                'caption' => 'Variablenverknüpfungen wirklich erstellen?',
-                                'items'   => [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Sofortige Benachrichtigung',
+                    'popup'   => [
+                        'caption' => 'Sofortige Benachrichtigung',
+                        'items'   => [
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
                                     [
-                                        'type'    => 'SelectCategory',
-                                        'name'    => 'LinkCategory',
-                                        'caption' => 'Kategorie',
-                                        'width'   => '610px'
-                                    ],
-                                    [
-                                        'type'    => 'Button',
-                                        'caption' => 'Erstellen',
-                                        'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory);'
-                                    ],
-                                    [
-                                        'type'    => 'ProgressBar',
-                                        'name'    => 'VariableLinkProgress',
-                                        'caption' => 'Fortschritt',
-                                        'minimum' => 0,
-                                        'maximum' => 100,
-                                        'visible' => false
+                                        'type'    => 'Label',
+                                        'caption' => '⚠️ '
                                     ],
                                     [
                                         'type'    => 'Label',
-                                        'name'    => 'VariableLinkProgressInfo',
-                                        'caption' => '',
-                                        'visible' => false
+                                        'caption' => 'Batterie schwach',
+                                        'bold'    => true,
+                                        'italic'  => true
                                     ]
                                 ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'ImmediateNotificationListDeviceStatusLowBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusLowBattery", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationLowBatteryConfigurationButton", "ID " . $ImmediateNotificationListDeviceStatusLowBattery["ID"] . " bearbeiten", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'ImmediateNotificationLowBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
+                            [
+                                'type'    => 'Label',
+                                'caption' => ' '
+                            ],
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🟢 '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie OK',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'ImmediateNotificationListDeviceStatusNormal',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusNormal", $ImmediateNotificationListDeviceStatusNormal["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationNormalConfigurationButton", "ID " . $ImmediateNotificationListDeviceStatusNormal["ID"] . " bearbeiten", $ImmediateNotificationListDeviceStatusNormal["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'ImmediateNotificationNormalConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
                             ]
                         ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => 'Sofortige Benachrichtigung',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Batterie schwach',
-                    'delete'   => true,
-                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusLowBattery", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);',
-                    'rowCount' => $amountImmediateLowBatteryVariables,
-                    'sort'     => [
-                        'column'    => 'Name',
-                        'direction' => 'ascending'
                     ],
-                    'columns' => [
-                        [
-                            'name'    => 'ID',
-                            'caption' => 'Variable ID',
-                            'width'   => '110px'
-                        ],
-                        [
-                            'name'    => 'Name',
-                            'caption' => 'Name',
-                            'width'   => '350px'
-                        ],
-                        [
-                            'name'    => 'Comment',
-                            'caption' => 'Bemerkung',
-                            'width'   => '250px'
-                        ],
-                        [
-                            'name'    => 'BatteryType',
-                            'caption' => 'Batterietyp',
-                            'width'   => '200px'
-                        ],
-                        [
-                            'name'    => 'Timestamp',
-                            'caption' => 'Datum, Uhrzeit',
-                            'width'   => '160px'
-                        ]
-                    ],
-                    'values' => $lowBatteryVariables
+                    'onClick' => self::MODULE_PREFIX . '_GetImmediateNotificationStatus($id);'
                 ],
+                //Daily notification
                 [
                     'type'    => 'PopupButton',
-                    'caption' => 'Zurücksetzen',
-                    'popup'   => [
-                        'caption' => 'Liste wirklich zurücksetzen?',
-                        'items'   => [
-                            [
-                                'type'    => 'Button',
-                                'caption' => 'Zurücksetzen',
-                                'onClick' => self::MODULE_PREFIX . '_ResetAttribute($id, "ImmediateNotificationListDeviceStatusLowBattery");' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Liste wurde zurückgesetzt, bitte Konfiguration neu laden!");'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'ImmediateNotificationListDeviceStatusNormal',
-                    'caption'  => 'Batterie OK',
-                    'delete'   => true,
-                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusNormal", $ImmediateNotificationListDeviceStatusNormal["ID"]);',
-                    'rowCount' => $amountImmediateNormalBatteryVariables,
-                    'sort'     => [
-                        'column'    => 'Name',
-                        'direction' => 'ascending'
-                    ],
-                    'columns' => [
-                        [
-                            'name'    => 'ID',
-                            'caption' => 'Variable ID',
-                            'width'   => '110px'
-                        ],
-                        [
-                            'name'    => 'Name',
-                            'caption' => 'Name',
-                            'width'   => '350px'
-                        ],
-                        [
-                            'name'    => 'Comment',
-                            'caption' => 'Bemerkung',
-                            'width'   => '250px'
-                        ],
-                        [
-                            'name'    => 'BatteryType',
-                            'caption' => 'Batterietyp',
-                            'width'   => '200px'
-                        ],
-                        [
-                            'name'    => 'Timestamp',
-                            'caption' => 'Datum, Uhrzeit',
-                            'width'   => '160px'
-                        ]
-                    ],
-                    'values' => $normalBatteryVariables
-                ],
-                [
-                    'type'    => 'PopupButton',
-                    'caption' => 'Zurücksetzen',
-                    'popup'   => [
-                        'caption' => 'Liste wirklich zurücksetzen?',
-                        'items'   => [
-                            [
-                                'type'    => 'Button',
-                                'caption' => 'Zurücksetzen',
-                                'onClick' => self::MODULE_PREFIX . '_ResetAttribute($id, "ImmediateNotificationListDeviceStatusNormal");' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Liste wurde zurückgesetzt, bitte Konfiguration neu laden!");'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
                     'caption' => 'Tägliche Benachrichtigung',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'DailyNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Batterie schwach',
-                    'delete'   => true,
-                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
-                    'rowCount' => $amountDailyLowBatteryVariables,
-                    'sort'     => [
-                        'column'    => 'Name',
-                        'direction' => 'ascending'
-                    ],
-                    'columns' => [
-                        [
-                            'name'    => 'ID',
-                            'caption' => 'Variable ID',
-                            'width'   => '110px'
-                        ],
-                        [
-                            'name'    => 'Name',
-                            'caption' => 'Name',
-                            'width'   => '350px'
-                        ],
-                        [
-                            'name'    => 'Comment',
-                            'caption' => 'Bemerkung',
-                            'width'   => '250px'
-                        ],
-                        [
-                            'name'    => 'BatteryType',
-                            'caption' => 'Batterietyp',
-                            'width'   => '200px'
-                        ],
-                        [
-                            'name'    => 'Timestamp',
-                            'caption' => 'Datum, Uhrzeit',
-                            'width'   => '160px'
-                        ]
-                    ],
-                    'values' => $dailyLowBatteryVariables
-                ],
-                [
-                    'type'    => 'PopupButton',
-                    'caption' => 'Zurücksetzen',
                     'popup'   => [
-                        'caption' => 'Liste wirklich zurücksetzen?',
+                        'caption' => 'Tägliche Benachrichtigung',
                         'items'   => [
                             [
-                                'type'    => 'Button',
-                                'caption' => 'Zurücksetzen',
-                                'onClick' => self::MODULE_PREFIX . '_ResetAttribute($id, "DailyNotificationListDeviceStatusLowBattery");' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Liste wurde zurückgesetzt!, bitte Konfiguration neu laden");'
-                            ]
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '⚠️ '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie schwach',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'DailyNotificationListDeviceStatusLowBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationLowBatteryConfigurationButton", "ID " . $DailyNotificationListDeviceStatusLowBattery["ID"] . " bearbeiten", $DailyNotificationListDeviceStatusLowBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'DailyNotificationLowBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
                         ]
-                    ]
+                    ],
+                    'onClick' => self::MODULE_PREFIX . '_GetDailyNotificationStatus($id);'
                 ],
+                //Weekly notification
                 [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
-                [
-                    'type'    => 'Label',
+                    'type'    => 'PopupButton',
                     'caption' => 'Wöchentliche Benachrichtigung',
-                    'italic'  => true,
-                    'bold'    => true
-                ],
-                [
-                    'type'     => 'List',
-                    'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
-                    'caption'  => 'Batterie schwach',
-                    'delete'   => true,
-                    'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "WeeklyNotificationListDeviceStatusLowBattery", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);',
-                    'rowCount' => $amountWeeklyLowBatteryVariables,
-                    'sort'     => [
-                        'column'    => 'Name',
-                        'direction' => 'ascending'
-                    ],
-                    'columns' => [
-                        [
-                            'name'    => 'ID',
-                            'caption' => 'Variable ID',
-                            'width'   => '110px'
-                        ],
-                        [
-                            'name'    => 'Name',
-                            'caption' => 'Name',
-                            'width'   => '350px'
-                        ],
-                        [
-                            'name'    => 'Comment',
-                            'caption' => 'Bemerkung',
-                            'width'   => '250px'
-                        ],
-                        [
-                            'name'    => 'BatteryType',
-                            'caption' => 'Batterietyp',
-                            'width'   => '200px'
-                        ],
-                        [
-                            'name'    => 'Timestamp',
-                            'caption' => 'Datum, Uhrzeit',
-                            'width'   => '160px'
-                        ]
-                    ],
-                    'values' => $weeklyLowBatteryVariables
-                ],
-                [
-                    'type'    => 'PopupButton',
-                    'caption' => 'Zurücksetzen',
                     'popup'   => [
-                        'caption' => 'Liste wirklich zurücksetzen?',
+                        'caption' => 'Wöchentliche Benachrichtigung',
                         'items'   => [
                             [
-                                'type'    => 'Button',
-                                'caption' => 'Zurücksetzen',
-                                'onClick' => self::MODULE_PREFIX . '_ResetAttribute($id, "WeeklyNotificationListDeviceStatusLowBattery");' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die Liste wurde zurückgesetzt, bitte Konfiguration neu laden!");'
-                            ]
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '⚠️ '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie schwach',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationLowBatteryConfigurationButton", "ID " . $WeeklyNotificationListDeviceStatusLowBattery["ID"] . " bearbeiten", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'WeeklyNotificationLowBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
                         ]
-                    ]
+                    ],
+                    'onClick' => self::MODULE_PREFIX . '_GetWeeklyNotificationStatus($id);'
                 ],
                 [
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+                //Registered references
                 [
                     'type'    => 'Label',
                     'caption' => 'Registrierte Referenzen',
@@ -4373,8 +4246,12 @@ trait BATM_ConfigurationForm
                         [
                             'caption' => 'Name',
                             'name'    => 'Name',
-                            'width'   => '300px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
+                            'width'   => '300px'
+                        ],
+                        [
+                            'caption' => 'Objektbaum',
+                            'name'    => 'VariableLocation',
+                            'width'   => '700px'
                         ]
                     ],
                     'values' => $registeredReferences
@@ -4390,6 +4267,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+                //Registered messages
                 [
                     'type'    => 'Label',
                     'caption' => 'Registrierte Nachrichten',
@@ -4414,8 +4292,12 @@ trait BATM_ConfigurationForm
                         [
                             'caption' => 'Name',
                             'name'    => 'Name',
-                            'width'   => '300px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " aufrufen", $RegisteredMessages["ObjectID"]);'
+                            'width'   => '300px'
+                        ],
+                        [
+                            'caption' => 'Objektbaum',
+                            'name'    => 'VariableLocation',
+                            'width'   => '700px'
                         ],
                         [
                             'caption' => 'Nachrichten ID',

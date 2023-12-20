@@ -201,9 +201,9 @@ trait BATM_MonitoredVariables
             return;
         }
         $determinedVariables = array_values($determinedVariables);
-        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
         $this->UpdateFormField('DeterminedVariableList', 'rowCount', count($determinedVariables));
         $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
+        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
         $this->UpdateFormField('OverwriteVariableProfiles', 'visible', true);
         $this->UpdateFormField('ApplyPreTriggerValues', 'visible', true);
     }
@@ -415,9 +415,9 @@ trait BATM_MonitoredVariables
         if ($amount == 0) {
             $amount = 1;
         }
-        $this->UpdateFormField('ActualVariableStates', 'visible', true);
         $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualVariableStates));
+        $this->UpdateFormField('ActualVariableStates', 'visible', true);
     }
 
     /**

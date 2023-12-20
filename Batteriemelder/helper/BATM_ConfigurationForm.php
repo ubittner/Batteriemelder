@@ -238,8 +238,6 @@ trait BATM_ConfigurationForm
         $amountRows = count($variables) + 1;
         foreach ($variables as $variable) {
             $id = 0;
-            $primaryVariableTriggerValue = '';
-            $variableLocation = '';
             $rowColor = '#FFC0C0'; //red
             //Primary condition
             if ($variable['PrimaryCondition'] != '') {
@@ -248,10 +246,7 @@ trait BATM_ConfigurationForm
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
                         if ($id > 1 && @IPS_ObjectExists($id)) {
-                            $primaryVariableTriggerValue = GetValueFormattedEx($id, $primaryCondition[0]['rules']['variable'][0]['value']);
                             $rowColor = '#C0FFC0'; //light green
-                            //Location
-                            $variableLocation = IPS_GetLocation($id);
                             if (!$variable['Use']) {
                                 $rowColor = '#DFDFDF'; //grey
                             }
@@ -259,9 +254,9 @@ trait BATM_ConfigurationForm
                     }
                 }
             }
-            $triggerListValues[] = ['ID' => $id, 'VariableLocation' => $variableLocation, 'PrimaryTriggerValue' => $primaryVariableTriggerValue, 'rowColor' => $rowColor];
-            $variableProfileListValues[] = ['SensorID' => $id, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
-            $variableLinksListValues[] = ['SensorID' => $id, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
+            $triggerListValues[] = ['rowColor' => $rowColor];
+            $variableProfileListValues[] = ['SensorID' => $id, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
+            $variableLinksListValues[] = ['SensorID' => $id, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
         }
 
         $form['elements'][] = [
@@ -343,7 +338,7 @@ trait BATM_ConfigurationForm
                                 'rowCount' => 15,
                                 'delete'   => true,
                                 'sort'     => [
-                                    'column'    => 'ID',
+                                    'column'    => 'Location',
                                     'direction' => 'ascending'
                                 ],
                                 'columns' => [
@@ -469,7 +464,7 @@ trait BATM_ConfigurationForm
                     'add'      => true,
                     'delete'   => true,
                     'sort'     => [
-                        'column'    => 'ID',
+                        'column'    => 'Designation',
                         'direction' => 'ascending'
                     ],
                     'columns' => [
@@ -483,25 +478,11 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'name'    => 'ID',
-                            'caption' => 'ID',
-                            'width'   => '80px',
-                            'add'     => '',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
-                            'save'    => false
-                        ],
-                        [
-                            'caption' => 'Objektbaum',
-                            'name'    => 'VariableLocation',
-                            'width'   => '350px',
-                            'add'     => '',
-                            'save'    => false
-                        ],
-                        [
                             'caption' => 'Name',
                             'name'    => 'Designation',
-                            'width'   => '300px',
+                            'width'   => '400px',
                             'add'     => '',
+                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
@@ -509,7 +490,7 @@ trait BATM_ConfigurationForm
                         [
                             'caption' => 'Bemerkung',
                             'name'    => 'Comment',
-                            'width'   => '200px',
+                            'width'   => '300px',
                             'add'     => '',
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
@@ -520,7 +501,6 @@ trait BATM_ConfigurationForm
                             'name'    => 'BatteryType',
                             'width'   => '200px',
                             'add'     => '',
-                            'visible' => false,
                             'edit'    => [
                                 'type'    => 'Select',
                                 'options' => [
@@ -580,33 +560,8 @@ trait BATM_ConfigurationForm
                             'name'    => 'UserDefinedBatteryType',
                             'width'   => '300px',
                             'add'     => '',
-                            'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerCheckBatteryCondition',
-                            'width'   => '200px',
-                            'add'     => '',
-                            'visible' => false,
-                            'save'    => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Bedingung:',
-                            'name'    => 'LabelCheckBatteryCondition',
-                            'width'   => '200px',
-                            'add'     => '',
-                            'visible' => false,
-                            'save'    => false,
-                            'edit'    => [
-                                'type'   => 'Label',
-                                'italic' => true,
-                                'bold'   => true
                             ]
                         ],
                         [
@@ -619,44 +574,12 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Bedingung',
-                            'name'    => 'PrimaryTriggerValue',
-                            'width'   => '250px',
-                            'add'     => '',
-                            'save'    => false
-                        ],
-                        [
-                            'caption' => ' ',
+                            'caption' => 'Primäre Bedingung ',
                             'name'    => 'PrimaryCondition',
-                            'width'   => '200px',
+                            'width'   => '1000px',
                             'add'     => '',
-                            'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectCondition'
-                            ]
-                        ],
-                        [
-                            'caption' => ' ',
-                            'name'    => 'SpacerBatteryReplacement',
-                            'width'   => '200px',
-                            'add'     => '',
-                            'visible' => false,
-                            'save'    => false,
-                            'edit'    => [
-                                'type' => 'Label'
-                            ]
-                        ],
-                        [
-                            'caption' => 'Batteriewechsel:',
-                            'name'    => 'LabelBatteryReplacement',
-                            'width'   => '200px',
-                            'add'     => '',
-                            'visible' => false,
-                            'save'    => false,
-                            'edit'    => [
-                                'type'   => 'Label',
-                                'italic' => true,
-                                'bold'   => true
                             ]
                         ],
                         [
@@ -664,20 +587,12 @@ trait BATM_ConfigurationForm
                             'name'    => 'LastBatteryReplacement',
                             'width'   => '200px',
                             'add'     => '{"year":0,"month":0,"day":0}',
-                            'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectDate'
                             ]
                         ]
                     ],
                     'values' => $triggerListValues,
-                ],
-                [
-                    'type'     => 'OpenObjectButton',
-                    'name'     => 'TriggerListConfigurationButton',
-                    'caption'  => 'Bearbeiten',
-                    'visible'  => false,
-                    'objectID' => 0
                 ],
                 [
                     'type'    => 'Label',
@@ -696,7 +611,7 @@ trait BATM_ConfigurationForm
                                 'add'      => false,
                                 'rowCount' => $amountVariables,
                                 'sort'     => [
-                                    'column'    => 'SensorID',
+                                    'column'    => 'Designation',
                                     'direction' => 'ascending'
                                 ],
                                 'columns' => [
@@ -722,13 +637,6 @@ trait BATM_ConfigurationForm
                                         'name'    => 'SensorID',
                                         'caption' => 'ID',
                                         'width'   => '80px',
-                                        'save'    => false
-                                    ],
-                                    [
-                                        'caption' => 'Objektbaum',
-                                        'name'    => 'VariableLocation',
-                                        'width'   => '350px',
-                                        'add'     => '',
                                         'save'    => false
                                     ],
                                     [
@@ -787,7 +695,7 @@ trait BATM_ConfigurationForm
                                 'add'      => false,
                                 'rowCount' => $amountVariables,
                                 'sort'     => [
-                                    'column'    => 'SensorID',
+                                    'column'    => 'Designation',
                                     'direction' => 'ascending'
                                 ],
                                 'columns' => [
@@ -804,13 +712,6 @@ trait BATM_ConfigurationForm
                                         'name'    => 'SensorID',
                                         'caption' => 'ID',
                                         'width'   => '80px',
-                                        'save'    => false
-                                    ],
-                                    [
-                                        'caption' => 'Objektbaum',
-                                        'name'    => 'VariableLocation',
-                                        'width'   => '350px',
-                                        'add'     => '',
                                         'save'    => false
                                     ],
                                     [
@@ -849,6 +750,13 @@ trait BATM_ConfigurationForm
                             ]
                         ]
                     ]
+                ],
+                [
+                    'type'     => 'OpenObjectButton',
+                    'name'     => 'TriggerListConfigurationButton',
+                    'caption'  => 'Bearbeiten',
+                    'visible'  => false,
+                    'objectID' => 0
                 ]
             ]
         ];
@@ -4170,7 +4078,7 @@ trait BATM_ConfigurationForm
                                 'type'     => 'List',
                                 'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
                                 'delete'   => true,
-                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "WeeklyNotificationListDeviceStatusLowBattery", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);',
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'Name',

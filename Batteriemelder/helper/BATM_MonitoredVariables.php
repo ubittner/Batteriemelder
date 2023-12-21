@@ -162,7 +162,6 @@ trait BATM_MonitoredVariables
                 }
             }
         }
-        $amount = count($determinedVariables);
         //Get already listed variables
         $listedVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
         foreach ($listedVariables as $listedVariable) {
@@ -188,6 +187,7 @@ trait BATM_MonitoredVariables
                 }
             }
         }
+        $amount = count($determinedVariables);
         if (empty($determinedVariables)) {
             $this->UpdateFormField('VariableDeterminationProgress', 'visible', false);
             $this->UpdateFormField('VariableDeterminationProgressInfo', 'visible', false);
@@ -238,11 +238,11 @@ trait BATM_MonitoredVariables
                 $profileName = '';
                 switch ($variableType) {
                     case 0: //Boolean
-                        $profileName = self::MODULE_PREFIX . '.Battery.Boolean';
+                        $profileName = 'Battery.Boolean';
                         break;
 
                     case 1: //Integer
-                        $profileName = self::MODULE_PREFIX . '.Battery.Integer';
+                        $profileName = 'Battery.Integer';
                         break;
 
                 }
@@ -467,16 +467,16 @@ trait BATM_MonitoredVariables
                     switch ($variableType) {
                         //0: Boolean, 1: Integer, 2: Float, 3: String
                         case 0:
-                            $profileName = self::MODULE_PREFIX . '.Battery.Boolean';
+                            $profileName = 'Battery.Boolean';
                             if ($variable['UseReversedProfile']) {
-                                $profileName = self::MODULE_PREFIX . '.Battery.Boolean.Reversed';
+                                $profileName = 'Battery.Boolean.Reversed';
                             }
                             break;
 
                         case 1:
-                            $profileName = self::MODULE_PREFIX . '.Battery.Integer';
+                            $profileName = 'Battery.Integer';
                             if ($variable['UseReversedProfile']) {
-                                $profileName = self::MODULE_PREFIX . '.Battery.Integer.Reversed';
+                                $profileName = 'Battery.Integer.Reversed';
                             }
                             break;
 

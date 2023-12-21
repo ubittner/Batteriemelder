@@ -98,7 +98,7 @@ class Batteriemelder extends IPSModule
         ########## General profiles
 
         //Battery boolean
-        $profile = self::MODULE_PREFIX . '.Battery.Boolean';
+        $profile = 'Battery.Boolean';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 0);
         }
@@ -106,7 +106,7 @@ class Batteriemelder extends IPSModule
         IPS_SetVariableProfileAssociation($profile, 1, 'Batterie schwach', 'Battery', 0xFF0000);
 
         //Battery boolean reversed
-        $profile = self::MODULE_PREFIX . '.Battery.Boolean.Reversed';
+        $profile = 'Battery.Boolean.Reversed';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 0);
         }
@@ -114,7 +114,7 @@ class Batteriemelder extends IPSModule
         IPS_SetVariableProfileAssociation($profile, 1, 'OK', 'Battery', 0x00FF00);
 
         //Battery integer
-        $profile = self::MODULE_PREFIX . '.Battery.Integer';
+        $profile = 'Battery.Integer';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 1);
         }
@@ -122,7 +122,7 @@ class Batteriemelder extends IPSModule
         IPS_SetVariableProfileAssociation($profile, 1, 'Batterie schwach', 'Battery', 0xFF0000);
 
         //Battery integer reversed
-        $profile = self::MODULE_PREFIX . '.Battery.Integer.Reversed';
+        $profile = 'Battery.Integer.Reversed';
         if (!IPS_VariableProfileExists($profile)) {
             IPS_CreateVariableProfile($profile, 1);
         }
@@ -358,10 +358,12 @@ class Batteriemelder extends IPSModule
             case 'WebFront':
             case 'WebFrontPush':
                 $guid = self::WEBFRONT_MODULE_GUID;
+                $name = 'WebFront';
                 break;
 
             case 'Mailer':
                 $guid = self::MAILER_MODULE_GUID;
+                $name = 'Mailer';
                 break;
 
             default:
@@ -370,7 +372,7 @@ class Batteriemelder extends IPSModule
         $this->SendDebug(__FUNCTION__, 'Guid: ' . $guid, 0);
         $id = @IPS_CreateInstance($guid);
         if (is_int($id)) {
-            IPS_SetName($id, 'Mailer');
+            IPS_SetName($id, $name);
             $infoText = 'Instanz mit der ID ' . $id . ' wurde erfolgreich erstellt!';
         } else {
             $infoText = 'Instanz konnte nicht erstellt werden!';

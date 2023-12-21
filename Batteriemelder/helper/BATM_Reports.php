@@ -30,7 +30,10 @@ trait BATM_Reports
         //Low battery
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $amountLowBatteryVariables = count($criticalVariables);
+        if ($amountLowBatteryVariables == 0) {
+            $amountLowBatteryVariables = 1;
+        }
         $this->UpdateFormField('ImmediateNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
@@ -63,7 +66,10 @@ trait BATM_Reports
         //Normal battery
         $normalBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
-        $amountNormalBatteryVariables = count($criticalVariables) + 1;
+        $amountNormalBatteryVariables = count($criticalVariables);
+        if ($amountNormalBatteryVariables == 0) {
+            $amountNormalBatteryVariables = 1;
+        }
         $this->UpdateFormField('ImmediateNotificationListDeviceStatusNormal', 'rowCount', $amountNormalBatteryVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
@@ -106,7 +112,10 @@ trait BATM_Reports
         $this->UpdateFormField('DailyNotificationLowBatteryConfigurationButton', 'visible', false);
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $amountLowBatteryVariables = count($criticalVariables);
+        if ($amountLowBatteryVariables == 0) {
+            $amountLowBatteryVariables = 1;
+        }
         $this->UpdateFormField('DailyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
@@ -149,7 +158,10 @@ trait BATM_Reports
         $this->UpdateFormField('WeeklyNotificationLowBatteryConfigurationButton', 'visible', false);
         $lowBatteryVariables = [];
         $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables) + 1;
+        $amountLowBatteryVariables = count($criticalVariables);
+        if ($amountLowBatteryVariables == 0) {
+            $amountLowBatteryVariables = 1;
+        }
         $this->UpdateFormField('WeeklyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
         foreach ($criticalVariables as $criticalVariable) {
             $variables = json_decode($this->ReadPropertyString('TriggerList'), true);

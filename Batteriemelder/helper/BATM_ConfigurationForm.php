@@ -236,6 +236,9 @@ trait BATM_ConfigurationForm
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         $amountVariables = count($variables);
         $amountRows = count($variables) + 1;
+        if ($amountRows == 1) {
+            $amountRows = 3;
+        }
         foreach ($variables as $variable) {
             $id = 0;
             $rowColor = '#FFC0C0'; //red
@@ -785,8 +788,8 @@ trait BATM_ConfigurationForm
         $immediateNotificationValues = [];
         $immediateNotification = json_decode($this->ReadPropertyString('ImmediateNotification'), true);
         $amountImmediateNotification = count($immediateNotification) + 1;
-        if ($amountImmediateNotification == 0) {
-            $amountImmediateNotification = 1;
+        if ($amountImmediateNotification == 1) {
+            $amountImmediateNotification = 3;
         }
         foreach ($immediateNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -804,8 +807,8 @@ trait BATM_ConfigurationForm
         $immediatePushNotificationValues = [];
         $immediatePushNotification = json_decode($this->ReadPropertyString('ImmediatePushNotification'), true);
         $amountImmediatePushNotification = count($immediatePushNotification) + 1;
-        if ($amountImmediatePushNotification == 0) {
-            $amountImmediatePushNotification = 1;
+        if ($amountImmediatePushNotification == 1) {
+            $amountImmediatePushNotification = 3;
         }
         foreach ($immediatePushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -823,8 +826,8 @@ trait BATM_ConfigurationForm
         $immediateNotificationMailerValues = [];
         $immediateMailerNotification = json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true);
         $amountImmediateMailerNotification = count($immediateMailerNotification) + 1;
-        if ($amountImmediateMailerNotification == 0) {
-            $amountImmediateMailerNotification = 1;
+        if ($amountImmediateMailerNotification == 1) {
+            $amountImmediateMailerNotification = 3;
         }
         foreach ($immediateMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -1707,8 +1710,8 @@ trait BATM_ConfigurationForm
         $dailyNotificationValues = [];
         $dailyNotification = json_decode($this->ReadPropertyString('DailyNotification'), true);
         $amountDailyNotification = count($dailyNotification) + 1;
-        if ($amountDailyNotification == 0) {
-            $amountDailyNotification = 1;
+        if ($amountDailyNotification == 1) {
+            $amountDailyNotification = 3;
         }
         foreach ($dailyNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -1726,8 +1729,8 @@ trait BATM_ConfigurationForm
         $dailyPushNotificationValues = [];
         $dailyPushNotification = json_decode($this->ReadPropertyString('DailyPushNotification'), true);
         $amountDailyPushNotification = count($dailyPushNotification) + 1;
-        if ($amountDailyPushNotification == 0) {
-            $amountDailyPushNotification = 1;
+        if ($amountDailyPushNotification == 1) {
+            $amountDailyPushNotification = 3;
         }
         foreach ($dailyPushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -1745,8 +1748,8 @@ trait BATM_ConfigurationForm
         $dailyNotificationMailerValues = [];
         $dailyMailerNotification = json_decode($this->ReadPropertyString('DailyMailerNotification'), true);
         $amountDailyMailerNotification = count($dailyMailerNotification) + 1;
-        if ($amountDailyMailerNotification == 0) {
-            $amountDailyMailerNotification = 1;
+        if ($amountDailyMailerNotification == 1) {
+            $amountDailyMailerNotification = 3;
         }
         foreach ($dailyMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -2692,8 +2695,8 @@ trait BATM_ConfigurationForm
         $weeklyNotificationValues = [];
         $weeklyNotification = json_decode($this->ReadPropertyString('WeeklyNotification'), true);
         $amountWeeklyNotification = count($weeklyNotification) + 1;
-        if ($amountWeeklyNotification == 0) {
-            $amountWeeklyNotification = 1;
+        if ($amountWeeklyNotification == 1) {
+            $amountWeeklyNotification = 3;
         }
         foreach ($weeklyNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -2711,8 +2714,8 @@ trait BATM_ConfigurationForm
         $weeklyPushNotificationValues = [];
         $weeklyPushNotification = json_decode($this->ReadPropertyString('WeeklyPushNotification'), true);
         $amountWeeklyPushNotification = count($weeklyPushNotification) + 1;
-        if ($amountWeeklyPushNotification == 0) {
-            $amountWeeklyPushNotification = 1;
+        if ($amountWeeklyPushNotification == 1) {
+            $amountWeeklyPushNotification = 3;
         }
         foreach ($weeklyPushNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -2730,8 +2733,8 @@ trait BATM_ConfigurationForm
         $weeklyNotificationMailerValues = [];
         $weeklyMailerNotification = json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true);
         $amountWeeklyMailerNotification = count($weeklyMailerNotification) + 1;
-        if ($amountWeeklyMailerNotification == 0) {
-            $amountWeeklyMailerNotification = 1;
+        if ($amountWeeklyMailerNotification == 1) {
+            $amountWeeklyMailerNotification = 3;
         }
         foreach ($weeklyMailerNotification as $element) {
             $rowColor = '#FFC0C0'; //red
@@ -3645,7 +3648,6 @@ trait BATM_ConfigurationForm
         ];
 
         //Visualisation
-
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel9',
@@ -3775,9 +3777,9 @@ trait BATM_ConfigurationForm
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
-        $amountReferences = count($references) + 1;
+        $amountReferences = count($references);
         if ($amountReferences == 0) {
-            $amountReferences = 1;
+            $amountReferences = 3;
         }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
@@ -3798,9 +3800,9 @@ trait BATM_ConfigurationForm
         //Registered messages
         $registeredMessages = [];
         $messages = $this->GetMessageList();
-        $amountMessages = count($messages) + 1;
+        $amountMessages = count($messages);
         if ($amountMessages == 0) {
-            $amountMessages = 1;
+            $amountMessages = 3;
         }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
@@ -4148,7 +4150,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'ID',
                             'name'    => 'ObjectID',
                             'width'   => '150px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " bearbeiten", $RegisteredReferences["ObjectID"]);'
                         ],
                         [
                             'caption' => 'Name',
@@ -4166,7 +4168,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'OpenObjectButton',
                     'name'     => 'RegisteredReferencesConfigurationButton',
-                    'caption'  => 'Aufrufen',
+                    'caption'  => 'Bearbeiten',
                     'visible'  => false,
                     'objectID' => 0
                 ],
@@ -4194,7 +4196,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'ID',
                             'name'    => 'ObjectID',
                             'width'   => '150px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " aufrufen", $RegisteredMessages["ObjectID"]);'
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " bearbeiten", $RegisteredMessages["ObjectID"]);'
                         ],
                         [
                             'caption' => 'Name',
@@ -4222,7 +4224,7 @@ trait BATM_ConfigurationForm
                 [
                     'type'     => 'OpenObjectButton',
                     'name'     => 'RegisteredMessagesConfigurationButton',
-                    'caption'  => 'Aufrufen',
+                    'caption'  => 'Bearbeiten',
                     'visible'  => false,
                     'objectID' => 0
                 ]

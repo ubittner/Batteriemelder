@@ -396,7 +396,6 @@ trait BATM_ConfigurationForm
                                 'name'     => 'ActualVariableStates',
                                 'caption'  => 'Variablen',
                                 'add'      => false,
-                                'visible'  => false,
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'ActualStatus',

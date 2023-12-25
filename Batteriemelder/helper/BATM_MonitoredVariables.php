@@ -417,7 +417,6 @@ trait BATM_MonitoredVariables
         }
         $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualVariableStates));
-        $this->UpdateFormField('ActualVariableStates', 'visible', true);
     }
 
     /**

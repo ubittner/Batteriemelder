@@ -4,7 +4,7 @@
  * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_ConfigurationForm.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -821,6 +821,25 @@ trait BATM_ConfigurationForm
             $immediatePushNotificationValues[] = ['rowColor' => $rowColor];
         }
 
+        //Immediate post notification
+        $immediatePostNotificationValues = [];
+        $immediatePostNotification = json_decode($this->ReadPropertyString('ImmediatePostNotification'), true);
+        $amountImmediatePostNotification = count($immediatePostNotification) + 1;
+        if ($amountImmediatePostNotification == 1) {
+            $amountImmediatePostNotification = 3;
+        }
+        foreach ($immediatePostNotification as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) {
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $immediatePostNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
         //Immediate mailer notification
         $immediateNotificationMailerValues = [];
         $immediateMailerNotification = json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true);
@@ -1494,6 +1513,422 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+                //Immediate post notification
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Post-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'ImmediatePostNotification',
+                    'rowCount' => $amountImmediatePostNotification,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Kachel Visualisierung',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediatePostNotificationConfigurationButton", "ID " . $ImmediatePostNotification["ID"] . " konfigurieren", $ImmediatePostNotification["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️%1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ]
+                    ],
+                    'values' => $immediatePostNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "TileVisualisation");'
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'ImmediatePostNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
                 //Immediate email notification
                 [
                     'type'    => 'Label',
@@ -1741,6 +2176,25 @@ trait BATM_ConfigurationForm
                 }
             }
             $dailyPushNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Daily post notification
+        $dailyPostNotificationValues = [];
+        $dailyPostNotification = json_decode($this->ReadPropertyString('DailyPostNotification'), true);
+        $amountDailyPostNotification = count($dailyPostNotification) + 1;
+        if ($amountDailyPostNotification == 1) {
+            $amountDailyPostNotification = 3;
+        }
+        foreach ($dailyPostNotification as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) {
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $dailyPostNotificationValues[] = ['rowColor' => $rowColor];
         }
 
         //Daily mailer notification
@@ -2479,6 +2933,422 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
+                //Daily post notification
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Post-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'DailyPostNotification',
+                    'rowCount' => $amountDailyPostNotification,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Kachel Visualisierung',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyPostNotificationConfigurationButton", "ID " . $DailyPostNotification["ID"] . " konfigurieren", $DailyPostNotification["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️%1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ]
+                    ],
+                    'values' => $dailyPostNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "TileVisualisation");'
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'DailyPostNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
                 //Daily email notification
                 [
                     'type'    => 'Label',
@@ -2726,6 +3596,25 @@ trait BATM_ConfigurationForm
                 }
             }
             $weeklyPushNotificationValues[] = ['rowColor' => $rowColor];
+        }
+
+        //Weekly post notification
+        $weeklyPostNotificationValues = [];
+        $weeklyPostNotification = json_decode($this->ReadPropertyString('WeeklyPostNotification'), true);
+        $amountWeeklyPostNotification = count($weeklyPostNotification) + 1;
+        if ($amountWeeklyPostNotification == 1) {
+            $amountWeeklyPostNotification = 3;
+        }
+        foreach ($weeklyPostNotification as $element) {
+            $rowColor = '#FFC0C0'; //red
+            $id = $element['ID'];
+            if ($id > 1 && @IPS_ObjectExists($id)) {
+                $rowColor = '#C0FFC0'; //light green
+                if (!$element['Use']) {
+                    $rowColor = '#DFDFDF'; //grey
+                }
+            }
+            $weeklyPostNotificationValues[] = ['rowColor' => $rowColor];
         }
 
         //Weekly mailer notification
@@ -3425,6 +4314,422 @@ trait BATM_ConfigurationForm
                         [
                             'type'     => 'OpenObjectButton',
                             'name'     => 'WeeklyPushNotificationConfigurationButton',
+                            'caption'  => 'Bearbeiten',
+                            'visible'  => false,
+                            'objectID' => 0
+                        ]
+                    ]
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' '
+                ],
+                //Weekly post notification
+                [
+                    'type'    => 'Label',
+                    'caption' => 'Post-Nachricht',
+                    'bold'    => true,
+                    'italic'  => true
+                ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'WeeklyPostNotification',
+                    'rowCount' => $amountWeeklyPostNotification,
+                    'add'      => true,
+                    'delete'   => true,
+                    'columns'  => [
+                        [
+                            'caption' => 'Aktiviert',
+                            'name'    => 'Use',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Kachel Visualisierung',
+                            'name'    => 'ID',
+                            'width'   => '300px',
+                            'add'     => 0,
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyPostNotificationConfigurationButton", "ID " . $WeeklyPostNotification["ID"] . " konfigurieren", $WeeklyPostNotification["ID"]);',
+                            'edit'    => [
+                                'type'     => 'SelectModule',
+                                'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'LowBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'LowBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie schwach',
+                            'name'    => 'UseLowBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'LowBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'LowBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '⚠️%1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseLowBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseLowBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'LowBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'LowBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'LowBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        [
+                            'caption' => ' ',
+                            'name'    => 'BatteryOKSpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'BatteryOKLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie OK',
+                            'name'    => 'UseBatteryOK',
+                            'width'   => '120px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'BatteryOKTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'BatteryOKMessageText',
+                            'width'   => '200px',
+                            'add'     => '🟢 %1$s Batterie OK',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseBatteryOKTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'BatteryOKIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'BatteryOKSound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'BatteryOKTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ]
+                    ],
+                    'values' => $weeklyPostNotificationValues,
+                ],
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type'    => 'Button',
+                            'caption' => 'Neue Instanz erstellen',
+                            'onClick' => self::MODULE_PREFIX . '_CreateInstance($id, "TileVisualisation");'
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'name'     => 'WeeklyPostNotificationConfigurationButton',
                             'caption'  => 'Bearbeiten',
                             'visible'  => false,
                             'objectID' => 0

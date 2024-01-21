@@ -4,7 +4,7 @@
  * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_MonitoredVariables.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -804,6 +804,37 @@ trait BATM_MonitoredVariables
                                 IPS_Sleep(100);
                             }
 
+                            # Immediate post notification: Battery OK
+
+                            foreach (json_decode($this->ReadPropertyString('ImmediatePostNotification'), true) as $postNotification) {
+                                if (!$postNotification['Use']) {
+                                    continue;
+                                }
+                                $postNotificationID = $postNotification['ID'];
+                                if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
+                                    continue;
+                                }
+                                if (!$postNotification['UseBatteryOK']) {
+                                    continue;
+                                }
+                                //Title length max 32 characters
+                                $title = substr($postNotification['BatteryOKTitle'], 0, 32);
+                                $text = "\n" . $postNotification['BatteryOKMessageText'];
+                                //Check for placeholder
+                                if (strpos($text, '%1$s') !== false) {
+                                    $text = sprintf($text, $monitoredVariable['Name']);
+                                }
+                                //Timestamp
+                                if ($postNotification['UseBatteryOKTimestamp']) {
+                                    $text = $text . ', ' . $timeStamp;
+                                }
+                                //Text length max 256 characters
+                                $text = substr($text, 0, 256);
+                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['BatteryOKIcon'] . '", "' . $postNotification['BatteryOKSound'] . '", ' . $postNotification['BatteryOKTargetID'] . ');';
+                                @IPS_RunScriptText($scriptText);
+                                IPS_Sleep(100);
+                            }
+
                             # Immediate email notification: Battery OK
 
                             foreach (json_decode($this->ReadPropertyString('ImmediateMailerNotification'), true) as $mailer) {
@@ -955,6 +986,44 @@ trait BATM_MonitoredVariables
                             //Text length max 256 characters
                             $text = substr($text, 0, 256);
                             $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['LowBatterySound'] . '", ' . $pushNotification['LowBatteryTargetID'] . ');';
+                            @IPS_RunScriptText($scriptText);
+                            IPS_Sleep(100);
+                        }
+
+                        # Immediate post notification: Low battery
+
+                        foreach (json_decode($this->ReadPropertyString('ImmediatePostNotification'), true) as $postNotification) {
+                            if (!$postNotification['Use']) {
+                                continue;
+                            }
+                            $postNotificationID = $postNotification['ID'];
+                            if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
+                                continue;
+                            }
+                            if (!$postNotification['UseLowBattery']) {
+                                continue;
+                            }
+                            //Title length max 32 characters
+                            $title = substr($postNotification['LowBatteryTitle'], 0, 32);
+                            $text = "\n" . $postNotification['LowBatteryMessageText'];
+                            //Check for placeholder
+                            if (strpos($text, '%1$s') !== false) {
+                                $text = sprintf($text, $monitoredVariable['Name']);
+                            }
+                            //Battery type
+                            $batteryType = $monitoredVariable['BatteryType'];
+                            if ($postNotification['UseLowBatteryBatteryType']) {
+                                if ($batteryType != '') {
+                                    $text = $text . ', ' . $batteryType;
+                                }
+                            }
+                            //Timestamp
+                            if ($postNotification['UseLowBatteryTimestamp']) {
+                                $text = $text . ', ' . $timeStamp;
+                            }
+                            //Text length max 256 characters
+                            $text = substr($text, 0, 256);
+                            $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
                             @IPS_RunScriptText($scriptText);
                             IPS_Sleep(100);
                         }

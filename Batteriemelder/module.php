@@ -4,7 +4,7 @@
  * @project       Batteriemelder/Batteriemelder/
  * @file          module.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -30,6 +30,7 @@ class Batteriemelder extends IPSModule
     private const MODULE_PREFIX = 'BATM';
     private const NOTIFICATION_MODULE_GUID = '{BDAB70AA-B45D-4CB4-3D65-509CFF0969F9}';
     private const WEBFRONT_MODULE_GUID = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
+    private const TILE_VISUALISATION_MODULE_GUID = '{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}';
     private const MAILER_MODULE_GUID = '{C6CF3C5C-E97B-97AB-ADA2-E834976C6A92}';
 
     public function Create()
@@ -63,6 +64,7 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyString('ImmediateNotificationResetTime', '{"hour":7,"minute":0,"second":0}');
         $this->RegisterPropertyString('ImmediateNotification', '[]');
         $this->RegisterPropertyString('ImmediatePushNotification', '[]');
+        $this->RegisterPropertyString('ImmediatePostNotification', '[]');
         $this->RegisterPropertyString('ImmediateMailerNotification', '[]');
 
         //Daily notification
@@ -77,6 +79,7 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyBoolean('DailyNotificationAlwaysResetCriticalVariables', false);
         $this->RegisterPropertyString('DailyNotification', '[]');
         $this->RegisterPropertyString('DailyPushNotification', '[]');
+        $this->RegisterPropertyString('DailyPostNotification', '[]');
         $this->RegisterPropertyString('DailyMailerNotification', '[]');
 
         //Weekly notification
@@ -84,6 +87,7 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyString('WeeklyNotificationTime', '{"hour":19,"minute":0,"second":0}');
         $this->RegisterPropertyString('WeeklyNotification', '[]');
         $this->RegisterPropertyString('WeeklyPushNotification', '[]');
+        $this->RegisterPropertyString('WeeklyPostNotification', '[]');
         $this->RegisterPropertyString('WeeklyMailerNotification', '[]');
 
         //Visualisation
@@ -359,6 +363,11 @@ class Batteriemelder extends IPSModule
             case 'WebFrontPush':
                 $guid = self::WEBFRONT_MODULE_GUID;
                 $name = 'WebFront';
+                break;
+
+            case 'TileVisualisation':
+                $guid = self::TILE_VISUALISATION_MODULE_GUID;
+                $name = 'Kachel Visualisierung';
                 break;
 
             case 'Mailer':

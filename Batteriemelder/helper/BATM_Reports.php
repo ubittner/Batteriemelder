@@ -4,7 +4,7 @@
  * @project       Batteriemelder/Batteriemelder/helper/
  * @file          BATM_Reports.php
  * @author        Ulrich Bittner
- * @copyright     2023 Ulrich Bittner
+ * @copyright     2023, 2024 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
@@ -449,6 +449,99 @@ trait BATM_Reports
                     }
                 }
 
+                ##### Post notification
+
+                foreach (json_decode($this->ReadPropertyString('DailyPostNotification'), true) as $postNotification) {
+                    if (!$postNotification['Use']) {
+                        continue;
+                    }
+                    $postNotificationID = $postNotification['ID'];
+                    if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
+                        continue;
+                    }
+                    //Low battery
+                    if ($postNotification['UseLowBattery']) {
+                        foreach (json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
+                            $id = $criticalVariable['ID'];
+                            foreach ($monitoredVariables as $monitoredVariable) {
+                                if ($monitoredVariable['PrimaryCondition'] != '') {
+                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                                    if (array_key_exists(0, $primaryCondition)) {
+                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                            if ($monitoredVariableID == $id) {
+                                                //Title length max 32 characters
+                                                $title = substr($postNotification['LowBatteryTitle'], 0, 32);
+                                                $text = "\n" . $postNotification['LowBatteryMessageText'];
+                                                //Check for placeholder
+                                                if (strpos($text, '%1$s') !== false) {
+                                                    $text = sprintf($text, $monitoredVariable['Designation']);
+                                                }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($postNotification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
+                                                if ($postNotification['UseLowBatteryTimestamp']) {
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
+                                                }
+                                                //Text length max 256 characters
+                                                $text = substr($text, 0, 256);
+                                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
+                                                @IPS_RunScriptText($scriptText);
+                                                IPS_Sleep(100);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //Battery OK
+                    if ($postNotification['UseBatteryOK']) {
+                        foreach ($monitoredVariables as $monitoredVariable) {
+                            if (!$monitoredVariable['Use']) {
+                                continue;
+                            }
+                            $id = 0;
+                            if ($monitoredVariable['PrimaryCondition'] != '') {
+                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                                if (array_key_exists(0, $primaryCondition)) {
+                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                    }
+                                }
+                            }
+                            if ($id > 1 && @IPS_ObjectExists($id)) {
+                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
+                                    continue;
+                                }
+                                //Title length max 32 characters
+                                $title = substr($postNotification['BatteryOKTitle'], 0, 32);
+                                $text = "\n" . $postNotification['BatteryOKMessageText'];
+                                //Check for placeholder
+                                if (strpos($text, '%1$s') !== false) {
+                                    $text = sprintf($text, $monitoredVariable['Designation']);
+                                }
+                                if ($postNotification['UseBatteryOKTimestamp']) {
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
+                                }
+                                //Text length max 256 characters
+                                $text = substr($text, 0, 256);
+                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
+                                @IPS_RunScriptText($scriptText);
+                                IPS_Sleep(100);
+                            }
+                        }
+                    }
+                }
+
                 ##### Email notification
 
                 foreach (json_decode($this->ReadPropertyString('DailyMailerNotification'), true) as $mailer) {
@@ -853,6 +946,99 @@ trait BATM_Reports
                                 //Text length max 256 characters
                                 $text = substr($text, 0, 256);
                                 $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['BatteryOKSound'] . '", ' . $pushNotification['BatteryOKTargetID'] . ');';
+                                @IPS_RunScriptText($scriptText);
+                                IPS_Sleep(100);
+                            }
+                        }
+                    }
+                }
+
+                ##### Post notification
+
+                foreach (json_decode($this->ReadPropertyString('WeeklyPostNotification'), true) as $postNotification) {
+                    if (!$postNotification['Use']) {
+                        continue;
+                    }
+                    $postNotificationID = $postNotification['ID'];
+                    if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
+                        continue;
+                    }
+                    //Low battery
+                    if ($postNotification['UseLowBattery']) {
+                        foreach (json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
+                            $id = $criticalVariable['ID'];
+                            foreach ($monitoredVariables as $monitoredVariable) {
+                                if ($monitoredVariable['PrimaryCondition'] != '') {
+                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                                    if (array_key_exists(0, $primaryCondition)) {
+                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                            if ($monitoredVariableID == $id) {
+                                                //Title length max 32 characters
+                                                $title = substr($postNotification['LowBatteryTitle'], 0, 32);
+                                                $text = "\n" . $postNotification['LowBatteryMessageText'];
+                                                //Check for placeholder
+                                                if (strpos($text, '%1$s') !== false) {
+                                                    $text = sprintf($text, $monitoredVariable['Designation']);
+                                                }
+                                                //Battery type
+                                                $batteryType = $monitoredVariable['BatteryType'];
+                                                if ($batteryType == '') {
+                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
+                                                }
+                                                if ($postNotification['UseLowBatteryBatteryType']) {
+                                                    if ($batteryType != '') {
+                                                        $text = $text . ', ' . $batteryType;
+                                                    }
+                                                }
+                                                //Timestamp
+                                                if ($postNotification['UseLowBatteryTimestamp']) {
+                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
+                                                }
+                                                //Text length max 256 characters
+                                                $text = substr($text, 0, 256);
+                                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
+                                                @IPS_RunScriptText($scriptText);
+                                                IPS_Sleep(100);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //Battery OK
+                    if ($postNotification['UseBatteryOK']) {
+                        foreach ($monitoredVariables as $monitoredVariable) {
+                            if (!$monitoredVariable['Use']) {
+                                continue;
+                            }
+                            $id = 0;
+                            if ($monitoredVariable['PrimaryCondition'] != '') {
+                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
+                                if (array_key_exists(0, $primaryCondition)) {
+                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
+                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                                    }
+                                }
+                            }
+                            if ($id > 1 && @IPS_ObjectExists($id)) {
+                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
+                                    continue;
+                                }
+                                //Title length max 32 characters
+                                $title = substr($postNotification['BatteryOKTitle'], 0, 32);
+                                $text = "\n" . $postNotification['BatteryOKMessageText'];
+                                //Check for placeholder
+                                if (strpos($text, '%1$s') !== false) {
+                                    $text = sprintf($text, $monitoredVariable['Designation']);
+                                }
+                                if ($postNotification['UseBatteryOKTimestamp']) {
+                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
+                                }
+                                //Text length max 256 characters
+                                $text = substr($text, 0, 256);
+                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
                                 @IPS_RunScriptText($scriptText);
                                 IPS_Sleep(100);
                             }

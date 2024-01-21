@@ -247,12 +247,15 @@ class Batteriemelder extends IPSModule
         $names = [
             'ImmediateNotification',
             'ImmediatePushNotification',
+            'ImmediatePostNotification',
             'ImmediateMailerNotification',
             'DailyNotification',
             'DailyPushNotification',
+            'DailyPostNotification',
             'DailyMailerNotification',
             'WeeklyNotification',
             'WeeklyPushNotification',
+            'WeeklyPostNotification',
             'WeeklyMailerNotification'];
         foreach ($names as $name) {
             foreach (json_decode($this->ReadPropertyString($name), true) as $element) {

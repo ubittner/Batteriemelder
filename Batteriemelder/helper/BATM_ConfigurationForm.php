@@ -1319,10 +1319,10 @@ trait BATM_ConfigurationForm
                             'caption' => 'Zielscript',
                             'name'    => 'LowBatteryTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ],
                         [
@@ -1480,13 +1480,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
+                            'caption' => 'Ziel ID',
                             'name'    => 'BatteryOKTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ]
                     ],
@@ -2736,13 +2736,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
+                            'caption' => 'Ziel ID',
                             'name'    => 'LowBatteryTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ],
                         [
@@ -2900,13 +2900,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
+                            'caption' => 'Ziel ID',
                             'name'    => 'BatteryOKTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ]
                     ],
@@ -4127,13 +4127,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
+                            'caption' => 'Ziel ID',
                             'name'    => 'LowBatteryTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ],
                         [
@@ -4291,13 +4291,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Zielscript',
+                            'caption' => 'Ziel ID',
                             'name'    => 'BatteryOKTargetID',
                             'width'   => '200px',
-                            'add'     => 0,
+                            'add'     => 1,
                             'visible' => false,
                             'edit'    => [
-                                'type' => 'SelectScript'
+                                'type' => 'SelectObject'
                             ]
                         ]
                     ],

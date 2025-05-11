@@ -1,1230 +1,281 @@
 <?php
 
-/**
- * @project       Batteriemelder/Batteriemelder/helper/
- * @file          BATM_Reports.php
- * @author        Ulrich Bittner
- * @copyright     2023, 2024 Ulrich Bittner
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- */
-
-/** @noinspection SpellCheckingInspection */
+/** @noinspection PhpUnhandledExceptionInspection */
 /** @noinspection DuplicatedCode */
 
 declare(strict_types=1);
 
 trait BATM_Reports
 {
-    ##### Notification status
+    ########## Public
 
-    /**
-     * Gets the actual status of the immediate notification.
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function GetImmediateNotificationStatus(): void
-    {
-        $this->UpdateFormField('ImmediateNotificationLowBatteryConfigurationButton', 'visible', false);
-        $this->UpdateFormField('ImmediateNotificationNormalConfigurationButton', 'visible', false);
-        //Low battery
-        $lowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables);
-        if ($amountLowBatteryVariables == 0) {
-            $amountLowBatteryVariables = 1;
-        }
-        $this->UpdateFormField('ImmediateNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $lowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-        $this->UpdateFormField('ImmediateNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
-        //Normal battery
-        $normalBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusNormal'), true);
-        $amountNormalBatteryVariables = count($criticalVariables);
-        if ($amountNormalBatteryVariables == 0) {
-            $amountNormalBatteryVariables = 1;
-        }
-        $this->UpdateFormField('ImmediateNotificationListDeviceStatusNormal', 'rowCount', $amountNormalBatteryVariables);
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $normalBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#C0FFC0']; //light green
-                }
-            }
-        }
-        $this->UpdateFormField('ImmediateNotificationListDeviceStatusNormal', 'values', json_encode($normalBatteryVariables));
-    }
-
-    /**
-     * Gets the actual status of the daily notification.
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function GetDailyNotificationStatus(): void
-    {
-        $this->UpdateFormField('DailyNotificationLowBatteryConfigurationButton', 'visible', false);
-        $lowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables);
-        if ($amountLowBatteryVariables == 0) {
-            $amountLowBatteryVariables = 1;
-        }
-        $this->UpdateFormField('DailyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $lowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-        $this->UpdateFormField('DailyNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
-    }
-
-    /**
-     * Gets the actual status of the weekly notification.
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function GetWeeklyNotificationStatus(): void
-    {
-        $this->UpdateFormField('WeeklyNotificationLowBatteryConfigurationButton', 'visible', false);
-        $lowBatteryVariables = [];
-        $criticalVariables = json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true);
-        $amountLowBatteryVariables = count($criticalVariables);
-        if ($amountLowBatteryVariables == 0) {
-            $amountLowBatteryVariables = 1;
-        }
-        $this->UpdateFormField('WeeklyNotificationListDeviceStatusLowBattery', 'rowCount', $amountLowBatteryVariables);
-        foreach ($criticalVariables as $criticalVariable) {
-            $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-            foreach ($variables as $variable) {
-                $id = 0;
-                if ($variable['PrimaryCondition'] != '') {
-                    $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                    if (array_key_exists(0, $primaryCondition)) {
-                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                            $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        }
-                    }
-                }
-                if ($criticalVariable['ID'] == $id) {
-                    $batteryType = $variable['BatteryType'];
-                    if ($batteryType == '') {
-                        $batteryType = $variable['UserDefinedBatteryType'];
-                    }
-                    $lowBatteryVariables[] = [
-                        'ID'          => $criticalVariable['ID'],
-                        'Name'        => $variable['Designation'],
-                        'Comment'     => $variable['Comment'],
-                        'BatteryType' => $batteryType,
-                        'Timestamp'   => $criticalVariable['Timestamp'],
-                        'rowColor'    => '#FFFFC0']; //yellow
-                }
-            }
-        }
-        $this->UpdateFormField('WeeklyNotificationListDeviceStatusLowBattery', 'values', json_encode($lowBatteryVariables));
-    }
-
-    ########### Daily notification
-
-    /**
-     * Executes the daily notification.
-     *
-     * @param bool $CheckDay
-     * false =  don't check the day
-     * true =   check the day
-     *
-     * @param bool $ResetCriticalVariables
-     * false =  don't reset
-     * true =   reset critical variables
-     *
-     * @return void
-     * @throws Exception
-     */
     public function ExecuteDailyNotification(bool $CheckDay, bool $ResetCriticalVariables): void
     {
-        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
         $this->SetTimerInterval('DailyNotification', $this->GetInterval('DailyNotificationTime'));
-        $timeStamp = date('d.m.Y, H:i:s');
-        $delete = false;
         if ($this->GetValue('Active')) {
             $execute = true;
             if ($CheckDay) {
-                $execute = false;
-                //Check weekday
-                $weekday = date('w');
-                switch ($weekday) {
-                    case 0: //Sunday
-                        if ($this->ReadPropertyBoolean('DailyNotificationSunday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 1: //Monday
-                        if ($this->ReadPropertyBoolean('DailyNotificationMonday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 2: //Tuesday
-                        if ($this->ReadPropertyBoolean('DailyNotificationTuesday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 3: //Wednesday
-                        if ($this->ReadPropertyBoolean('DailyNotificationWednesday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 4: //Thursday
-                        if ($this->ReadPropertyBoolean('DailyNotificationThursday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 5: //Friday
-                        if ($this->ReadPropertyBoolean('DailyNotificationFriday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                    case 6: //Saturday
-                        if ($this->ReadPropertyBoolean('DailyNotificationSaturday')) {
-                            $execute = true;
-                        }
-                        break;
-
-                }
+                $execute = $this->CheckDayForDailyNotification();
             }
             if ($execute) {
                 $this->SendDebug(__FUNCTION__, 'Tagesbericht wird versendet...', 0);
-                $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-                array_multisort(array_column($monitoredVariables, 'Designation'), SORT_ASC, $monitoredVariables);
-
-                ##### Notification
-
-                foreach (json_decode($this->ReadPropertyString('DailyNotification'), true) as $notification) {
-                    if (!$notification['Use']) {
-                        continue;
-                    }
-                    $notificationID = $notification['ID'];
-                    if ($notificationID <= 1 || @!IPS_ObjectExists($notificationID)) {
-                        continue;
-                    }
-                    //Low battery
-                    if ($notification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                $text = $notification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($notification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($notification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['LowBatteryTitle'] . '", "' . $text . '", "' . $notification['LowBatteryIcon'] . '", ' . $notification['LowBatteryDisplayDuration'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //Battery OK
-                    if ($notification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                $text = $notification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($notification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['BatteryOKTitle'] . '", "' . $text . '", "' . $notification['BatteryOKIcon'] . '", ' . $notification['BatteryOKDisplayDuration'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
-                    }
-                }
-
-                ##### Push notification
-
-                foreach (json_decode($this->ReadPropertyString('DailyPushNotification'), true) as $pushNotification) {
-                    if (!$pushNotification['Use']) {
-                        continue;
-                    }
-                    $pushNotificationID = $pushNotification['ID'];
-                    if ($pushNotificationID <= 1 || @!IPS_ObjectExists($pushNotificationID)) {
-                        continue;
-                    }
-                    //Low battery
-                    if ($pushNotification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                //Title length max 32 characters
-                                                $title = substr($pushNotification['LowBatteryTitle'], 0, 32);
-                                                $text = "\n" . $pushNotification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($pushNotification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($pushNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                //Text length max 256 characters
-                                                $text = substr($text, 0, 256);
-                                                $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['LowBatterySound'] . '", ' . $pushNotification['LowBatteryTargetID'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //Battery OK
-                    if ($pushNotification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                //Title length max 32 characters
-                                $title = substr($pushNotification['BatteryOKTitle'], 0, 32);
-                                $text = "\n" . $pushNotification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($pushNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                //Text length max 256 characters
-                                $text = substr($text, 0, 256);
-                                $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['BatteryOKSound'] . '", ' . $pushNotification['BatteryOKTargetID'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
-                    }
-                }
-
-                ##### Post notification
-
-                foreach (json_decode($this->ReadPropertyString('DailyPostNotification'), true) as $postNotification) {
-                    if (!$postNotification['Use']) {
-                        continue;
-                    }
-                    $postNotificationID = $postNotification['ID'];
-                    if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
-                        continue;
-                    }
-                    //Low battery
-                    if ($postNotification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                //Title length max 32 characters
-                                                $title = substr($postNotification['LowBatteryTitle'], 0, 32);
-                                                $text = "\n" . $postNotification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($postNotification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($postNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                //Text length max 256 characters
-                                                $text = substr($text, 0, 256);
-                                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //Battery OK
-                    if ($postNotification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                //Title length max 32 characters
-                                $title = substr($postNotification['BatteryOKTitle'], 0, 32);
-                                $text = "\n" . $postNotification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($postNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                //Text length max 256 characters
-                                $text = substr($text, 0, 256);
-                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
-                    }
-                }
-
-                ##### Email notification
-
-                foreach (json_decode($this->ReadPropertyString('DailyMailerNotification'), true) as $mailer) {
-                    $mailerID = $mailer['ID'];
-                    if ($mailerID <= 1 || @!IPS_ObjectExists($mailerID)) {
-                        continue;
-                    }
-                    if (!$mailer['Use']) {
-                        continue;
-                    }
-                    //Check if we have more than one message category
-                    $multiMessage = 0;
-                    //Check low battery
-                    $useLowBattery = false;
-                    if ($mailer['UseLowBattery']) {
-                        $useLowBattery = true;
-                        $multiMessage++;
-                    }
-                    //Check for battery ok
-                    $useBatteryOK = false;
-                    if ($mailer['UseBatteryOK']) {
-                        $useBatteryOK = true;
-                        $multiMessage++;
-                    }
-                    //Create message block for low battery
-                    $existing = false;
-                    $lowBatteryMessageText = "Batterie schwach:\n\n";
-                    foreach (json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                        $id = $criticalVariable['ID'];
-                        $existing = true;
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                        if ($monitoredVariableID == $id) {
-                                            //Message text
-                                            $lineText = $mailer['LowBatteryMessageText'];
-                                            $name = $monitoredVariable['Designation'];
-                                            if ($monitoredVariable['Comment'] != '') {
-                                                $name = $name . ', ' . $monitoredVariable['Comment'];
-                                            }
-                                            //Check for placeholder
-                                            if (strpos($lineText, '%1$s') !== false) {
-                                                $lineText = sprintf($lineText, $name);
-                                            }
-                                            //Timestamp
-                                            if ($mailer['UseLowBatteryTimestamp']) {
-                                                $lineText = $lineText . ', ' . $criticalVariable['Timestamp'];
-                                            }
-                                            //Variable ID
-                                            if ($mailer['UseLowBatteryVariableID']) {
-                                                $lineText = $lineText . ', ID: ' . $id;
-                                            }
-                                            //Battery type
-                                            $batteryType = $monitoredVariable['BatteryType'];
-                                            if ($batteryType == '') {
-                                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                            }
-                                            if ($mailer['UseLowBatteryBatteryType']) {
-                                                if ($batteryType != '') {
-                                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
-                                                }
-                                            }
-                                            $lowBatteryMessageText .= $lineText . "\n";
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (!$existing) {
-                        $lowBatteryMessageText .= 'Keine';
-                    }
-                    $lowBatteryMessageText .= "\n\n\n\n";
-                    //Create message block for battery ok
-                    $existing = false;
-                    $batteryOKMessageText = "Batterie OK:\n\n";
-                    foreach ($monitoredVariables as $monitoredVariable) {
-                        if (!$monitoredVariable['Use']) {
-                            continue;
-                        }
-                        $id = 0;
-                        if ($monitoredVariable['PrimaryCondition'] != '') {
-                            $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                            if (array_key_exists(0, $primaryCondition)) {
-                                if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                    $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                }
-                            }
-                        }
-                        if ($id > 1 && @IPS_ObjectExists($id)) {
-                            if (in_array($id, array_column(json_decode($this->ReadAttributeString('DailyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                continue;
-                            }
-                            $existing = true;
-                            //Message text
-                            $lineText = $mailer['BatteryOKMessageText'];
-                            $name = $monitoredVariable['Designation'];
-                            if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . ', ' . $monitoredVariable['Comment'];
-                            }
-                            //Check for placeholder
-                            if (strpos($lineText, '%1$s') !== false) {
-                                $lineText = sprintf($lineText, $name);
-                            }
-                            //Timestamp
-                            if ($mailer['UseBatteryOKTimestamp']) {
-                                $lineText = $lineText . ', ' . date('d.m.Y, H:i:s');
-                            }
-                            //Variable ID
-                            if ($mailer['UseBatteryOKVariableID']) {
-                                $lineText = $lineText . ', ID: ' . $id;
-                            }
-                            //Battery type
-                            $batteryType = $monitoredVariable['BatteryType'];
-                            if ($batteryType == '') {
-                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                            }
-                            if ($mailer['UseBatteryOKBatteryType']) {
-                                if ($batteryType != '') {
-                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
-                                }
-                            }
-                            $batteryOKMessageText .= $lineText . "\n";
-                        }
-                    }
-                    if (!$existing) {
-                        $batteryOKMessageText .= 'Keine';
-                    }
-                    $batteryOKMessageText .= "\n\n\n\n";
-                    //Message block header
-                    $messageText = 'Tagesbericht vom ' . $timeStamp . ":\n\n\n";
-                    $sendEmail = false;
-                    //We only have one category
-                    if ($multiMessage == 1) {
-                        if ($useLowBattery) {
-                            if (strpos($lowBatteryMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $lowBatteryMessageText;
-                            }
-                        }
-                        if ($useBatteryOK) {
-                            if (strpos($batteryOKMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $batteryOKMessageText;
-                            }
-                        }
-                    }
-                    //We have more than one category
-                    if ($multiMessage > 1) {
-                        $sendEmail = false;
-                        if ($useLowBattery) {
-                            if (strpos($lowBatteryMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $lowBatteryMessageText;
-                            }
-                        }
-                        if ($useBatteryOK) {
-                            if (strpos($batteryOKMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $batteryOKMessageText;
-                            }
-                        }
-                    }
-                    //Debug
-                    $this->SendDebug(__FUNCTION__, 'E-Mail Versand: ' . json_encode($sendEmail), 0);
-                    //Send email
-                    if ($sendEmail) {
-                        $scriptText = 'MA_SendMessage(' . $mailerID . ', "' . $mailer['Subject'] . '", "' . $messageText . '");';
-                        @IPS_RunScriptText($scriptText);
-                    }
-                }
-                if ($ResetCriticalVariables) {
-                    $delete = true;
-                }
+                $this->SendReportAsNotification('Daily', 'Notification');
+                $this->SendReportAsNotification('Daily', 'PushNotification');
+                $this->SendReportAsNotification('Daily', 'PostNotification');
+                $this->SendReportAsMail('Daily');
             }
         }
         //Reset critical variables
-        if ($this->ReadPropertyBoolean('DailyNotificationAlwaysResetCriticalVariables') || $delete) {
+        if ($this->ReadPropertyBoolean('DailyNotificationAlwaysResetCriticalVariables') || $ResetCriticalVariables) {
+            $this->ResetAttribute('DailyNotificationListDeviceStatusEmptyBattery');
             $this->ResetAttribute('DailyNotificationListDeviceStatusLowBattery');
+            $this->ResetAttribute('DailyNotificationListDeviceStatusBatteryOK');
         }
     }
 
-    ########### Weekly notification
-
-    /**
-     * Executes the weekly notification.
-     *
-     * @param bool $CheckDay
-     * false =  don't check the day
-     * true =   check the day
-     *
-     * @param bool $ResetCriticalVariables
-     * false =  don't reset
-     * true =   reset critical variables
-     *
-     * @return void
-     * @throws Exception
-     */
     public function ExecuteWeeklyNotification(bool $CheckDay, bool $ResetCriticalVariables): void
     {
-        $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
-        $checkDayText = 'nein';
-        if ($CheckDay) {
-            $checkDayText = 'ja';
-        }
-        $this->SendDebug(__FUNCTION__, 'Tagesprüfung: ' . $checkDayText, 0);
-        $resetCriticalVariablesText = 'nein';
-        if ($ResetCriticalVariables) {
-            $resetCriticalVariablesText = 'ja';
-        }
-        $this->SendDebug(__FUNCTION__, 'Kritische Variablen zurücksetzen: ' . $resetCriticalVariablesText, 0);
         $this->SetTimerInterval('WeeklyNotification', $this->GetInterval('WeeklyNotificationTime'));
-        $timeStamp = date('d.m.Y, H:i:s');
         if ($this->GetValue('Active')) {
-            $this->SendDebug(__FUNCTION__, 'Aktiv: ja', 0);
             $execute = true;
             if ($CheckDay) {
-                $execute = false;
-                //Check weekday
-                $weekday = date('w');
-                if ($weekday == $this->ReadPropertyInteger('WeeklyNotificationDay')) {
-                    $execute = true;
-                }
+                $execute = $this->CheckDayForWeeklyNotification();
             }
             if ($execute) {
                 $this->SendDebug(__FUNCTION__, 'Wochenbericht wird versendet...', 0);
+                $this->SendReportAsNotification('Weekly', 'Notification');
+                $this->SendReportAsNotification('Weekly', 'PushNotification');
+                $this->SendReportAsNotification('Weekly', 'PostNotification');
+                $this->SendReportAsMail('Weekly');
+            }
+        }
+        //Reset critical variables
+        if ($ResetCriticalVariables) {
+            $this->ResetAttribute('WeeklyNotificationListDeviceStatusEmptyBattery');
+            $this->ResetAttribute('WeeklyNotificationListDeviceStatusLowBattery');
+            $this->ResetAttribute('WeeklyNotificationListDeviceStatusBatteryOK');
+        }
+    }
 
-                $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-                array_multisort(array_column($monitoredVariables, 'Designation'), SORT_ASC, $monitoredVariables);
+    public function CheckDayForDailyNotification(): bool
+    {
+        $weekday = date('l');
+        $this->SendDebug(__FUNCTION__, 'Check day for daily notification: ' . $weekday, 0);
+        $useDay = $this->ReadPropertyBoolean('DailyNotification' . $weekday);
+        $this->SendDebug(__FUNCTION__, 'Selected day is ' . json_encode($useDay), 0);
+        if ($useDay) {
+            $this->SendDebug(__FUNCTION__, 'Day is ' . $weekday . ', so execute daily notification', 0);
+            return true;
+        }
+        $this->SendDebug(__FUNCTION__, 'Day is ' . $weekday . ', so do not execute daily notification', 0);
+        return false;
+    }
 
-                ##### Notification
+    public function CheckDayForWeeklyNotification(): bool
+    {
+        //Check weekday
+        $weekday = date('w');
+        $this->SendDebug(__FUNCTION__, 'Check day for weekly notification: ' . $weekday, 0);
+        $useDay = $this->ReadPropertyInteger('WeeklyNotificationDay');
+        if ($weekday == $useDay) {
+            $this->SendDebug(__FUNCTION__, 'Day is ' . $weekday . ', so execute weekly notification', 0);
+            return true;
+        }
+        $this->SendDebug(__FUNCTION__, 'Day is ' . $weekday . ', so do not execute weekly notification', 0);
+        return false;
+    }
 
-                foreach (json_decode($this->ReadPropertyString('WeeklyNotification'), true) as $notification) {
-                    if (!$notification['Use']) {
-                        continue;
-                    }
-                    $notificationID = $notification['ID'];
-                    if ($notificationID <= 1 || @!IPS_ObjectExists($notificationID)) {
-                        continue;
-                    }
-                    //Low battery
-                    if ($notification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                $text = $notification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($notification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($notification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['LowBatteryTitle'] . '", "' . $text . '", "' . $notification['LowBatteryIcon'] . '", ' . $notification['LowBatteryDisplayDuration'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //Battery OK
-                    if ($notification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                $text = $notification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($notification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                $scriptText = 'WFC_SendNotification(' . $notificationID . ', "' . $notification['BatteryOKTitle'] . '", "' . $text . '", "' . $notification['BatteryOKIcon'] . '", ' . $notification['BatteryOKDisplayDuration'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
-                    }
+    ########## Protected
+
+    protected function GetValueFromMonitoredVariable(int $VariableID, string $ValueName): string
+    {
+        $result = '';
+        $monitoredVariables = json_decode($this->ReadAttributeString('MonitoredVariables'), true);
+        $key = array_search($VariableID, array_column($monitoredVariables, 'ID'));
+        if (is_int($key)) {
+            if (array_key_exists($ValueName, $monitoredVariables[$key])) {
+                $result = (string) $monitoredVariables[$key][$ValueName];
+                $this->SendDebug(__FUNCTION__, 'Value ' . $ValueName . ' for variable ' . $VariableID . ' is: ' . $result, 0);
+            }
+        }
+        return $result;
+    }
+
+    protected function IsNotificationTypeValid(string $NotificationType): bool
+    {
+        $notificationTypes = [
+            'Immediate',
+            'Daily',
+            'Weekly'
+        ];
+        if (in_array($NotificationType, $notificationTypes)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function IsNotificationMethodValid(string $NotificationMethod): bool
+    {
+        $notificationMethods = [
+            'Notification',
+            'PushNotification',
+            'PostNotification',
+            'MailerNotification'
+        ];
+        if (in_array($NotificationMethod, $notificationMethods)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function IsVariableAlreadyOnNotificationList(int $VariableID, string $NotificationType): bool
+    {
+        $isTypeValid = $this->IsNotificationTypeValid($NotificationType);
+        if (!$isTypeValid) {
+            return false;
+        }
+        $emptyBatteryVariables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatusEmptyBattery'), true);
+        $lowBatteryVariables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatusLowBattery'), true);
+        return in_array($VariableID, array_column($emptyBatteryVariables, 'ID')) || in_array($VariableID, array_column($lowBatteryVariables, 'ID'));
+    }
+
+    ########## Private
+
+    private function SendReportAsNotification(string $NotificationType, string $NotificationMethod): void
+    {
+        $isTypeValid = $this->IsNotificationTypeValid($NotificationType);
+        if (!$isTypeValid || $NotificationType == 'Immediate') {
+            return;
+        }
+        $isMethodValid = $this->IsNotificationMethodValid($NotificationMethod);
+        if (!$isMethodValid || $NotificationMethod == 'MailerNotification') {
+            return;
+        }
+        foreach (json_decode($this->ReadPropertyString($NotificationType . $NotificationMethod), true) as $notification) {
+            if (!$notification['Use'] || $notification['ID'] <= 1 || @!IPS_ObjectExists($notification['ID'])) {
+                $this->SendDebug(__FUNCTION__, 'Notification ' . $notification['ID'] . ' does not exist or is not active', 0);
+                continue;
+            }
+            foreach (['BatteryOK', 'LowBattery', 'EmptyBattery'] as $batteryState) {
+                if (!$notification['Use' . $batteryState]) {
+                    continue;
                 }
-
-                ##### Push notification
-
-                foreach (json_decode($this->ReadPropertyString('WeeklyPushNotification'), true) as $pushNotification) {
-                    if (!$pushNotification['Use']) {
-                        continue;
+                //Get variables from the notification list
+                $variables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatus' . $batteryState), true);
+                foreach ($variables as $variable) {
+                    if ($NotificationMethod == 'Notification') {
+                        //Title
+                        $title = $notification[$batteryState . 'Title'];
+                        //Text
+                        $text = $notification[$batteryState . 'MessageText'];
+                    } else {
+                        //Title length max 32 characters
+                        $title = substr($notification[$batteryState . 'Title'], 0, 32);
+                        //Text
+                        $text = "\n" . $notification[$batteryState . 'MessageText'];
                     }
-                    $pushNotificationID = $pushNotification['ID'];
-                    if ($pushNotificationID <= 1 || @!IPS_ObjectExists($pushNotificationID)) {
-                        continue;
+                    //Check for placeholder
+                    if (strpos($text, '%1$s') !== false) {
+                        $text = sprintf($text, $this->GetValueFromMonitoredVariable($variable['ID'], 'Name'));
                     }
-                    //Low battery
-                    if ($pushNotification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                //Title length max 32 characters
-                                                $title = substr($pushNotification['LowBatteryTitle'], 0, 32);
-                                                $text = "\n" . $pushNotification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($pushNotification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($pushNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                //Text length max 256 characters
-                                                $text = substr($text, 0, 256);
-                                                $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['LowBatterySound'] . '", ' . $pushNotification['LowBatteryTargetID'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    //Battery type
+                    if ($notification['Use' . $batteryState . 'BatteryType']) {
+                        $batteryType = $this->GetValueFromMonitoredVariable($variable['ID'], 'BatteryType');
+                        if ($batteryType != '') {
+                            $text .= ', ' . $this->GetValueFromMonitoredVariable($variable['ID'], 'BatteryType');
                         }
                     }
-                    //Battery OK
-                    if ($pushNotification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                //Title length max 32 characters
-                                $title = substr($pushNotification['BatteryOKTitle'], 0, 32);
-                                $text = "\n" . $pushNotification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($pushNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                //Text length max 256 characters
-                                $text = substr($text, 0, 256);
-                                $scriptText = 'WFC_PushNotification(' . $pushNotificationID . ', "' . $title . '", "' . $text . '", "' . $pushNotification['BatteryOKSound'] . '", ' . $pushNotification['BatteryOKTargetID'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
+                    //Timestamp
+                    if ($notification['Use' . $batteryState . 'Timestamp']) {
+                        $text .= ', ' . $variable['Timestamp'];
                     }
-                }
-
-                ##### Post notification
-
-                foreach (json_decode($this->ReadPropertyString('WeeklyPostNotification'), true) as $postNotification) {
-                    if (!$postNotification['Use']) {
-                        continue;
+                    IPS_Sleep(100);
+                    if (!$NotificationMethod == 'Notification') {
+                        //Text length max 256 characters
+                        $text = substr($text, 0, 256);
                     }
-                    $postNotificationID = $postNotification['ID'];
-                    if ($postNotificationID <= 1 || @!IPS_ObjectExists($postNotificationID)) {
-                        continue;
+                    if ($NotificationMethod == 'Notification') {
+                        $this->SendNotification($notification['ID'], $notification[$batteryState . 'Title'], $text, $notification[$batteryState . 'Icon'], $notification[$batteryState . 'DisplayDuration']);
                     }
-                    //Low battery
-                    if ($postNotification['UseLowBattery']) {
-                        foreach (json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                            $id = $criticalVariable['ID'];
-                            foreach ($monitoredVariables as $monitoredVariable) {
-                                if ($monitoredVariable['PrimaryCondition'] != '') {
-                                    $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                    if (array_key_exists(0, $primaryCondition)) {
-                                        if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                            $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                            if ($monitoredVariableID == $id) {
-                                                //Title length max 32 characters
-                                                $title = substr($postNotification['LowBatteryTitle'], 0, 32);
-                                                $text = "\n" . $postNotification['LowBatteryMessageText'];
-                                                //Check for placeholder
-                                                if (strpos($text, '%1$s') !== false) {
-                                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                                }
-                                                //Battery type
-                                                $batteryType = $monitoredVariable['BatteryType'];
-                                                if ($batteryType == '') {
-                                                    $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                                }
-                                                if ($postNotification['UseLowBatteryBatteryType']) {
-                                                    if ($batteryType != '') {
-                                                        $text = $text . ', ' . $batteryType;
-                                                    }
-                                                }
-                                                //Timestamp
-                                                if ($postNotification['UseLowBatteryTimestamp']) {
-                                                    $text = $text . ', ' . $criticalVariable['Timestamp'];
-                                                }
-                                                //Text length max 256 characters
-                                                $text = substr($text, 0, 256);
-                                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
-                                                @IPS_RunScriptText($scriptText);
-                                                IPS_Sleep(100);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    if ($NotificationMethod == 'PushNotification') {
+                        $this->SendPushNotification($notification['ID'], $title, $text, $notification[$batteryState . 'Sound'], $notification[$batteryState . 'TargetID']);
                     }
-                    //Battery OK
-                    if ($postNotification['UseBatteryOK']) {
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if (!$monitoredVariable['Use']) {
-                                continue;
-                            }
-                            $id = 0;
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    }
-                                }
-                            }
-                            if ($id > 1 && @IPS_ObjectExists($id)) {
-                                if (in_array($id, array_column(json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                    continue;
-                                }
-                                //Title length max 32 characters
-                                $title = substr($postNotification['BatteryOKTitle'], 0, 32);
-                                $text = "\n" . $postNotification['BatteryOKMessageText'];
-                                //Check for placeholder
-                                if (strpos($text, '%1$s') !== false) {
-                                    $text = sprintf($text, $monitoredVariable['Designation']);
-                                }
-                                if ($postNotification['UseBatteryOKTimestamp']) {
-                                    $text = $text . ', ' . date('d.m.Y, H:i:s');
-                                }
-                                //Text length max 256 characters
-                                $text = substr($text, 0, 256);
-                                $scriptText = 'VISU_PostNotificationEx(' . $postNotificationID . ', "' . $title . '", "' . $text . '", "' . $postNotification['LowBatteryIcon'] . '", "' . $postNotification['LowBatterySound'] . '", ' . $postNotification['LowBatteryTargetID'] . ');';
-                                @IPS_RunScriptText($scriptText);
-                                IPS_Sleep(100);
-                            }
-                        }
+                    if ($NotificationMethod == 'PostNotification') {
+                        $this->SendPostNotification($notification['ID'], $title, $text, $notification[$batteryState . 'Icon'], $notification[$batteryState . 'Sound'], $notification[$batteryState . 'TargetID']);
                     }
-                }
-
-                ##### Email notification
-
-                foreach (json_decode($this->ReadPropertyString('WeeklyMailerNotification'), true) as $mailer) {
-                    $mailerID = $mailer['ID'];
-                    if ($mailerID <= 1 || @!IPS_ObjectExists($mailerID)) {
-                        continue;
-                    }
-                    if (!$mailer['Use']) {
-                        continue;
-                    }
-                    //Check if we have more than one message category
-                    $multiMessage = 0;
-                    //Check low battery
-                    $useLowBattery = false;
-                    if ($mailer['UseLowBattery']) {
-                        $useLowBattery = true;
-                        $multiMessage++;
-                    }
-                    //Check for battery ok
-                    $useBatteryOK = false;
-                    if ($mailer['UseBatteryOK']) {
-                        $useBatteryOK = true;
-                        $multiMessage++;
-                    }
-                    //Create message block for low battery
-                    $existing = false;
-                    $lowBatteryMessageText = "Batterie schwach:\n\n";
-                    foreach (json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true) as $criticalVariable) {
-                        $id = $criticalVariable['ID'];
-                        $existing = true;
-                        foreach ($monitoredVariables as $monitoredVariable) {
-                            if ($monitoredVariable['PrimaryCondition'] != '') {
-                                $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                                if (array_key_exists(0, $primaryCondition)) {
-                                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                        $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                        if ($monitoredVariableID == $id) {
-                                            //Message text
-                                            $lineText = $mailer['LowBatteryMessageText'];
-                                            $name = $monitoredVariable['Designation'];
-                                            if ($monitoredVariable['Comment'] != '') {
-                                                $name = $name . ', ' . $monitoredVariable['Comment'];
-                                            }
-                                            //Check for placeholder
-                                            if (strpos($lineText, '%1$s') !== false) {
-                                                $lineText = sprintf($lineText, $name);
-                                            }
-                                            //Timestamp
-                                            if ($mailer['UseLowBatteryTimestamp']) {
-                                                $lineText = $lineText . ', ' . $criticalVariable['Timestamp'];
-                                            }
-                                            //Variable ID
-                                            if ($mailer['UseLowBatteryVariableID']) {
-                                                $lineText = $lineText . ', ID: ' . $id;
-                                            }
-                                            //Battery type
-                                            $batteryType = $monitoredVariable['BatteryType'];
-                                            if ($batteryType == '') {
-                                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                                            }
-                                            if ($mailer['UseLowBatteryBatteryType']) {
-                                                if ($batteryType != '') {
-                                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
-                                                }
-                                            }
-                                            $lowBatteryMessageText .= $lineText . "\n";
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (!$existing) {
-                        $lowBatteryMessageText .= 'Keine';
-                    }
-                    $lowBatteryMessageText .= "\n\n\n\n";
-                    //Create message block for battery ok
-                    $existing = false;
-                    $batteryOKMessageText = "Batterie OK:\n\n";
-                    foreach ($monitoredVariables as $monitoredVariable) {
-                        if (!$monitoredVariable['Use']) {
-                            continue;
-                        }
-                        $id = 0;
-                        if ($monitoredVariable['PrimaryCondition'] != '') {
-                            $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                            if (array_key_exists(0, $primaryCondition)) {
-                                if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                    $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                }
-                            }
-                        }
-                        if ($id > 1 && @IPS_ObjectExists($id)) {
-                            if (in_array($id, array_column(json_decode($this->ReadAttributeString('WeeklyNotificationListDeviceStatusLowBattery'), true), 'ID'))) {
-                                continue;
-                            }
-                            $existing = true;
-                            //Message text
-                            $lineText = $mailer['BatteryOKMessageText'];
-                            $name = $monitoredVariable['Designation'];
-                            if ($monitoredVariable['Comment'] != '') {
-                                $name = $name . ', ' . $monitoredVariable['Comment'];
-                            }
-                            //Check for placeholder
-                            if (strpos($lineText, '%1$s') !== false) {
-                                $lineText = sprintf($lineText, $name);
-                            }
-                            //Timestamp
-                            if ($mailer['UseBatteryOKTimestamp']) {
-                                $lineText = $lineText . ', ' . date('d.m.Y, H:i:s');
-                            }
-                            //Variable ID
-                            if ($mailer['UseBatteryOKVariableID']) {
-                                $lineText = $lineText . ', ID: ' . $id;
-                            }
-                            //Battery type
-                            $batteryType = $monitoredVariable['BatteryType'];
-                            if ($batteryType == '') {
-                                $batteryType = $monitoredVariable['UserDefinedBatteryType'];
-                            }
-                            if ($mailer['UseBatteryOKBatteryType']) {
-                                if ($batteryType != '') {
-                                    $lineText = $lineText . ', Batterietyp: ' . $batteryType;
-                                }
-                            }
-                            $batteryOKMessageText .= $lineText . "\n";
-                        }
-                    }
-                    if (!$existing) {
-                        $batteryOKMessageText .= 'Keine';
-                    }
-                    $batteryOKMessageText .= "\n\n\n\n";
-                    //Message block header
-                    $messageText = 'Wochenbericht vom ' . $timeStamp . ":\n\n\n";
-                    $sendEmail = false;
-                    //We only have one category
-                    if ($multiMessage == 1) {
-                        if ($useLowBattery) {
-                            if (strpos($lowBatteryMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $lowBatteryMessageText;
-                            }
-                        }
-                        if ($useBatteryOK) {
-                            if (strpos($batteryOKMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $batteryOKMessageText;
-                            }
-                        }
-                    }
-                    //We have more than one category
-                    if ($multiMessage > 1) {
-                        $sendEmail = false;
-                        if ($useLowBattery) {
-                            if (strpos($lowBatteryMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $lowBatteryMessageText;
-                            }
-                        }
-                        if ($useBatteryOK) {
-                            if (strpos($batteryOKMessageText, 'Keine') === false) {
-                                $sendEmail = true;
-                                $messageText .= $batteryOKMessageText;
-                            }
-                        }
-                    }
-                    //Debug
-                    $this->SendDebug(__FUNCTION__, 'E-Mail Versand: ' . json_encode($sendEmail), 0);
-                    //Send email
-                    if ($sendEmail) {
-                        $scriptText = 'MA_SendMessage(' . $mailerID . ', "' . $mailer['Subject'] . '", "' . $messageText . '");';
-                        @IPS_RunScriptText($scriptText);
-                    }
-                }
-                //Reset critical variables
-                if ($ResetCriticalVariables) {
-                    $this->ResetAttribute('WeeklyNotificationListDeviceStatusLowBattery');
                 }
             }
+        }
+    }
+
+    private function SendReportAsMail(string $NotificationType): void
+    {
+        $typeIsValid = $this->IsNotificationTypeValid($NotificationType);
+        if (!$typeIsValid || $NotificationType == 'Immediate') {
+            return;
+        }
+        foreach (json_decode($this->ReadPropertyString($NotificationType . 'MailerNotification'), true) as $mailer) {
+            if (!$mailer['Use'] || $mailer['ID'] <= 1 || @!IPS_ObjectExists($mailer['ID'])) {
+                $this->SendDebug(__FUNCTION__, 'Mailer ' . $mailer['ID'] . ' does not exist or is not active', 0);
+                continue;
+            }
+            $messageText = 'Tagesbericht vom ' . date('d.m.Y, H:i:s') . ":\n\n\n";
+            if ($NotificationType == 'Weekly') {
+                $messageText = 'Wochenbericht vom ' . date('d.m.Y, H:i:s') . ":\n\n\n";
+            }
+            $batteryStates = ['EmptyBattery', 'LowBattery', 'BatteryOK'];
+            foreach ($batteryStates as $batteryState) {
+                if (!$mailer['Use' . $batteryState]) {
+                    continue;
+                }
+                //Header
+                if ($batteryState == 'EmptyBattery') {
+                    $messageText .= "Batterie leer:\n\n";
+                }
+                if ($batteryState == 'LowBattery') {
+                    $messageText .= "Batterie schwach:\n\n";
+                }
+                if ($batteryState == 'BatteryOK') {
+                    $messageText .= "Batterie OK:\n\n";
+                }
+                //Get variables from the notification list
+                $variables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatus' . $batteryState), true);
+                if (empty($variables)) {
+                    $messageText .= "Keine\n\n";
+                } else {
+                    foreach ($variables as $variable) {
+                        //Text
+                        $lineText = $mailer[$batteryState . 'MessageText'];
+                        $name = $this->GetValueFromMonitoredVariable($variable['ID'], 'Name');
+                        if ($this->GetValueFromMonitoredVariable($variable['ID'], 'Comment') != '') {
+                            $name = $name . ', ' . $this->GetValueFromMonitoredVariable($variable['ID'], 'Comment');
+                        }
+                        //Check for placeholder
+                        if (strpos($lineText, '%1$s') !== false) {
+                            $lineText = sprintf($lineText, $name);
+                        }
+                        //Timestamp
+                        if ($mailer['Use' . $batteryState . 'Timestamp']) {
+                            $lineText .= ', ' . $variable['Timestamp'];
+                        }
+                        //Variable ID
+                        if ($mailer['Use' . $batteryState . 'VariableID']) {
+                            $lineText .= ', ID: ' . $variable['ID'];
+                        }
+                        //Battery type
+                        if ($mailer['Use' . $batteryState . 'BatteryType']) {
+                            $batteryType = $this->GetValueFromMonitoredVariable($variable['ID'], 'BatteryType');
+                            if ($batteryType != '') {
+                                $lineText .= ', Batterietyp: ' . $batteryType;
+                            }
+                        }
+                        $messageText .= $lineText . "\n";
+                    }
+                    $messageText .= "\n";
+                }
+            }
+            $this->SendMail($mailer['ID'], $mailer['Subject'], $messageText);
+            IPS_Sleep(100);
         }
     }
 }

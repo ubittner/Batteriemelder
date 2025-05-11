@@ -1,17 +1,23 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection SpellCheckingInspection */
+/** @noinspection PhpUnused */
+
 /**
  * @project       Batteriemelder/Batteriemelder/
  * @file          module.php
  * @author        Ulrich Bittner
- * @copyright     2023, 2024 Ulrich Bittner
+ * @copyright     2023, 2024, 2025 Ulrich Bittner
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
-/** @noinspection PhpUnusedPrivateMethodInspection */
-/** @noinspection PhpUnhandledExceptionInspection */
-/** @noinspection SpellCheckingInspection */
-/** @noinspection PhpUnused */
+/*
+ * Notes:
+ * TriggerList is only for configuration of the monitored variables
+ * MonitoredVariable list is our internal battery list with states and additional information
+ * All other lists contain only id and timestamp
+ */
 
 declare(strict_types=1);
 
@@ -22,6 +28,7 @@ class Batteriemelder extends IPSModule
     //Helper
     use BATM_ConfigurationForm;
     use BATM_MonitoredVariables;
+    use BATM_Notifications;
     use BATM_Reports;
 
     //Constants
@@ -48,10 +55,12 @@ class Batteriemelder extends IPSModule
         $this->RegisterPropertyString('StatusTextOK', 'OK');
 
         //List options
+        $this->RegisterPropertyBoolean('EnableEmptyBattery', true);
+        $this->RegisterPropertyString('EmptyBatteryStatusText', '🔴 Batterie leer');
         $this->RegisterPropertyBoolean('EnableLowBattery', true);
+        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️ Batterie schwach');
         $this->RegisterPropertyBoolean('EnableBatteryOK', true);
-        $this->RegisterPropertyString('LowBatteryStatusText', '⚠️Batterie schwach');
-        $this->RegisterPropertyString('BatteryOKStatusText', '🟢 OK');
+        $this->RegisterPropertyString('BatteryOKStatusText', '🟢 Batterie OK');
 
         //Trigger list
         $this->RegisterPropertyString('TriggerList', '[]');
@@ -200,10 +209,19 @@ class Batteriemelder extends IPSModule
 
         ########## Attributes
 
+        $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusEmptyBattery', '[]');
         $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
-        $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
+        $this->RegisterAttributeString('ImmediateNotificationListDeviceStatusBatteryOK', '[]');
+        $this->RegisterAttributeString('DailyNotificationListDeviceStatusEmptyBattery', '[]');
         $this->RegisterAttributeString('DailyNotificationListDeviceStatusLowBattery', '[]');
+        $this->RegisterAttributeString('DailyNotificationListDeviceStatusBatteryOK', '[]');  # new
+        $this->RegisterAttributeString('WeeklyNotificationListDeviceStatusEmptyBattery', '[]');
         $this->RegisterAttributeString('WeeklyNotificationListDeviceStatusLowBattery', '[]');
+        $this->RegisterAttributeString('WeeklyNotificationListDeviceStatusBatteryOK', '[]'); # new
+        //Register the monitored variables attribute, this will be our internal battery list with additional information
+        $this->RegisterAttributeString('MonitoredVariables', '[]');
+        //Register the zero-timestamp helper. It is necessary if the timestamp is 0 = never updated, we set the actual timestamp as reverence for overdue = empty battery.
+        $this->RegisterAttributeString('ZeroTimestampHelper', '[]');
     }
 
     public function ApplyChanges()
@@ -310,9 +328,6 @@ class Batteriemelder extends IPSModule
         IPS_SetHidden($this->GetIDForIdent('UpdateStatus'), !$this->ReadPropertyBoolean('EnableUpdateStatus'));
         IPS_SetHidden($this->GetIDForIdent('BatteryList'), !$this->ReadPropertyBoolean('EnableBatteryList'));
 
-        $this->CleanUpAttributes();
-
-        //Update
         $this->CheckBatteries();
     }
 
@@ -352,14 +367,9 @@ class Batteriemelder extends IPSModule
         }
     }
 
-    /**
-     * Creates an instance.
-     *
-     * @param string $ModuleName
-     * @return void
-     */
     public function CreateInstance(string $ModuleName): void
     {
+        //Used in configuration form
         $this->SendDebug(__FUNCTION__, 'Modul: ' . $ModuleName, 0);
         switch ($ModuleName) {
             case 'WebFront':
@@ -393,102 +403,13 @@ class Batteriemelder extends IPSModule
         $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
     }
 
-    /**
-     * Resets the notification limit for immediate notification.
-     *
-     * @return void
-     * @throws Exception
-     */
     public function ResetImmediateNotificationLimit(): void
     {
+        //Used by timer
         $this->SetTimerInterval('ResetImmediateNotificationLimit', $this->GetInterval('ImmediateNotificationResetTime'));
-        $this->ResetImmediateNotificationDeviceState();
-    }
-
-    /**
-     * Resets the attributes for immediate notification of the device status to the default values.
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function ResetImmediateNotificationDeviceState(): void
-    {
+        $this->ResetAttribute('ImmediateNotificationListDeviceStatusEmptyBattery');
         $this->ResetAttribute('ImmediateNotificationListDeviceStatusLowBattery');
-        $this->ResetAttribute('ImmediateNotificationListDeviceStatusNormal');
-    }
-
-    /**
-     * Resets a attribute.
-     *
-     * @param string $Name
-     * @return void
-     * @throws Exception
-     */
-    public function ResetAttribute(string $Name): void
-    {
-        $this->WriteAttributeString($Name, '[]');
-    }
-
-    public function ListAttribute(string $Name): void
-    {
-        print_r(json_decode($this->ReadAttributeString($Name), true));
-    }
-
-    public function CleanUpAttributes(): void
-    {
-        $attributes = [
-            'ImmediateNotificationListDeviceStatusLowBattery',
-            'ImmediateNotificationListDeviceStatusNormal',
-            'DailyNotificationListDeviceStatusLowBattery',
-            'WeeklyNotificationListDeviceStatusLowBattery'];
-        foreach ($attributes as $attribute) {
-            $elements = json_decode($this->ReadAttributeString($attribute), true);
-            foreach ($elements as $key => $element) {
-                $id = $element['ID'];
-                $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
-                $exists = false;
-                foreach ($monitoredVariables as $monitoredVariable) {
-                    if ($monitoredVariable['Use']) {
-                        if ($monitoredVariable['PrimaryCondition'] != '') {
-                            $primaryCondition = json_decode($monitoredVariable['PrimaryCondition'], true);
-                            if (array_key_exists(0, $primaryCondition)) {
-                                if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                                    $monitoredVariableID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                                    if ($monitoredVariableID == $id) {
-                                        $exists = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!$exists) {
-                    unset($elements[$key]);
-                }
-            }
-            $elements = array_values($elements);
-            $this->WriteAttributeString($attribute, json_encode($elements));
-        }
-    }
-
-    public function DeleteElementFromAttribute(string $AttributeName, int $VariableID): void
-    {
-        $elements = json_decode($this->ReadAttributeString($AttributeName), true);
-        foreach ($elements as $key => $element) {
-            if ($element['ID'] == $VariableID) {
-                unset($elements[$key]);
-            }
-        }
-        $elements = array_values($elements);
-        $this->WriteAttributeString($AttributeName, json_encode($elements));
-    }
-
-    public function ResetNotificationLists(): void
-    {
-        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusLowBattery', '[]');
-        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusNormal', '[]');
-        $this->WriteAttributeString('DailyNotificationListDeviceStatusLowBattery', '[]');
-        $this->WriteAttributeString('WeeklyNotificationListDeviceStatusLowBattery', '[]');
+        $this->ResetAttribute('ImmediateNotificationListDeviceStatusBatteryOK');
     }
 
     public function UIShowMessage(string $Message): void
@@ -497,7 +418,7 @@ class Batteriemelder extends IPSModule
         $this->UpdateFormField('InfoMessageLabel', 'caption', $Message);
     }
 
-    #################### Request action
+    ########## Request action
 
     public function RequestAction($Ident, $Value)
     {
@@ -518,21 +439,34 @@ class Batteriemelder extends IPSModule
         }
     }
 
-    #################### Private
+    ########## Protected
 
-    private function KernelReady()
+    protected function IsStringJsonEncoded(string $String): bool
     {
-        $this->ApplyChanges();
+        json_decode($String);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
-    /**
-     * Gets an interval for a timer.
-     *
-     * @param string $TimerName
-     * @return int
-     * @throws Exception
-     */
-    private function GetInterval(string $TimerName): int
+    protected function LockSemaphore(string $Name): bool
+    {
+        for ($i = 0; $i < 100; $i++) {
+            if (IPS_SemaphoreEnter(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name, 1)) {
+                $this->SendDebug(__FUNCTION__, 'Semaphore locked', 0);
+                return true;
+            } else {
+                IPS_Sleep(mt_rand(1, 5));
+            }
+        }
+        return false;
+    }
+
+    protected function UnlockSemaphore(string $Name): void
+    {
+        IPS_SemaphoreLeave(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name);
+        $this->SendDebug(__FUNCTION__, 'Semaphore unlocked', 0);
+    }
+
+    protected function GetInterval(string $TimerName): int
     {
         $timer = json_decode($this->ReadPropertyString($TimerName));
         $now = time();
@@ -548,46 +482,15 @@ class Batteriemelder extends IPSModule
         return ($timestamp - $now) * 1000;
     }
 
-    /**
-     * Set the values to default.
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function SetDefault(): void
+    protected function ResetAttribute(string $Name): void
     {
-        $this->SetValue('Status', false);
-        $this->SetValue('BatteryList', '');
-        $this->ResetImmediateNotificationLimit();
-        $this->ResetAttribute('DailyNotificationListDeviceStatusLowBattery');
-        $this->ResetAttribute('WeeklyNotificationListDeviceStatusLowBattery');
+        $this->WriteAttributeString($Name, '[]');
     }
 
-    /**
-     * Attempts to set a semaphore and repeats this up to 100 times if unsuccessful.
-     * @param string $Name
-     * @return bool
-     */
-    private function LockSemaphore(string $Name): bool
-    {
-        for ($i = 0; $i < 100; $i++) {
-            if (IPS_SemaphoreEnter(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name, 1)) {
-                $this->SendDebug(__FUNCTION__, 'Semaphore locked', 0);
-                return true;
-            } else {
-                IPS_Sleep(mt_rand(1, 5));
-            }
-        }
-        return false;
-    }
+    ########## Private
 
-    /**
-     * Unlocks a semaphore.
-     * @param string $Name
-     */
-    private function UnlockSemaphore(string $Name): void
+    private function KernelReady()
     {
-        IPS_SemaphoreLeave(self::MODULE_PREFIX . '_' . $this->InstanceID . '_Semaphore_' . $Name);
-        $this->SendDebug(__FUNCTION__, 'Semaphore unlocked', 0);
+        $this->ApplyChanges();
     }
 }

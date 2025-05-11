@@ -1,38 +1,17 @@
 <?php
 
-/**
- * @project       Batteriemelder/Batteriemelder/helper/
- * @file          BATM_ConfigurationForm.php
- * @author        Ulrich Bittner
- * @copyright     2023, 2024 Ulrich Bittner
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- */
-
+/** @noinspection PhpUnhandledExceptionInspection */
 /** @noinspection SpellCheckingInspection */
 
 declare(strict_types=1);
 
 trait BATM_ConfigurationForm
 {
-    /**
-     * Reloads the configuration form.
-     *
-     * @return void
-     */
     public function ReloadConfig(): void
     {
         $this->ReloadForm();
     }
 
-    /**
-     * Expands or collapses the expansion panels.
-     *
-     * @param bool $State
-     * false =  collapse,
-     * true =   expand
-     *
-     * @return void
-     */
     public function ExpandExpansionPanels(bool $State): void
     {
         for ($i = 1; $i <= 9; $i++) {
@@ -40,14 +19,6 @@ trait BATM_ConfigurationForm
         }
     }
 
-    /**
-     * Modifies a configuration button.
-     *
-     * @param string $Field
-     * @param string $Caption
-     * @param int $ObjectID
-     * @return void
-     */
     public function ModifyButton(string $Field, string $Caption, int $ObjectID): void
     {
         $state = false;
@@ -59,13 +30,6 @@ trait BATM_ConfigurationForm
         $this->UpdateFormField($Field, 'objectID', $ObjectID);
     }
 
-    /**
-     * Modifies a trigger list configuration button
-     *
-     * @param string $Field
-     * @param string $Condition
-     * @return void
-     */
     public function ModifyTriggerListButton(string $Field, string $Condition): void
     {
         $id = 0;
@@ -96,12 +60,6 @@ trait BATM_ConfigurationForm
         $this->UpdateFormField($Field, 'objectID', $VariableID);
     }
 
-    /**
-     * Gets the configuration form.
-     *
-     * @return false|string
-     * @throws Exception
-     */
     public function GetConfigurationForm()
     {
         $form = [];
@@ -198,6 +156,20 @@ trait BATM_ConfigurationForm
             'name'    => 'Panel3',
             'caption' => 'Listenoptionen',
             'items'   => [
+                [
+                    'type'  => 'RowLayout',
+                    'items' => [
+                        [
+                            'type' => 'CheckBox',
+                            'name' => 'EnableEmptyBattery',
+                        ],
+                        [
+                            'type'    => 'ValidationTextBox',
+                            'name'    => 'EmptyBatteryStatusText',
+                            'caption' => 'Batterie leer'
+                        ]
+                    ]
+                ],
                 [
                     'type'  => 'RowLayout',
                     'items' => [
@@ -397,11 +369,7 @@ trait BATM_ConfigurationForm
                                 'caption'  => 'Variablen',
                                 'add'      => false,
                                 'rowCount' => 1,
-                                'sort'     => [
-                                    'column'    => 'ActualStatus',
-                                    'direction' => 'ascending'
-                                ],
-                                'columns' => [
+                                'columns'  => [
                                     [
                                         'name'    => 'ActualStatus',
                                         'caption' => 'Aktueller Status',
@@ -444,6 +412,12 @@ trait BATM_ConfigurationForm
                                         'caption' => 'Letzte Aktualisierung',
                                         'width'   => '200px',
                                         'save'    => false
+                                    ],
+                                    [
+                                        'name'    => 'UpdateOverdue',
+                                        'caption' => 'Aktualisierung überfällig',
+                                        'width'   => '200px',
+                                        'save'    => false
                                     ]
                                 ]
                             ],
@@ -456,7 +430,7 @@ trait BATM_ConfigurationForm
                             ]
                         ]
                     ],
-                    'onClick' => self::MODULE_PREFIX . '_GetActualVariableStates($id);'
+                    'onClick' => self::MODULE_PREFIX . '_DetermineActualBatteryStates($id);'
                 ],
                 [
                     'type'     => 'List',
@@ -591,6 +565,57 @@ trait BATM_ConfigurationForm
                             'add'     => '{"year":0,"month":0,"day":0}',
                             'edit'    => [
                                 'type' => 'SelectDate'
+                            ]
+                        ],
+                        //New in 4.0-18
+                        [
+                            'caption' => 'Aktualisierung überwachen',
+                            'name'    => 'CheckUpdateOverdue',
+                            'width'   => '250px',
+                            'add'     => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        //New in 4.0-18
+                        [
+                            'caption' => 'Zeit',
+                            'name'    => 'OverdueTimeValue',
+                            'width'   => '200px',
+                            'add'     => 3,
+                            'edit'    => [
+                                'type'    => 'NumberSpinner',
+                                'minimum' => 1,
+                                'maximum' => 30240
+                            ]
+                        ],
+                        //New in 4.0-18
+                        [
+                            'caption' => 'Einheit',
+                            'name'    => 'OverdueTimeBase',
+                            'width'   => '200px',
+                            'add'     => 3,
+                            'edit'    => [
+                                'type'     => 'Select',
+                                'onChange' => self::MODULE_PREFIX . '_CheckTimeValue($id, $OverdueTimeBase);',
+                                'options'  => [
+                                    [
+                                        'caption' => 'Sekunden',
+                                        'value'   => 0
+                                    ],
+                                    [
+                                        'caption' => 'Minuten',
+                                        'value'   => 1
+                                    ],
+                                    [
+                                        'caption' => 'Stunden',
+                                        'value'   => 2
+                                    ],
+                                    [
+                                        'caption' => 'Tage',
+                                        'value'   => 3
+                                    ]
+                                ]
                             ]
                         ]
                     ],
@@ -917,6 +942,101 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'EmptyBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -972,7 +1092,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1010,6 +1130,7 @@ trait BATM_ConfigurationForm
                                 'suffix' => 'Sekunden'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -1070,6 +1191,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -1151,6 +1282,182 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zielscript',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -1196,7 +1503,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1325,6 +1632,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -1375,6 +1683,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -1547,6 +1865,192 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴️ %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -1592,7 +2096,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -1731,6 +2235,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -1781,6 +2286,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -1973,6 +2488,80 @@ trait BATM_ConfigurationForm
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴️ %1$s Batterie leer!',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseEmptyBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -2008,7 +2597,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2045,6 +2634,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'CheckBox'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -2080,7 +2670,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'BatteryOKMessageText',
                             'width'   => '200px',
-                            'add'     => '🟢 %1$s',
+                            'add'     => '🟢 %1$s Batterie OK',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2178,7 +2768,7 @@ trait BATM_ConfigurationForm
             $dailyPushNotificationValues[] = ['rowColor' => $rowColor];
         }
 
-        //Daily post notification
+        //Daily post-notification
         $dailyPostNotificationValues = [];
         $dailyPostNotification = json_decode($this->ReadPropertyString('DailyPostNotification'), true);
         $amountDailyPostNotification = count($dailyPostNotification) + 1;
@@ -2219,7 +2809,7 @@ trait BATM_ConfigurationForm
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel7',
-            'caption' => 'Tägliche Benachrichtigung',
+            'caption' => 'Tagesbericht',
             'items'   => [
                 [
                     'type'  => 'RowLayout',
@@ -2337,6 +2927,101 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'EmptyBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -2392,7 +3077,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2430,6 +3115,7 @@ trait BATM_ConfigurationForm
                                 'suffix' => 'Sekunden'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -2490,6 +3176,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -2571,6 +3267,182 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴️ %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -2616,7 +3488,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -2745,6 +3617,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -2795,6 +3668,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -2933,7 +3816,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-                //Daily post notification
+                //Daily post-notification
                 [
                     'type'    => 'Label',
                     'caption' => 'Post-Nachricht',
@@ -2967,6 +3850,192 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴️ %1$s Batterie schwach',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -3012,7 +4081,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3151,6 +4220,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -3201,6 +4271,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -3393,6 +4473,80 @@ trait BATM_ConfigurationForm
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseEmptyBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -3428,7 +4582,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s',
+                            'add'     => '⚠️ %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3465,6 +4619,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'CheckBox'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -3598,7 +4753,7 @@ trait BATM_ConfigurationForm
             $weeklyPushNotificationValues[] = ['rowColor' => $rowColor];
         }
 
-        //Weekly post notification
+        //Weekly post-notification
         $weeklyPostNotificationValues = [];
         $weeklyPostNotification = json_decode($this->ReadPropertyString('WeeklyPostNotification'), true);
         $amountWeeklyPostNotification = count($weeklyPostNotification) + 1;
@@ -3639,7 +4794,7 @@ trait BATM_ConfigurationForm
         $form['elements'][] = [
             'type'    => 'ExpansionPanel',
             'name'    => 'Panel8',
-            'caption' => 'Wöchentliche Benachrichtigung',
+            'caption' => 'Wochenbericht',
             'items'   => [
                 [
                     'type'  => 'RowLayout',
@@ -3728,6 +4883,101 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Anzeigedauer',
+                            'name'    => 'EmptyBatteryDisplayDuration',
+                            'width'   => '200px',
+                            'add'     => 0,
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'NumberSpinner',
+                                'suffix' => 'Sekunden'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -3783,7 +5033,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -3821,6 +5071,7 @@ trait BATM_ConfigurationForm
                                 'suffix' => 'Sekunden'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -3881,6 +5132,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -3962,6 +5223,182 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::WEBFRONT_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -4007,7 +5444,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4136,6 +5573,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -4186,6 +5624,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -4324,7 +5772,7 @@ trait BATM_ConfigurationForm
                     'type'    => 'Label',
                     'caption' => ' '
                 ],
-                //Weekly post notification
+                //Weekly post-notification
                 [
                     'type'    => 'Label',
                     'caption' => 'Post-Nachricht',
@@ -4358,6 +5806,192 @@ trait BATM_ConfigurationForm
                                 'moduleID' => self::TILE_VISUALISATION_MODULE_GUID
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Titel der Meldung (maximal 32 Zeichen)',
+                            'name'    => 'EmptyBatteryTitle',
+                            'width'   => '350px',
+                            'add'     => 'Batteriemelder',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'ValidationTextBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext (maximal 256 Zeichen)',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s Batterie leer',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Icon',
+                            'name'    => 'EmptyBatteryIcon',
+                            'width'   => '200px',
+                            'add'     => 'Battery',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectIcon'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Sound',
+                            'name'    => 'EmptyBatterySound',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Standard',
+                                        'value'   => ''
+                                    ],
+                                    [
+                                        'caption' => 'Alarm',
+                                        'value'   => 'alarm'
+                                    ],
+                                    [
+                                        'caption' => 'Bell',
+                                        'value'   => 'bell'
+                                    ],
+                                    [
+                                        'caption' => 'Boom',
+                                        'value'   => 'boom'
+                                    ],
+                                    [
+                                        'caption' => 'Buzzer',
+                                        'value'   => 'buzzer'
+                                    ],
+                                    [
+                                        'caption' => 'Connected',
+                                        'value'   => 'connected'
+                                    ],
+                                    [
+                                        'caption' => 'Dark',
+                                        'value'   => 'dark'
+                                    ],
+                                    [
+                                        'caption' => 'Digital',
+                                        'value'   => 'digital'
+                                    ],
+                                    [
+                                        'caption' => 'Drums',
+                                        'value'   => 'drums'
+                                    ],
+                                    [
+                                        'caption' => 'Duck',
+                                        'value'   => 'duck'
+                                    ],
+                                    [
+                                        'caption' => 'Full',
+                                        'value'   => 'full'
+                                    ],
+                                    [
+                                        'caption' => 'Happy',
+                                        'value'   => 'happy'
+                                    ],
+                                    [
+                                        'caption' => 'Horn',
+                                        'value'   => 'horn'
+                                    ],
+                                    [
+                                        'caption' => 'Inception',
+                                        'value'   => 'inception'
+                                    ],
+                                    [
+                                        'caption' => 'Kazoo',
+                                        'value'   => 'kazoo'
+                                    ],
+                                    [
+                                        'caption' => 'Roll',
+                                        'value'   => 'roll'
+                                    ],
+                                    [
+                                        'caption' => 'Siren',
+                                        'value'   => 'siren'
+                                    ],
+                                    [
+                                        'caption' => 'Space',
+                                        'value'   => 'space'
+                                    ],
+                                    [
+                                        'caption' => 'Trickling',
+                                        'value'   => 'trickling'
+                                    ],
+                                    [
+                                        'caption' => 'Turn',
+                                        'value'   => 'turn'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            'caption' => 'Ziel ID',
+                            'name'    => 'EmptyBatteryTargetID',
+                            'width'   => '200px',
+                            'add'     => 1,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'SelectObject'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -4403,7 +6037,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext (maximal 256 Zeichen)',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s Batterie schwach',
+                            'add'     => '⚠️ %1$s Batterie schwach',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4542,6 +6176,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'SelectObject'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -4592,6 +6227,16 @@ trait BATM_ConfigurationForm
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
                                 'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseBatteryOKBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
                             ]
                         ],
                         [
@@ -4784,6 +6429,80 @@ trait BATM_ConfigurationForm
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
+                        //Empty battery
+                        [
+                            'caption' => ' ',
+                            'name'    => 'EmptyBatterySpacer',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'Label'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'EmptyBatteryLabel',
+                            'width'   => '200px',
+                            'add'     => '',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'   => 'Label',
+                                'bold'   => true,
+                                'italic' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterie leer',
+                            'name'    => 'UseEmptyBattery',
+                            'width'   => '160px',
+                            'add'     => true,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Meldungstext',
+                            'name'    => 'EmptyBatteryMessageText',
+                            'width'   => '200px',
+                            'add'     => '🔴 %1$s',
+                            'visible' => false,
+                            'edit'    => [
+                                'type'      => 'ValidationTextBox',
+                                'multiline' => true
+                            ]
+                        ],
+                        [
+                            'caption' => 'Zeitstempel',
+                            'name'    => 'UseEmptyBatteryTimestamp',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Melder ID',
+                            'name'    => 'UseEmptyBatteryVariableID',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        [
+                            'caption' => 'Batterietyp',
+                            'name'    => 'UseEmptyBatteryBatteryType',
+                            'width'   => '100px',
+                            'add'     => true,
+                            'visible' => false,
+                            'edit'    => [
+                                'type' => 'CheckBox'
+                            ]
+                        ],
+                        //Low battery
                         [
                             'caption' => ' ',
                             'name'    => 'LowBatterySpacer',
@@ -4819,7 +6538,7 @@ trait BATM_ConfigurationForm
                             'caption' => 'Meldungstext',
                             'name'    => 'LowBatteryMessageText',
                             'width'   => '200px',
-                            'add'     => '⚠️%1$s',
+                            'add'     => '⚠️ %1$s',
                             'visible' => false,
                             'edit'    => [
                                 'type'      => 'ValidationTextBox',
@@ -4856,6 +6575,7 @@ trait BATM_ConfigurationForm
                                 'type' => 'CheckBox'
                             ]
                         ],
+                        //Battery OK
                         [
                             'caption' => ' ',
                             'name'    => 'BatteryOKSpacer',
@@ -4997,6 +6717,19 @@ trait BATM_ConfigurationForm
 
         ########## Actions
 
+        $form['actions'][] =
+            [
+                'type'    => 'Label',
+                'caption' => 'Aktueller Status'
+            ];
+
+        $form['actions'][] =
+            [
+                'type'    => 'Button',
+                'caption' => 'Status anzeigen',
+                'onClick' => '$status = ' . self::MODULE_PREFIX . '_CheckBatteries($id); print_r(json_decode($status, true));'
+            ];
+
         //Notifications
         $form['actions'][] =
             [
@@ -5010,14 +6743,14 @@ trait BATM_ConfigurationForm
                 'items' => [
                     [
                         'type'    => 'PopupButton',
-                        'caption' => 'Tägliche Benachrichtigung versenden',
+                        'caption' => 'Tagesbericht versenden',
                         'popup'   => [
-                            'caption' => 'Tägliche Benachrichtigung wirklich versenden?',
+                            'caption' => 'Tagesbericht wirklich versenden?',
                             'items'   => [
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Versenden',
-                                    'onClick' => self::MODULE_PREFIX . '_ExecuteDailyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die tägliche Benachrichtigung wurde versendet!");'
+                                    'onClick' => self::MODULE_PREFIX . '_ExecuteDailyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Der Tagesbericht wurde versendet!");'
                                 ]
                             ]
 
@@ -5025,14 +6758,14 @@ trait BATM_ConfigurationForm
                     ],
                     [
                         'type'    => 'PopupButton',
-                        'caption' => 'Wöchentliche Benachrichtigung versenden',
+                        'caption' => 'Wochenbericht versenden',
                         'popup'   => [
-                            'caption' => 'Wöchentliche Benachrichtigung wirklich versenden?',
+                            'caption' => 'Wochenbericht wirklich versenden?',
                             'items'   => [
                                 [
                                     'type'    => 'Button',
                                     'caption' => 'Versenden',
-                                    'onClick' => self::MODULE_PREFIX . '_ExecuteWeeklyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Die wöchentliche Benachrichtigung wurde versendet!");'
+                                    'onClick' => self::MODULE_PREFIX . '_ExecuteWeeklyNotification($id, false, false);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Der Wochenbericht wurde versendet!");'
                                 ]
                             ]
                         ]
@@ -5145,7 +6878,7 @@ trait BATM_ConfigurationForm
             'items'   => [
                 [
                     'type'    => 'Label',
-                    'caption' => 'Benachrichtigungen',
+                    'caption' => 'Benachrichtigungslisten',
                     'italic'  => true,
                     'bold'    => true
                 ],
@@ -5156,6 +6889,69 @@ trait BATM_ConfigurationForm
                     'popup'   => [
                         'caption' => 'Sofortige Benachrichtigung',
                         'items'   => [
+                            //Empty battery
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🔴️ '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie leer',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'ImmediateNotificationListDeviceStatusEmptyBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "ImmediateNotificationListDeviceStatusEmptyBattery", $ImmediateNotificationListDeviceStatusEmptyBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationEmptyBatteryConfigurationButton", "ID " . $ImmediateNotificationListDeviceStatusEmptyBattery["ID"] . " bearbeiten", $ImmediateNotificationListDeviceStatusEmptyBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'ImmediateNotificationEmptyBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
+                            //Low battery
                             [
                                 'type'  => 'RowLayout',
                                 'items' => [
@@ -5175,7 +6971,7 @@ trait BATM_ConfigurationForm
                                 'type'     => 'List',
                                 'name'     => 'ImmediateNotificationListDeviceStatusLowBattery',
                                 'delete'   => true,
-                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusLowBattery", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);',
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "ImmediateNotificationListDeviceStatusLowBattery", $ImmediateNotificationListDeviceStatusLowBattery["ID"]);',
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'Name',
@@ -5217,10 +7013,7 @@ trait BATM_ConfigurationForm
                                 'visible'  => false,
                                 'objectID' => 0
                             ],
-                            [
-                                'type'    => 'Label',
-                                'caption' => ' '
-                            ],
+                            //Battery OK
                             [
                                 'type'  => 'RowLayout',
                                 'items' => [
@@ -5238,9 +7031,9 @@ trait BATM_ConfigurationForm
                             ],
                             [
                                 'type'     => 'List',
-                                'name'     => 'ImmediateNotificationListDeviceStatusNormal',
+                                'name'     => 'ImmediateNotificationListDeviceStatusBatteryOK',
                                 'delete'   => true,
-                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "ImmediateNotificationListDeviceStatusNormal", $ImmediateNotificationListDeviceStatusNormal["ID"]);',
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "ImmediateNotificationListDeviceStatusBatteryOK", $ImmediateNotificationListDeviceStatusBatteryOK["ID"]);',
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'Name',
@@ -5251,7 +7044,7 @@ trait BATM_ConfigurationForm
                                         'name'    => 'ID',
                                         'caption' => 'Variable ID',
                                         'width'   => '110px',
-                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationNormalConfigurationButton", "ID " . $ImmediateNotificationListDeviceStatusNormal["ID"] . " bearbeiten", $ImmediateNotificationListDeviceStatusNormal["ID"]);'
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "ImmediateNotificationNormalConfigurationButton", "ID " . $ImmediateNotificationListDeviceStatusBatteryOK["ID"] . " bearbeiten", $ImmediateNotificationListDeviceStatusBatteryOK["ID"]);'
                                     ],
                                     [
                                         'name'    => 'Name',
@@ -5284,15 +7077,78 @@ trait BATM_ConfigurationForm
                             ]
                         ]
                     ],
-                    'onClick' => self::MODULE_PREFIX . '_GetImmediateNotificationStatus($id);'
+                    'onClick' => self::MODULE_PREFIX . '_ShowNotificationListContent($id, "Immediate");'
                 ],
                 //Daily notification
                 [
                     'type'    => 'PopupButton',
-                    'caption' => 'Tägliche Benachrichtigung',
+                    'caption' => 'Tagesbericht',
                     'popup'   => [
-                        'caption' => 'Tägliche Benachrichtigung',
+                        'caption' => 'Tagesbericht',
                         'items'   => [
+                            //Empty battery
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🔴️ '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie leer',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'DailyNotificationListDeviceStatusEmptyBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "DailyNotificationListDeviceStatusEmptyBattery", $DailyNotificationListDeviceStatusEmptyBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationEmptyBatteryConfigurationButton", "ID " . $DailyNotificationListDeviceStatusEmptyBattery["ID"] . " bearbeiten", $DailyNotificationListDeviceStatusEmptyBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'DailyNotificationEmptyBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
+                            //Low battery
                             [
                                 'type'  => 'RowLayout',
                                 'items' => [
@@ -5312,7 +7168,7 @@ trait BATM_ConfigurationForm
                                 'type'     => 'List',
                                 'name'     => 'DailyNotificationListDeviceStatusLowBattery',
                                 'delete'   => true,
-                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "DailyNotificationListDeviceStatusLowBattery", $DailyNotificationListDeviceStatusLowBattery["ID"]);',
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'Name',
@@ -5354,17 +7210,142 @@ trait BATM_ConfigurationForm
                                 'visible'  => false,
                                 'objectID' => 0
                             ],
+                            //Battery OK
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🟢 '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie OK',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'DailyNotificationListDeviceStatusBatteryOK',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "DailyNotificationListDeviceStatusBatteryOK", $DailyNotificationListDeviceStatusBatteryOK["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "DailyNotificationNormalConfigurationButton", "ID " . $DailyNotificationListDeviceStatusBatteryOK["ID"] . " bearbeiten", $DailyNotificationListDeviceStatusBatteryOK["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'DailyNotificationNormalConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ]
                         ]
                     ],
-                    'onClick' => self::MODULE_PREFIX . '_GetDailyNotificationStatus($id);'
+                    'onClick' => self::MODULE_PREFIX . '_ShowNotificationListContent($id, "Daily");'
                 ],
                 //Weekly notification
                 [
                     'type'    => 'PopupButton',
-                    'caption' => 'Wöchentliche Benachrichtigung',
+                    'caption' => 'Wochenbericht',
                     'popup'   => [
-                        'caption' => 'Wöchentliche Benachrichtigung',
+                        'caption' => 'Wochenbericht',
                         'items'   => [
+                            //Empty battery
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🔴️ '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie leer',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'WeeklyNotificationListDeviceStatusEmptyBattery',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "WeeklyNotificationListDeviceStatusEmptyBattery", $WeeklyNotificationListDeviceStatusEmptyBattery["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationEmptyBatteryConfigurationButton", "ID " . $WeeklyNotificationListDeviceStatusEmptyBattery["ID"] . " bearbeiten", $WeeklyNotificationListDeviceStatusEmptyBattery["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'WeeklyNotificationEmptyBatteryConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ],
+                            //Low battery
                             [
                                 'type'  => 'RowLayout',
                                 'items' => [
@@ -5384,7 +7365,7 @@ trait BATM_ConfigurationForm
                                 'type'     => 'List',
                                 'name'     => 'WeeklyNotificationListDeviceStatusLowBattery',
                                 'delete'   => true,
-                                'onDelete' => self::MODULE_PREFIX . '_DeleteElementFromAttribute($id, "WeeklyNotificationListDeviceStatusLowBattery", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);',
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "WeeklyNotificationListDeviceStatusLowBattery", $WeeklyNotificationListDeviceStatusLowBattery["ID"]);',
                                 'rowCount' => 1,
                                 'sort'     => [
                                     'column'    => 'Name',
@@ -5426,9 +7407,71 @@ trait BATM_ConfigurationForm
                                 'visible'  => false,
                                 'objectID' => 0
                             ],
+                            //Battery OK
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => '🟢 '
+                                    ],
+                                    [
+                                        'type'    => 'Label',
+                                        'caption' => 'Batterie OK',
+                                        'bold'    => true,
+                                        'italic'  => true
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'List',
+                                'name'     => 'WeeklyNotificationListDeviceStatusBatteryOK',
+                                'delete'   => true,
+                                'onDelete' => self::MODULE_PREFIX . '_DeleteVariableFromNotificationList($id, "WeeklyNotificationListDeviceStatusBatteryOK", $WeeklyNotificationListDeviceStatusBatteryOK["ID"]);',
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Name',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'Variable ID',
+                                        'width'   => '110px',
+                                        'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "WeeklyNotificationNormalConfigurationButton", "ID " . $WeeklyNotificationListDeviceStatusBatteryOK["ID"] . " bearbeiten", $WeeklyNotificationListDeviceStatusBatteryOK["ID"]);'
+                                    ],
+                                    [
+                                        'name'    => 'Name',
+                                        'caption' => 'Name',
+                                        'width'   => '350px'
+                                    ],
+                                    [
+                                        'name'    => 'Comment',
+                                        'caption' => 'Bemerkung',
+                                        'width'   => '250px'
+                                    ],
+                                    [
+                                        'name'    => 'BatteryType',
+                                        'caption' => 'Batterietyp',
+                                        'width'   => '200px'
+                                    ],
+                                    [
+                                        'name'    => 'Timestamp',
+                                        'caption' => 'Datum, Uhrzeit',
+                                        'width'   => '160px'
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'     => 'OpenObjectButton',
+                                'name'     => 'WeeklyNotificationNormalConfigurationButton',
+                                'caption'  => 'Bearbeiten',
+                                'visible'  => false,
+                                'objectID' => 0
+                            ]
                         ]
                     ],
-                    'onClick' => self::MODULE_PREFIX . '_GetWeeklyNotificationStatus($id);'
+                    'onClick' => self::MODULE_PREFIX . '_ShowNotificationListContent($id, "Weekly");'
                 ],
                 [
                     'type'    => 'Label',
@@ -5535,7 +7578,7 @@ trait BATM_ConfigurationForm
             ]
         ];
 
-        //Dummy info message
+        //Fake info message
         $form['actions'][] =
             [
                 'type'    => 'PopupAlert',
@@ -5583,5 +7626,31 @@ trait BATM_ConfigurationForm
         ];
 
         return json_encode($form);
+    }
+
+    public function CheckTimeValue(int $TimeBase): void
+    {
+        switch ($TimeBase) {
+            case 1: //Minutes
+                $minimum = 1;
+                $maximum = 30240;
+                break;
+
+            case 2: //Hours
+                $minimum = 1;
+                $maximum = 504;
+                break;
+
+            case 3: //Days
+                $minimum = 1;
+                $maximum = 21;
+                break;
+
+            default: //Seconds
+                $minimum = 10;
+                $maximum = 1814400;
+        }
+        $this->UpdateFormfield('TimeValue', 'minimum', $minimum);
+        $this->UpdateFormfield('TimeValue', 'maximum', $maximum);
     }
 }

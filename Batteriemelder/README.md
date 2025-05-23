@@ -30,10 +30,11 @@ Auslösender Melder:
 Gibt es mehrere kritische Melder, welche alphabetisch nach der Bezeichnung sortiert sind,  
 so wird der Melder mit der höchsten Priorität angezeigt.
 
-| Priorität | Status                      |
-|-----------|-----------------------------|
-| 1         | ⚠️ Batterie schwach         |
-| 2         | 🟢 Batterie OK              |
+| Priorität | Status              |
+|-----------|---------------------|
+| 1         | 🔴 Batterie leer    |
+| 2         | ⚠️ Batterie schwach |
+| 3         | 🟢 Batterie OK      |
 
 Batteriewechsel ID:  
 Wird ein Batteriewechsel ausgeführt und ist der Melder dann nicht mehr in einem kritischen Zustand,  
@@ -68,10 +69,10 @@ Wird der Status eines Auslösers aktualisiert, so werden alle aktivierten Variab
 
 ##### 5.1.1 Gerätestatus:
 
-Ändert sich erstmalig der Gerätestatus von `OK` auf `Schwache Batterie`,  
-so werden die sofortigen Benachrichtigungen für den Gerätestatus `Schwache Batterie` versendet.
+Ändert sich erstmalig der Gerätestatus von `OK` auf `Schwache Batterie` oder `Leere Batterie`,  
+so werden die sofortigen Benachrichtigungen für den Gerätestatus versendet.
 
-Ändert sich Gerätestatus von `Schwache Batterie` wieder auf `OK`,  
+Ändert sich Gerätestatus von `Schwache Batterie` oder `Leere Batterie` wieder auf `OK`,  
 so werden die sofortigen Benachrichtigungen für den Gerätestatus `OK` versendet.
 
 Es werden Benachrichtigungen über die Änderung des jeweiligen Gerätestatus maximal ***einmal*** innerhalb des Zeitraums versendet.

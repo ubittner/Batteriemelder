@@ -93,9 +93,7 @@ trait BATM_Notifications
         $monitoredVariables = json_decode($BatteryList, true);
         foreach ($monitoredVariables as $monitoredVariable) {
             $status = $monitoredVariable['Status'];
-            $statusChanged = false;
             $addToList = false;
-            $notify = false;
             $notificationLists = [];
 
             # Battery OK
@@ -103,7 +101,7 @@ trait BATM_Notifications
             if ($status == 'BatteryOK') {
 
                 /*
-                 * Immediate notification for Battery OK
+                 * Immediate notification
                  *
                  * Immediate notification is handled differently from the daily and weekly notification.
                  * Critical states such as empty or low battery are immediately added to the notification list.
@@ -113,22 +111,15 @@ trait BATM_Notifications
                  */
 
                 //Check if the battery was empty or low before
-                $statusChanged = $this->IsVariableAlreadyOnNotificationList($monitoredVariable['ID'], 'Immediate');
-                if ($statusChanged) {
-                    $listedVariables = json_decode($this->ReadAttributeString('ImmediateNotificationListDeviceStatusBatteryOK'), true);
-                    if (!in_array($monitoredVariable['ID'], array_column($listedVariables, 'ID'))) {
-                        $notify = true;
-                        //Add to the immediate notification list
-                        $listedVariables[] = [
-                            'ID'          => $monitoredVariable['ID'],
-                            'Timestamp'   => $monitoredVariable['Timestamp']
-                        ];
-                        $this->WriteAttributeString('ImmediateNotificationListDeviceStatusBatteryOK', json_encode($listedVariables));
-                    }
+                $listed = $this->IsVariableAlreadyOnNotificationList($monitoredVariable['ID'], 'ImmediateNotificationListDeviceStatusEmptyBattery') || $this->IsVariableAlreadyOnNotificationList($monitoredVariable['ID'], 'ImmediateNotificationListDeviceStatusLowBattery');
+                if ($listed) {
+                    $this->AddVariableToNotificationList($monitoredVariable['ID'], $monitoredVariable['Timestamp'], 'ImmediateNotificationListDeviceStatusBatteryOK');
+                    $this->SendImmediateNotification($status, json_encode($monitoredVariable));
+                    $this->SendImmediateMailNotification($status, json_encode($monitoredVariable));
                 }
 
                 /*
-                 * Daily and weekly notification for Battery OK
+                 * Daily and weekly notification
                  *
                  * We will always build the list from scratch.
                  *
@@ -158,29 +149,35 @@ trait BATM_Notifications
                 $addToList = true;
                 $notificationLists = ['ImmediateNotificationListDeviceStatusEmptyBattery', 'DailyNotificationListDeviceStatusEmptyBattery', 'WeeklyNotificationListDeviceStatusEmptyBattery'];
             }
+
             if ($addToList) {
                 foreach ($notificationLists as $notificationList) {
-                    //Add to the notification list
-                    $criticalVariables = json_decode($this->ReadAttributeString($notificationList), true);
-                    if (!in_array($monitoredVariable['ID'], array_column($criticalVariables, 'ID'))) {
-                        $statusChanged = true;
-                        $notify = true;
-                        $criticalVariables[] = [
-                            'ID'          => $monitoredVariable['ID'],
-                            'Timestamp'   => $monitoredVariable['Timestamp']
-                        ];
-                        $this->WriteAttributeString($notificationList, json_encode($criticalVariables));
+                    $isListed = $this->IsVariableAlreadyOnNotificationList($monitoredVariable['ID'], $notificationList);
+                    $this->AddVariableToNotificationList($monitoredVariable['ID'], $monitoredVariable['Timestamp'], $notificationList);
+                    if ($notificationList == 'ImmediateNotificationListDeviceStatusEmptyBattery' || $notificationList == 'ImmediateNotificationListDeviceStatusLowBattery') {
+                        if (!$isListed) {
+                            $this->SendImmediateNotification($status, json_encode($monitoredVariable));
+                            $this->SendImmediateMailNotification($status, json_encode($monitoredVariable));
+                        }
                     }
                 }
             }
-            if ($statusChanged) {
-                //Notify
-                if ($this->GetValue('Active') && $notify) {
-                    $this->SendImmediateNotification($status, json_encode($monitoredVariable));
-                    $this->SendImmediateMailNotification($status, json_encode($monitoredVariable));
-                }
-            }
         }
+    }
+
+    protected function AddVariableToNotificationList(int $VariableID, string $Timestamp, string $NotificationList): bool
+    {
+        $result = false;
+        $variables = json_decode($this->ReadAttributeString($NotificationList), true);
+        if (!in_array($VariableID, array_column($variables, 'ID'))) {
+            $result = true;
+            $variables[] = [
+                'ID'        => $VariableID,
+                'Timestamp' => $Timestamp
+            ];
+            $this->WriteAttributeString($NotificationList, json_encode($variables));
+        }
+        return $result;
     }
 
     protected function CleanupNotificationLists(string $BatteryList): void
@@ -272,6 +269,9 @@ trait BATM_Notifications
 
     private function SendImmediateNotification(string $BatteryState, string $Variable): void
     {
+        if (!$this->GetValue('Active')) {
+            return;
+        }
         $batteryStates = ['EmptyBattery', 'LowBattery', 'BatteryOK'];
         if (!in_array($BatteryState, $batteryStates) || $Variable == '' || !$this->IsStringJsonEncoded($Variable)) {
             return;
@@ -335,6 +335,9 @@ trait BATM_Notifications
 
     private function SendImmediateMailNotification(string $BatteryState, string $Variable): void
     {
+        if (!$this->GetValue('Active')) {
+            return;
+        }
         $batteryStates = ['EmptyBattery', 'LowBattery', 'BatteryOK'];
         if (!in_array($BatteryState, $batteryStates) || $Variable == '' || !$this->IsStringJsonEncoded($Variable)) {
             return;

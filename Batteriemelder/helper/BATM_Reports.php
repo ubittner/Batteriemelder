@@ -85,6 +85,12 @@ trait BATM_Reports
         return false;
     }
 
+    public function IsVariableAlreadyOnNotificationList(int $VariableID, string $NotificationList): bool
+    {
+        $listedVariables = json_decode($this->ReadAttributeString($NotificationList), true);
+        return in_array($VariableID, array_column($listedVariables, 'ID'));
+    }
+
     ########## Protected
 
     protected function GetValueFromMonitoredVariable(int $VariableID, string $ValueName): string
@@ -128,21 +134,13 @@ trait BATM_Reports
         return false;
     }
 
-    protected function IsVariableAlreadyOnNotificationList(int $VariableID, string $NotificationType): bool
-    {
-        $isTypeValid = $this->IsNotificationTypeValid($NotificationType);
-        if (!$isTypeValid) {
-            return false;
-        }
-        $emptyBatteryVariables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatusEmptyBattery'), true);
-        $lowBatteryVariables = json_decode($this->ReadAttributeString($NotificationType . 'NotificationListDeviceStatusLowBattery'), true);
-        return in_array($VariableID, array_column($emptyBatteryVariables, 'ID')) || in_array($VariableID, array_column($lowBatteryVariables, 'ID'));
-    }
-
     ########## Private
 
     private function SendReportAsNotification(string $NotificationType, string $NotificationMethod): void
     {
+        if (!$this->GetValue('Active')) {
+            return;
+        }
         $isTypeValid = $this->IsNotificationTypeValid($NotificationType);
         if (!$isTypeValid || $NotificationType == 'Immediate') {
             return;
@@ -210,6 +208,9 @@ trait BATM_Reports
 
     private function SendReportAsMail(string $NotificationType): void
     {
+        if (!$this->GetValue('Active')) {
+            return;
+        }
         $typeIsValid = $this->IsNotificationTypeValid($NotificationType);
         if (!$typeIsValid || $NotificationType == 'Immediate') {
             return;

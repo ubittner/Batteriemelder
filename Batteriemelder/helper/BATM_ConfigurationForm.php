@@ -454,12 +454,13 @@ trait BATM_ConfigurationForm
                             ]
                         ],
                         [
-                            'caption' => 'Name',
-                            'name'    => 'Designation',
-                            'width'   => '400px',
-                            'add'     => '',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
-                            'edit'    => [
+                            'caption'        => 'Name',
+                            'name'           => 'Designation',
+                            'width'          => '400px',
+                            'add'            => '',
+                            'quickFilter'    => true,
+                            'onClick'        => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
+                            'edit'           => [
                                 'type' => 'ValidationTextBox'
                             ]
                         ],
@@ -536,6 +537,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'UserDefinedBatteryType',
                             'width'   => '300px',
                             'add'     => '',
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'ValidationTextBox'
                             ]
@@ -545,6 +547,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'UseMultipleAlerts',
                             'width'   => '200px',
                             'add'     => false,
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
@@ -554,6 +557,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'PrimaryCondition',
                             'width'   => '1000px',
                             'add'     => '',
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'SelectCondition'
                             ]
@@ -573,6 +577,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'CheckUpdateOverdue',
                             'width'   => '250px',
                             'add'     => false,
+                            'visible' => false,
                             'edit'    => [
                                 'type' => 'CheckBox'
                             ]
@@ -583,6 +588,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'OverdueTimeValue',
                             'width'   => '200px',
                             'add'     => 3,
+                            'visible' => false,
                             'edit'    => [
                                 'type'    => 'NumberSpinner',
                                 'minimum' => 1,
@@ -595,6 +601,7 @@ trait BATM_ConfigurationForm
                             'name'    => 'OverdueTimeBase',
                             'width'   => '200px',
                             'add'     => 3,
+                            'visible' => false,
                             'edit'    => [
                                 'type'     => 'Select',
                                 'onChange' => self::MODULE_PREFIX . '_CheckTimeValue($id, $OverdueTimeBase);',

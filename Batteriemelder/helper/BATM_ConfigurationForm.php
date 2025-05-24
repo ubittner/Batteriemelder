@@ -306,6 +306,14 @@ trait BATM_ConfigurationForm
                                 'visible' => false
                             ],
                             [
+                                'type'     => 'CheckBox',
+                                'name'     => 'SelectAllDeterminedVariables',
+                                'add'      => false,
+                                'caption'  => 'Alle Variablen auswählen',
+                                'onChange' => self::MODULE_PREFIX . '_SetColumnValues($id, "Use", $SelectAllDeterminedVariables, "DeterminedVariableList", $DeterminedVariableList);',
+                                'visible'  => false
+                            ],
+                            [
                                 'type'     => 'List',
                                 'name'     => 'DeterminedVariableList',
                                 'caption'  => 'Variablen',
@@ -431,6 +439,182 @@ trait BATM_ConfigurationForm
                         ]
                     ],
                     'onClick' => self::MODULE_PREFIX . '_DetermineActualBatteryStates($id);'
+                ],
+                [
+                    'type'    => 'PopupButton',
+                    'caption' => 'Überwachung konfigurieren',
+                    'popup'   => [
+                        'caption' => 'Überwachung',
+                        'items'   => [
+                            [
+                                'type'     => 'List',
+                                'name'     => 'UpdateOverdueConfiguration',
+                                'caption'  => 'Variablen',
+                                'add'      => false,
+                                'visible'  => false,
+                                'rowCount' => 1,
+                                'sort'     => [
+                                    'column'    => 'Designation',
+                                    'direction' => 'ascending'
+                                ],
+                                'columns' => [
+                                    [
+                                        'caption' => 'Auswahl',
+                                        'name'    => 'Use',
+                                        'width'   => '100px',
+                                        'add'     => false,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'name'    => 'ID',
+                                        'caption' => 'ID',
+                                        'width'   => '80px',
+                                        'add'     => ''
+                                    ],
+                                    [
+                                        'caption' => 'Name',
+                                        'name'    => 'Designation',
+                                        'width'   => '400px',
+                                        'add'     => ''
+                                    ],
+                                    [
+                                        'caption' => 'Aktualisierung überwachen',
+                                        'name'    => 'CheckUpdateOverdue',
+                                        'width'   => '250px',
+                                        'add'     => false,
+                                        'edit'    => [
+                                            'type' => 'CheckBox'
+                                        ]
+                                    ],
+                                    [
+                                        'caption' => 'Zeit',
+                                        'name'    => 'OverdueTimeValue',
+                                        'width'   => '200px',
+                                        'add'     => 3,
+                                        'edit'    => [
+                                            'type'    => 'NumberSpinner',
+                                            'minimum' => 1,
+                                            'maximum' => 30240
+                                        ]
+                                    ],
+                                    [
+                                        'caption' => 'Einheit',
+                                        'name'    => 'OverdueTimeBase',
+                                        'width'   => '200px',
+                                        'add'     => 3,
+                                        'edit'    => [
+                                            'type'     => 'Select',
+                                            'onChange' => self::MODULE_PREFIX . '_CheckTimeValue($id, $OverdueTimeBase);',
+                                            'options'  => [
+                                                [
+                                                    'caption' => 'Sekunden',
+                                                    'value'   => 0
+                                                ],
+                                                [
+                                                    'caption' => 'Minuten',
+                                                    'value'   => 1
+                                                ],
+                                                [
+                                                    'caption' => 'Stunden',
+                                                    'value'   => 2
+                                                ],
+                                                [
+                                                    'caption' => 'Tage',
+                                                    'value'   => 3
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'       => 'Label',
+                                'caption'    => ' '
+                            ],
+                            [
+                                'type'     => 'CheckBox',
+                                'name'     => 'SelectAllUpdateOverdueVariables',
+                                'visible'  => false,
+                                'caption'  => 'Alle Variablen auswählen',
+                                'onChange' => self::MODULE_PREFIX . '_SetColumnValues($id, "Use", $SelectAllUpdateOverdueVariables, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
+                            ],
+                            [
+                                'type'     => 'CheckBox',
+                                'name'     => 'SelectAllCheckUpdateOverdue',
+                                'visible'  => false,
+                                'caption'  => 'Alle Aktualisierungen überwachen auswählen',
+                                'onChange' => self::MODULE_PREFIX . '_SetColumnValues($id, "CheckUpdateOverdue", $SelectAllCheckUpdateOverdue, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
+                            ],
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'     => 'NumberSpinner',
+                                        'name'     => 'DefinedOverdueTimeValue',
+                                        'caption'  => 'Zeit',
+                                        'minimum'  => 1,
+                                        'maximum'  => 30240,
+                                        'value'    => 3,
+                                    ],
+                                    [
+                                        'type'       => 'Label',
+                                        'caption'    => ' '
+                                    ],
+                                    [
+                                        'type'    => 'Button',
+                                        'name'    => 'SetOverdueTimeValue',
+                                        'caption' => 'Übernehmen',
+                                        'visible' => false,
+                                        'onClick' => self::MODULE_PREFIX . '_SetColumnValues($id, "OverdueTimeValue", $DefinedOverdueTimeValue, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'  => 'RowLayout',
+                                'items' => [
+                                    [
+                                        'type'     => 'Select',
+                                        'name'     => 'DefinedOverdueTimeBase',
+                                        'caption'  => 'Einheit',
+                                        'options'  => [
+                                            [
+                                                'caption' => 'Sekunden',
+                                                'value'   => 0
+                                            ],
+                                            [
+                                                'caption' => 'Minuten',
+                                                'value'   => 1
+                                            ],
+                                            [
+                                                'caption' => 'Stunden',
+                                                'value'   => 2
+                                            ],
+                                            [
+                                                'caption' => 'Tage',
+                                                'value'   => 3
+                                            ]
+                                        ],
+                                        'onChange' => self::MODULE_PREFIX . '_SetColumnValues($id, "OverdueTimeBase", $DefinedOverdueTimeBase, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
+                                        'value'    => 3
+                                    ]
+                                ]
+                            ],
+                            [
+                                'type'       => 'Label',
+                                'caption'    => ' '
+                            ],
+                            [
+                                'type'    => 'Button',
+                                'name'    => 'ApplyUpdateOverdueConfiguration',
+                                'caption' => 'Konfiguration übernehmen',
+                                'visible' => false,
+                                'onClick' => self::MODULE_PREFIX . '_ApplyUpdateOverdueConfiguration($id, $UpdateOverdueConfiguration);'
+                            ]
+                        ]
+                    ],
+                    'onClick' => self::MODULE_PREFIX . '_EditUpdateOverdueConfiguration($id);'
                 ],
                 [
                     'type'     => 'List',

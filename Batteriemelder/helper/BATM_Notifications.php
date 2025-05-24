@@ -366,7 +366,7 @@ trait BATM_Notifications
             $lineText = $mailer[$BatteryState . 'MessageText'];
             $name = $this->GetValueFromMonitoredVariable($Variable['ID'], 'Name');
             if ($Variable['Comment'] != '') {
-                $name = $name . ', ' . $this->GetValueFromMonitoredVariable($Variable['ID'], 'Comment') . ', ';
+                $name = $name . ', ' . $this->GetValueFromMonitoredVariable($Variable['ID'], 'Comment');
             }
             //Check for placeholder
             if (strpos($lineText, '%1$s') !== false) {

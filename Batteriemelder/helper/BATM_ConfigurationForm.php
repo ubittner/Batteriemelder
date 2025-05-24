@@ -599,6 +599,17 @@ trait BATM_ConfigurationForm
                                         ],
                                         'onChange' => self::MODULE_PREFIX . '_SetColumnValues($id, "OverdueTimeBase", $DefinedOverdueTimeBase, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
                                         'value'    => 3
+                                    ],
+                                    [
+                                        'type'       => 'Label',
+                                        'caption'    => ' '
+                                    ],
+                                    [
+                                        'type'    => 'Button',
+                                        'name'    => 'SetOverdueTimeBase',
+                                        'caption' => 'Übernehmen',
+                                        'visible' => false,
+                                        'onClick' => self::MODULE_PREFIX . '_SetColumnValues($id, "OverdueTimeBase", $DefinedOverdueTimeValue, "UpdateOverdueConfiguration", $UpdateOverdueConfiguration);',
                                     ]
                                 ]
                             ],

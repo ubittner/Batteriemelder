@@ -447,13 +447,13 @@ trait BATM_ConfigurationForm
                         'caption' => 'Überwachung',
                         'items'   => [
                             [
-                                'type'     => 'List',
-                                'name'     => 'UpdateOverdueConfiguration',
-                                'caption'  => 'Variablen',
-                                'add'      => false,
-                                'visible'  => false,
-                                'rowCount' => 1,
-                                'sort'     => [
+                                'type'        => 'List',
+                                'name'        => 'UpdateOverdueConfiguration',
+                                'caption'     => 'Variablen',
+                                'add'         => false,
+                                'visible'     => false,
+                                'rowCount'    => 1,
+                                'sort'        => [
                                     'column'    => 'Designation',
                                     'direction' => 'ascending'
                                 ],
@@ -474,10 +474,11 @@ trait BATM_ConfigurationForm
                                         'add'     => ''
                                     ],
                                     [
-                                        'caption' => 'Name',
-                                        'name'    => 'Designation',
-                                        'width'   => '400px',
-                                        'add'     => ''
+                                        'caption'     => 'Name',
+                                        'name'        => 'Designation',
+                                        'width'       => '400px',
+                                        'add'         => '',
+                                        'quickFilter' => true,
                                     ],
                                     [
                                         'caption' => 'Aktualisierung überwachen',

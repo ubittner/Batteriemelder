@@ -165,6 +165,7 @@ trait BATM_MonitoredVariables
             return;
         }
         $determinedVariables = array_values($determinedVariables);
+        $this->UpdateFormField('SelectAllDeterminedVariables', 'visible', true);
         $this->UpdateFormField('DeterminedVariableList', 'rowCount', count($determinedVariables));
         $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
         $this->UpdateFormField('DeterminedVariableList', 'visible', true);
@@ -250,6 +251,9 @@ trait BATM_MonitoredVariables
                 'UserDefinedBatteryType' => '',
                 'UseMultipleAlerts'      => false,
                 'PrimaryCondition'       => json_encode($primaryCondition),
+                'CheckUpdateOverdue'     => false,
+                'OverdueTimeValue'       => 3,
+                'OverdueTimeBase'        => 3,
                 'LastBatteryReplacement' => $lastBatteryReplacement];
         }
         //Get already listed variables
@@ -300,6 +304,80 @@ trait BATM_MonitoredVariables
         }
         $this->UpdateFormField('ActualVariableStates', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStates', 'values', json_encode($actualBatteryStates));
+    }
+
+    public function EditUpdateOverdueConfiguration(): void
+    {
+        $this->UpdateFormfield('SelectAllUpdateOverdueVariables', 'value', false);
+        $actualConfig = [];
+        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($monitoredVariables as $monitoredVariable) {
+            if ($monitoredVariable['Use']) {
+                $actualConfig[] = ['Use' => false, 'ID' => $this->GetVariableIDFromCondition($monitoredVariable['PrimaryCondition']), 'Designation' => $monitoredVariable['Designation'], 'CheckUpdateOverdue' => $monitoredVariable['CheckUpdateOverdue'], 'OverdueTimeValue' => $monitoredVariable['OverdueTimeValue'], 'OverdueTimeBase' => $monitoredVariable['OverdueTimeBase']];
+            }
+        }
+        $amount = count($actualConfig);
+        if ($amount == 0) {
+            $infoText = 'Es wurden keine Variablen gefunden!';
+            $this->UpdateFormField('InfoMessage', 'visible', true);
+            $this->UpdateFormField('InfoMessageLabel', 'caption', $infoText);
+            return;
+        }
+        $this->UpdateFormfield('SelectAllUpdateOverdueVariables', 'visible', true);
+        $this->UpdateFormfield('SelectAllCheckUpdateOverdue', 'visible', true);
+
+        $this->UpdateFormfield('DefinedOverdueTimeValue', 'visible', true);
+        $this->UpdateFormfield('SetOverdueTimeValue', 'visible', true);
+
+        $this->UpdateFormfield('DefinedOverdueTimeBase', 'visible', true);
+        $this->UpdateFormfield('SetOverdueTimeBase', 'visible', true);
+
+        $this->UpdateFormfield('ApplyUpdateOverdueConfiguration', 'visible', true);
+        $this->UpdateFormfield('UpdateOverdueConfiguration', 'visible', true);
+        $this->UpdateFormField('UpdateOverdueConfiguration', 'rowCount', $amount);
+        $this->UpdateFormField('UpdateOverdueConfiguration', 'values', json_encode($actualConfig));
+    }
+
+    public function SetColumnValues(string $ColumnName, $ColumnValue, string $ListName, object $ListValues): void
+    {
+        $reflection = new ReflectionObject($ListValues);
+        $property = $reflection->getProperty('array');
+        $property->setAccessible(true);
+        $editedVariables = $property->getValue($ListValues);
+        foreach ($editedVariables as $key => $editedVariable) {
+            $editedVariables[$key][$ColumnName] = $ColumnValue;
+        }
+        $this->UpdateFormField($ListName, 'values', json_encode($editedVariables));
+    }
+
+    public function ApplyUpdateOverdueConfiguration(object $ListValues): void
+    {
+        $reflection = new ReflectionObject($ListValues);
+        $property = $reflection->getProperty('array');
+        $property->setAccessible(true);
+        $editedVariables = $property->getValue($ListValues);
+        $monitoredVariables = json_decode($this->ReadPropertyString('TriggerList'), true);
+        foreach ($monitoredVariables as $key => $monitoredVariable) {
+            foreach ($editedVariables as $editedVariable) {
+                if (!$editedVariable['Use']) {
+                    continue;
+                }
+                $monitoredVariableID = $this->GetVariableIDFromCondition($monitoredVariable['PrimaryCondition']);
+                if ($monitoredVariableID > 1 && @IPS_ObjectExists($monitoredVariableID)) {
+                    if ($monitoredVariableID == $editedVariable['ID']) {
+                        $monitoredVariables[$key]['CheckUpdateOverdue'] = $editedVariable['CheckUpdateOverdue'];
+                        $monitoredVariables[$key]['OverdueTimeValue'] = $editedVariable['OverdueTimeValue'];
+                        $monitoredVariables[$key]['OverdueTimeBase'] = $editedVariable['OverdueTimeBase'];
+                    }
+                }
+            }
+        }
+        //Sort variables by name
+        array_multisort(array_column($monitoredVariables, 'Designation'), SORT_ASC, $monitoredVariables);
+        @IPS_SetProperty($this->InstanceID, 'TriggerList', json_encode(array_values($monitoredVariables)));
+        if (@IPS_HasChanges($this->InstanceID)) {
+            @IPS_ApplyChanges($this->InstanceID);
+        }
     }
 
     public function AssignVariableProfile(object $ListValues): void
